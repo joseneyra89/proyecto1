@@ -4,62 +4,323 @@
     <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/sweetalert2@7.12.15/dist/sweetalert2.min.css'></link>
 
     <style>
-        .collapsible {
-            background-color: #eee;
-            color: #444;
-            cursor: pointer;
-            padding: 18px;
-            width: 50%;
-            border: none;
-            text-align: left;
-            outline: none;
-            font-size: 15px;
-            margin-left: 5%;
-            margin-right: 5%;
-            margin-top: 2%;
-            margin-bottom: 2%;
+        :root {
+            --verde-900: #06451f;
+            --verde-800: #07582a;
+            --verde-700: #087a38;
+            --verde-600: #0b9446;
+            --verde-100: #e7f6ec;
+            --verde-50: #f4fbf6;
+            --texto: #173526;
+            --gris: #64736a;
+            --blanco: rgba(255,255,255,0.92);
         }
 
-        /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
-        .active, .collapsible:hover {
-        background-color: #ccc;
-        }
+        * { box-sizing: border-box; }
 
-        .client, .technician {
-            display: hidden;
-        }
-
-        /* Style the collapsible content. Note: hidden by default */
-        .content {
-            padding: 0 18px;
-            display: none;
-            overflow: hidden;
-            color: black;
-            background-color: rgb(155, 127, 127, .75);
-            width: 75%;
-            margin-left: 10%;
-        }
         body {
-            background-image: url("revimage.png");
-            background-repeat: no-repeat;
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Arial, sans-serif;
+            color: var(--texto);
+            background:
+                linear-gradient(rgba(2, 61, 29, .45), rgba(5, 82, 39, .50)),
+                url("universidad.jpg");
+            background-size: cover;
+            background-position: center;
             background-attachment: fixed;
-            background-size: contain;
+        }
+
+        .topbar {
+            height: 86px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 34px;
+            background: linear-gradient(135deg, rgba(3, 70, 31, .96), rgba(5, 104, 47, .94));
+            box-shadow: 0 10px 28px rgba(0,0,0,.25);
+        }
+
+        .brand { display: flex; align-items: center; gap: 16px; color: #fff; }
+        .brand img {
+            width: 58px; height: 58px; object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,.25));
+        }
+
+        .brand-title {
+            font-size: 23px; font-weight: 800; letter-spacing: .3px; text-transform: uppercase;
+        }
+
+        .brand-subtitle { font-size: 14px; color: #d7f5df; margin-top: 3px; }
+
+        .logout-btn {
+            background: rgba(255,255,255,.14);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,.35);
+            border-radius: 999px;
+            padding: 11px 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .logout-btn:hover { background: rgba(255,255,255,.24); transform: translateY(-1px); }
+
+        .page-shell {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 28px;
+            padding: 34px;
+        }
+
+        .sidebar {
+            min-height: calc(100vh - 154px);
+            background: rgba(255,255,255,.88);
+            border: 1px solid rgba(255,255,255,.65);
+            border-radius: 22px;
+            padding: 24px;
+            box-shadow: 0 16px 40px rgba(0,0,0,.18);
+            backdrop-filter: blur(8px);
+        }
+
+        .sidebar-logo {
+            width: 98px;
+            display: block;
+            margin: 0 auto 14px;
+            opacity: .92;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            color: var(--verde-900);
+            font-size: 20px;
+            line-height: 1.2;
+            margin: 0 0 8px;
+        }
+
+        .sidebar p {
+            text-align: center;
+            color: var(--gris);
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 0 0 22px;
+        }
+
+        .role-card {
+            background: linear-gradient(135deg, #ecfff1, #d9f4df);
+            border: 1px solid #c9eccc;
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 18px;
+        }
+
+        .role-card strong {
+            display: block;
+            color: var(--verde-900);
+            margin-bottom: 6px;
+        }
+
+        .dashboard-panel {
+            position: relative;
+            min-height: calc(100vh - 154px);
+            background: rgba(255,255,255,.86);
+            border: 1px solid rgba(255,255,255,.65);
+            border-radius: 24px;
+            padding: 34px 38px;
+            box-shadow: 0 16px 42px rgba(0,0,0,.18);
+            backdrop-filter: blur(9px);
+            overflow: hidden;
+        }
+
+        .dashboard-panel::after {
+            content: "";
+            position: absolute;
+            right: 28px;
+            top: 38px;
+            width: 300px;
+            height: 300px;
+            background: url("logo.png") center/contain no-repeat;
+            opacity: .08;
+            pointer-events: none;
+        }
+
+        .welcome {
+            position: relative;
+            z-index: 1;
+            margin-bottom: 24px;
+        }
+
+        .welcome h1 {
+            margin: 0;
+            color: var(--verde-900);
+            font-size: 36px;
+            line-height: 1.15;
+        }
+
+        .welcome p {
+            margin: 10px 0 0;
+            color: var(--gris);
+            font-size: 17px;
+        }
+
+        .collapsible {
+            position: relative;
+            z-index: 1;
+            display: block;
+            width: min(720px, 100%);
+            margin: 16px 0 0;
+            padding: 18px 22px;
+            border: 1px solid #d8eadc;
+            border-radius: 16px;
+            background: rgba(255,255,255,.93);
+            color: var(--verde-900);
+            cursor: pointer;
+            text-align: left;
+            font-size: 17px;
+            font-weight: 800;
+            box-shadow: 0 10px 24px rgba(0,0,0,.10);
+            transition: .2s;
+        }
+
+        .collapsible::before {
+            content: "▸";
+            display: inline-block;
+            margin-right: 10px;
+            color: var(--verde-700);
+            transition: .2s;
+        }
+
+        .collapsible.active::before { transform: rotate(90deg); }
+
+        .active, .collapsible:hover {
+            background: linear-gradient(135deg, #f8fff9, #e7f6ec);
+            transform: translateY(-1px);
+            box-shadow: 0 14px 28px rgba(0,0,0,.14);
+        }
+
+        .client, .technician { display: hidden; }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            display: none;
+            width: min(920px, 100%);
+            overflow: hidden;
+            margin: 10px 0 8px;
+            padding: 22px;
+            color: var(--texto);
+            background: rgba(255,255,255,.78);
+            border: 1px solid rgba(215,235,220,.9);
+            border-radius: 18px;
+            box-shadow: 0 12px 26px rgba(0,0,0,.10);
         }
 
         table {
-            margin-left: 15%;
+            width: 100%;
+            margin: 0;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
+
+        td { vertical-align: middle; padding: 4px 8px; }
+
+        h3 {
+            margin: 0 0 8px;
+            color: var(--verde-900);
+            font-size: 16px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            min-width: 220px;
+            padding: 12px 14px;
+            border: 1px solid #c9dccf;
+            border-radius: 12px;
+            background: rgba(255,255,255,.96);
+            color: var(--texto);
+            font-size: 15px;
+            outline: none;
+        }
+
+        textarea { resize: vertical; }
+
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--verde-700);
+            box-shadow: 0 0 0 3px rgba(8,122,56,.14);
+        }
+
+        button:not(.collapsible):not(.logout-btn) {
+            background: linear-gradient(135deg, var(--verde-800), var(--verde-600));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 18px;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 14px;
+            transition: .2s;
+        }
+
+        button:not(.collapsible):not(.logout-btn):hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 22px rgba(8,122,56,.25);
+        }
+
+        .app-footer {
+            padding: 18px 34px;
+            color: #e9fff0;
+            background: rgba(2, 61, 29, .92);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        @media (max-width: 900px) {
+            .topbar { height: auto; padding: 18px; gap: 12px; flex-direction: column; align-items: flex-start; }
+            .page-shell { grid-template-columns: 1fr; padding: 18px; }
+            .sidebar, .dashboard-panel { min-height: auto; }
+            .welcome h1 { font-size: 28px; }
+            .app-footer { flex-direction: column; gap: 8px; }
         }
     </style>
     <title></title>
 </head>
 <body onload="pickEmployeeType()">
-    <button type="button" style="margin-left: 80%;" onclick="doLogout()">Log Out</button>
-    <button type="button" class="collapsible">Update Personal Info</button>
+    <header class="topbar">
+        <div class="brand">
+            <img src="logo.png" alt="Logo Universidad Nacional de Cañete">
+            <div>
+                <div class="brand-title">Universidad Nacional de Cañete</div>
+                <div class="brand-subtitle">Sistema de Mesa de Ayuda</div>
+            </div>
+        </div>
+        <button type="button" class="logout-btn" onclick="doLogout()">Cerrar sesión</button>
+    </header>
+
+    <div class="page-shell">
+        <aside class="sidebar">
+            <img src="logo.png" alt="Logo UNDC" class="sidebar-logo">
+            <h2>Mesa de Ayuda</h2>
+            <p>Gestiona solicitudes y tickets de soporte técnico institucional.</p>
+            <div class="role-card">
+                <strong>Sesión activa</strong>
+                <span id="roleLabel">Cargando perfil...</span>
+            </div>
+        </aside>
+
+        <main class="dashboard-panel">
+            <section class="welcome">
+                <h1>Panel de Gestión de Soporte</h1>
+                <p>Selecciona una opción para continuar con el flujo de soporte.</p>
+            </section>
+
+    <button type="button" class="collapsible">Actualizar información personal</button>
     <div class="content">
         <table id="updatePersonalInfo">
-            <tr><td><h3>Enter first name:</h3><input type="text" id="firstName"></td></tr>
-            <tr><td><h3>Enter last name:</h3><input type="text" id="lastName"></td></tr>
-            <tr><td><button id="updateInfo" onclick="updatePersonalInfo()">Update Info</button></td></tr>
+            <tr><td><h3>Ingrese nombres:</h3><input type="text" id="firstName"></td></tr>
+            <tr><td><h3>Ingrese apellidos:</h3><input type="text" id="lastName"></td></tr>
+            <tr><td><button id="updateInfo" onclick="updatePersonalInfo()">Actualizar información</button></td></tr>
         </table>
     </div>
     <button type="button" class="collapsible" id="createCollapseButton"></button>
@@ -82,6 +343,14 @@
         <table id="employeeCancelResolve">
         </table>
     </div>
+
+        </main>
+    </div>
+
+    <footer class="app-footer">
+        <span>Universidad Nacional de Cañete</span>
+        <span>© 2026 Sistema de Mesa de Ayuda</span>
+    </footer>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.10.1/dist/sweetalert2.all.min.js"></script>
 <script>
@@ -93,8 +362,8 @@
 
         if(!window.sessionStorage.getItem("token")) {
             swal.fire({
-                title: 'You do not have access to this page!',
-                confirmButtonText: 'Continue to log in...'
+                title: 'No tienes acceso a esta página',
+                confirmButtonText: 'Ir al inicio de sesión'
                 }).then(function (result) {
                 /* Read more about isConfirmed, isDenied below */
                 if (result.isConfirmed) {
@@ -123,33 +392,35 @@
         function pickEmployeeType() {
             if(employeeType==1) {
                 const apiURL = "";
-                document.title="Client Home Page"
-                document.getElementById("createCollapseButton").innerText = "Create Help Request";
+                document.title="Panel del Cliente"
+                document.getElementById("roleLabel").innerText = "Cliente"
+                document.getElementById("createCollapseButton").innerText = "Crear solicitud de ayuda";
                 document.getElementById("employeeCreate").innerHTML = 
-                "<tr><td><h3>Enter description of help request:</h3></td><td><textarea id='help_request_comment' rows='5' cols='50'></textarea></td></tr>"+
-                "<tr><td><button id='create_request'onclick='createHelpRequest()'>Create Request</button></td></tr>";
-                document.getElementById("viewCollapseButton").innerText = "View My Help Request";
-                document.getElementById("employeeView").innerHTML = "<tr><td><button id='view_request' onclick='viewHelpRequestStatus()'>View Request</button></td></tr><tr></tr>";
-                document.getElementById("updateCollapseButton").innerText = "Update My Help Request";
-                document.getElementById("employeeUpdate").innerHTML = "<tr><td><h3>Enter help request ID:</h3></td> <td><input type = 'number' id= 'update_request_id'></td></tr> <tr><td><h3>Enter description of help request:</h3></td>"+
-                "<td><textarea id='update_request_comment' rows='5' cols='50'></textarea></td></tr><tr><td><button id='update_request' onclick='update_request()'>Update Request</button></td></tr>";
-                document.getElementById("cancelCollapseButton").innerText = "Cancel My Help Request";
-                document.getElementById("employeeCancelResolve").innerHTML="<tr><td><h3>Please enter the request id number:</h3></td><td><input type='number' id='ticket_requests_id'>"+
-                "</td></tr><tr><td><button id='cancel_request' onclick='cancelHelpRequest()'>Cancel Request</button></td></tr>";
+                "<tr><td><h3>Ingrese la descripción de la solicitud:</h3></td><td><textarea id='help_request_comment' rows='5' cols='50'></textarea></td></tr>"+
+                "<tr><td><button id='create_request'onclick='createHelpRequest()'>Crear solicitud</button></td></tr>";
+                document.getElementById("viewCollapseButton").innerText = "Ver mi solicitud de ayuda";
+                document.getElementById("employeeView").innerHTML = "<tr><td><button id='view_request' onclick='viewHelpRequestStatus()'>Ver solicitud</button></td></tr><tr></tr>";
+                document.getElementById("updateCollapseButton").innerText = "Actualizar mi solicitud";
+                document.getElementById("employeeUpdate").innerHTML = "<tr><td><h3>Ingrese el ID de la solicitud:</h3></td> <td><input type = 'number' id= 'update_request_id'></td></tr> <tr><td><h3>Ingrese la descripción de la solicitud:</h3></td>"+
+                "<td><textarea id='update_request_comment' rows='5' cols='50'></textarea></td></tr><tr><td><button id='update_request' onclick='update_request()'>Actualizar solicitud</button></td></tr>";
+                document.getElementById("cancelCollapseButton").innerText = "Cancelar mi solicitud";
+                document.getElementById("employeeCancelResolve").innerHTML="<tr><td><h3>Ingrese el número ID de la solicitud:</h3></td><td><input type='number' id='ticket_requests_id'>"+
+                "</td></tr><tr><td><button id='cancel_request' onclick='cancelHelpRequest()'>Cancelar solicitud</button></td></tr>";
             } else {
                 const apiURL = "http://localhost:8080/technician";
-                document.title="Technician Home Page"
-                document.getElementById("createCollapseButton").innerText = "Create Ticket";
-                document.getElementById("employeeCreate").innerHTML = "<tr><td><button id='view_request' onclick='viewOpenRequestsTech()'>View Open Help Requests</button></td></tr><tr></tr>";
-                document.getElementById("viewCollapseButton").innerText = "View My Open Ticket";
-                document.getElementById("employeeView").innerHTML = "<tr><td><button id='view_ticket' onclick='viewOpenTicket()'>View Ticket</button></td></tr><tr></tr>";
-                document.getElementById("updateCollapseButton").innerText = "Update Ticket";
-                document.getElementById("employeeUpdate").innerHTML = "<tr><td><h3>Enter ticket ID:</h3></td> <td><input type = 'number' id= 'update_ticket'></td></tr> <tr><td><h3>Enter description of the issue the client is having:</h3></td>"+
-                "<td><textarea id='update_ticket_comment' rows='5' cols='50'></textarea></td></tr><tr><td><button id='update_request' onclick='updateTicket()'>Update Ticket</button></td></tr>";
-                document.getElementById("cancelCollapseButton").innerText = "Resolve Ticket";
-                document.getElementById("employeeCancelResolve").innerHTML = "<tr><td><button id='view_open_resolve' onclick='viewOpenTicketsFill()'>View Open Tickets</button></td></tr><tr></tr>";
-                //document.getElementById("employeeCancelResolve").innerHTML = "<tr><td><h3>Enter ticket ID:</h3></td> <td><input type = 'number' id= 'cancel_ticket_id'></td></tr><tr><td><h3>Enter ticket request ID:</h3></td> <td><input type = 'number' id= 'cancel_ticket_request_id'></td></tr> <tr><td><h3>Enter description of how the issue was resolved:</h3></td>"+
-                //"<td><textarea id='resolution' rows='5' cols='50'></textarea></td></tr><tr><td><button id='update_request' onclick='resolveTicket()'>Resolve Ticket</button></td></tr>";
+                document.title="Panel del Técnico"
+                document.getElementById("roleLabel").innerText = "Técnico / Administrador"
+                document.getElementById("createCollapseButton").innerText = "Crear ticket";
+                document.getElementById("employeeCreate").innerHTML = "<tr><td><button id='view_request' onclick='viewOpenRequestsTech()'>Ver solicitudes pendientes</button></td></tr><tr></tr>";
+                document.getElementById("viewCollapseButton").innerText = "Ver mi ticket abierto";
+                document.getElementById("employeeView").innerHTML = "<tr><td><button id='view_ticket' onclick='viewOpenTicket()'>Ver mi ticket</button></td></tr><tr></tr>";
+                document.getElementById("updateCollapseButton").innerText = "Actualizar ticket";
+                document.getElementById("employeeUpdate").innerHTML = "<tr><td><h3>Ingrese el ID del ticket:</h3></td> <td><input type = 'number' id= 'update_ticket'></td></tr> <tr><td><h3>Ingrese la descripción del problema del cliente:</h3></td>"+
+                "<td><textarea id='update_ticket_comment' rows='5' cols='50'></textarea></td></tr><tr><td><button id='update_request' onclick='updateTicket()'>Actualizar ticket</button></td></tr>";
+                document.getElementById("cancelCollapseButton").innerText = "Resolver ticket";
+                document.getElementById("employeeCancelResolve").innerHTML = "<tr><td><button id='view_open_resolve' onclick='viewOpenTicketsFill()'>Ver tickets pendientes</button></td></tr><tr></tr>";
+                //document.getElementById("employeeCancelResolve").innerHTML = "<tr><td><h3>Ingrese el ID del ticket:</h3></td> <td><input type = 'number' id= 'cancel_ticket_id'></td></tr><tr><td><h3>Enter ticket request ID:</h3></td> <td><input type = 'number' id= 'cancel_ticket_request_id'></td></tr> <tr><td><h3>Enter description of how the issue was resolved:</h3></td>"+
+                //"<td><textarea id='resolution' rows='5' cols='50'></textarea></td></tr><tr><td><button id='update_request' onclick='resolveTicket()'>Resolver ticket</button></td></tr>";
 
             }
         }
@@ -172,7 +443,7 @@
             if (response.status === 201) {
                 const apiResponse = await response.json();
                 swal.fire({
-                title: 'Employee info successfully changed!!! ',
+                title: 'Información personal actualizada correctamente',
                 confirmButtonText: 'Continue'
                 }).then(function (result) {
                 /* Read more about isConfirmed, isDenied below */
@@ -185,15 +456,15 @@
                 const apiResponse = await response.json();
                 // alert(apiResponse);
                 swal.fire(
-                    "Could not complete request..",
+                    "No se pudo completar la solicitud",
                     apiResponse.message,
                     "error"
                 );
                 resetInputs();
             } else {
                 swal.fire(
-                    "Something really, really bad happened...",
-                    "Please try again.",
+                    "Ocurrió un error inesperado",
+                    "Inténtalo nuevamente.",
                     "error"
                 );
 
@@ -223,7 +494,7 @@
                             fillFormString += "<td>"+jsonResponse[ticket].description+"</td>";
                         }
                         if(key=="ticket_requests_id") {
-                            fillFormString += "<td><button id='firstCreateTicketButton' onclick='fillTicketCreateForm("+jsonResponse[ticket].ticket_requests_id+")'>Create Ticket</button></td>";
+                            fillFormString += "<td><button id='firstCreateTicketButton' onclick='fillTicketCreateForm("+jsonResponse[ticket].ticket_requests_id+")'>Crear ticket</button></td>";
                         }
                         fillFormString += "</tr>";
                     }
@@ -244,8 +515,8 @@
                 });
             } else {
                 swal.fire(
-                    "Something really, really bad happened...",
-                    "Please try again.",
+                    "Ocurrió un error inesperado",
+                    "Inténtalo nuevamente.",
                     "error"
                 );
             }
@@ -273,7 +544,7 @@
                             fillFormString += "<td>"+jsonResponse[ticket].ticket_comments+"</td>";
                         }
                         if(key=="ticket_requests_id") {
-                            fillFormString += "<td><button id='firstResolveButton' onclick='fillTicketResolveForm("+jsonResponse[ticket].tickets_id+","+jsonResponse[ticket].ticket_requests_id+")'>Resolve Ticket</button></td>";
+                            fillFormString += "<td><button id='firstResolveButton' onclick='fillTicketResolveForm("+jsonResponse[ticket].tickets_id+","+jsonResponse[ticket].ticket_requests_id+")'>Resolver ticket</button></td>";
                         }
                         fillFormString += "</tr>";
                     }
@@ -294,8 +565,8 @@
                 });
             } else {
                 swal.fire(
-                    "Something really, really bad happened...",
-                    "Please try again.",
+                    "Ocurrió un error inesperado",
+                    "Inténtalo nuevamente.",
                     "error"
                 );
 
@@ -305,10 +576,10 @@
 
         async function fillTicketResolveForm(ticketsId,ticketRequestsId) {
             document.getElementById("employeeCancelResolve").innerHTML="";
-            document.getElementById("employeeCancelResolve").innerHTML="<tr><td><h3>Enter resolution description:</h3></td>"+
+            document.getElementById("employeeCancelResolve").innerHTML="<tr><td><h3>Ingrese la descripción de la solución:</h3></td>"+
                 "<td><textarea id='resolution' rows='5' cols='50'></textarea>";
             document.getElementById("employeeCancelResolve").innerHTML += 
-                "</td></tr><tr><td><button id='resolve_button' onclick='resolveTicket("+ticketsId+","+ticketRequestsId+")'>Resolve Ticket</button></td></tr>";
+                "</td></tr><tr><td><button id='resolve_button' onclick='resolveTicket("+ticketsId+","+ticketRequestsId+")'>Resolver ticket</button></td></tr>";
         }
 
 
@@ -326,7 +597,7 @@
             let response = await fetch("http://localhost:8080/technician/", sendFillReason);
             if (response.status === 201) {
                 jsonResponse = await response.json();
-                document.getElementById("employeeCreate").innerHTML="<tr><td><h3>Enter description of the issue the client is having:</h3></td>"+
+                document.getElementById("employeeCreate").innerHTML="<tr><td><h3>Ingrese la descripción del problema del cliente:</h3></td>"+
                 "<td><textarea id='help_ticket_comment' rows='5' cols='50'></textarea></td></tr><tr><td><select id='categoryList' name='categories'>";
                 const selectToPop = document.getElementById("categoryList");
                 let defOption = document.createElement("option");
@@ -343,20 +614,20 @@
                     selectToPop.append(nextOption);
                     }
                 document.getElementById("employeeCreate").innerHTML += 
-                "</select></td></tr><tr><td><button id='create_request' onclick='createTicket("+ticketRequestsId+")'>Create Ticket</button></td></tr>";
+                "</select></td></tr><tr><td><button id='create_request' onclick='createTicket("+ticketRequestsId+")'>Crear ticket</button></td></tr>";
             } else if (response.status === 400 || response.status === 404) { 
                 const apiResponse = await response.json();
                 // alert(apiResponse);
                 swal.fire(
-                    "Could not complete request..",
+                    "No se pudo completar la solicitud",
                     apiResponse.message,
                     "error"
                 );
                 resetInputs();
             } else {
                 swal.fire(
-                    "Something really, really bad happened...",
-                    "Please try again.",
+                    "Ocurrió un error inesperado",
+                    "Inténtalo nuevamente.",
                     "error"
                 );
 
@@ -386,7 +657,7 @@
             if (response.status === 201) {
                 const apiResponse = await response.json();
                 swal.fire({
-                title: 'Request successfully generated with ID number '+String(apiResponse.tickets_id),
+                title: 'Solicitud generada correctamente con ID número '+String(apiResponse.tickets_id),
                 confirmButtonText: 'Continue'
                 }).then(function (result) {
                 /* Read more about isConfirmed, isDenied below */
@@ -399,15 +670,15 @@
                 const apiResponse = await response.json();
                 // alert(apiResponse);
                 swal.fire(
-                    "Could not complete request..",
+                    "No se pudo completar la solicitud",
                     apiResponse.message,
                     "error"
                 );
                 resetInputs();
             } else {
                 swal.fire(
-                    "Something really, really bad happened...",
-                    "Please try again.",
+                    "Ocurrió un error inesperado",
+                    "Inténtalo nuevamente.",
                     "error"
                 );
 
@@ -434,7 +705,7 @@
             if (response.status === 201) {
                 const apiResponse = await response.json();
                 swal.fire({
-                title: 'Request successfully updated with ID number '+String(apiResponse.tickets_id),
+                title: 'Solicitud actualizada correctamente con ID número '+String(apiResponse.tickets_id),
                 confirmButtonText: 'Continue'
                 }).then(function (result) {
                 /* Read more about isConfirmed, isDenied below */
@@ -447,15 +718,15 @@
                 const apiResponse = await response.json();
                 // alert(apiResponse);
                 swal.fire(
-                    "Could not complete request..",
+                    "No se pudo completar la solicitud",
                     apiResponse.message,
                     "error"
                 );
                 // resetInputs();
             } else {
                 swal.fire(
-                    "Something really, really bad happened...",
-                    "Please try again.",
+                    "Ocurrió un error inesperado",
+                    "Inténtalo nuevamente.",
                     "error"
                 );
 
@@ -477,7 +748,7 @@
             if (response.status === 201) {
                 const apiResponse = await response.json();
                 swal.fire({
-                title: 'Your open ticket id #' +String(apiResponse.tickets_id),
+                title: 'Tu ticket abierto ID #' +String(apiResponse.tickets_id),
                 confirmButtonText: 'Continue'
                 }).then(function (result) {
                 /* Read more about isConfirmed, isDenied below */
@@ -488,15 +759,15 @@
                 } else if (response.status === 400) { 
                 const apiResponse = await response.json();
                 swal.fire(
-                    "Could not complete request..",
+                    "No se pudo completar la solicitud",
                     apiResponse.message,
                     "error"
                 );
                 resetInputs();
             } else {
                 swal(
-                    "Something really, really bad happened...",
-                    "Please try again.",
+                    "Ocurrió un error inesperado",
+                    "Inténtalo nuevamente.",
                     "error"
                 );
             }
@@ -507,7 +778,7 @@
         function doLogout() {
             window.sessionStorage.removeItem("token");
             swal.fire({
-                title: 'Successfully logged out!',
+                title: 'Sesión cerrada correctamente',
                 confirmButtonText: 'return to log in page.',
                 }).then(function (result) {
                 /* Read more about isConfirmed, isDenied below */
@@ -534,7 +805,7 @@
             if (response.status === 201) {
                 const apiResponse = await response.json();
                 swal.fire({
-                title: 'Request successfully updated with ID number '+String(apiResponse.ticket_requests_id),
+                title: 'Solicitud actualizada correctamente con ID número '+String(apiResponse.ticket_requests_id),
                 confirmButtonText: 'Continue'
                 }).then(function (result) {
                 /* Read more about isConfirmed, isDenied below */
@@ -546,15 +817,15 @@
                 const apiResponse = await response.json();
                 // alert(apiResponse);
                 swal.fire(
-                    "Could not complete request..",
+                    "No se pudo completar la solicitud",
                     apiResponse.message,
                     "error"
                 );
                 resetInputs();
             } else {
                 swal.fire(
-                    "Something really, really bad happened...",
-                    "Please try again.",
+                    "Ocurrió un error inesperado",
+                    "Inténtalo nuevamente.",
                     "error"
                 );
 
@@ -583,7 +854,7 @@
             if (response.status === 201) {
                 const apiResponse = await response.json();
                 swal.fire({
-                title: 'Request successfully updated with ID number '+String(apiResponse.ticket_requests_id),
+                title: 'Solicitud actualizada correctamente con ID número '+String(apiResponse.ticket_requests_id),
                 confirmButtonText: 'Continue'
                 }).then(function (result) {
                 /* Read more about isConfirmed, isDenied below */
@@ -596,15 +867,15 @@
                 const apiResponse = await response.json();
                 // alert(apiResponse);
                 swal.fire(
-                    "Could not complete request..",
+                    "No se pudo completar la solicitud",
                     apiResponse.message,
                     "error"
                 );
                 // document.location.reload();
             } else {
                 swal.fire({
-                    title: "Something really, really bad happened...",
-                    body: "Please try again. error",
+                    title: "Ocurrió un error inesperado",
+                    body: "Inténtalo nuevamente. error",
                     confirmButtonText: 'Okay'
                 });
                 
@@ -647,15 +918,15 @@
                 } else if (response.status === 400) { 
                 const apiResponse = await response.json();
                 swal.fire(
-                    "Could not complete request..",
+                    "No se pudo completar la solicitud",
                     apiResponse.message,
                     "error"
                 );
                 resetInputs();
             } else {
                 swal(
-                    "Something really, really bad happened...",
-                    "Please try again.",
+                    "Ocurrió un error inesperado",
+                    "Inténtalo nuevamente.",
                     "error"
                 );
             }
@@ -677,7 +948,7 @@
             if (response.status === 201) {
                 const apiResponse = await response.json();
                 swal.fire({
-                title: 'The request has been successfully deleted.',
+                title: 'La solicitud fue cancelada correctamente.',
                 confirmButtonText: 'Continue'
                 }).then(function (result) {
                 /* Read more about isConfirmed, isDenied below */
@@ -688,15 +959,15 @@
             } else if (response.status === 400) { 
                 const apiResponse = await response.json();
                 swal.fire(
-                    "Could not complete request..",
+                    "No se pudo completar la solicitud",
                     apiResponse.message,
                     "error"
                 );
                 resetInputs();
             } else {
                 swal(
-                    "Something really, really bad happened...",
-                    "Please try again.",
+                    "Ocurrió un error inesperado",
+                    "Inténtalo nuevamente.",
                     "error"
                 );
 
@@ -725,7 +996,7 @@
             if (response.status === 201) {
                 const apiResponse = await response.json();
                 swal.fire({
-                title: 'The ticket has been successfully resolved.',
+                title: 'El ticket fue resuelto correctamente.',
                 confirmButtonText: 'Continue'
                 }).then(function (result) {
                 /* Read more about isConfirmed, isDenied below */
@@ -736,15 +1007,15 @@
             } else if (response.status === 400) { 
                 const apiResponse = await response.json();
                 swal.fire(
-                    "Could not complete request..",
+                    "No se pudo completar la solicitud",
                     apiResponse.message,
                     "error"
                 );
                 resetInputs();
             } else {
                 swal(
-                    "Something really, really bad happened...",
-                    "Please try again.",
+                    "Ocurrió un error inesperado",
+                    "Inténtalo nuevamente.",
                     "error"
                 );
 

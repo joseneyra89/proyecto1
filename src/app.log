@@ -153,3 +153,17 @@
   "status_id": "2",
   "comment": "Se solucionó el problema"
 }
+2026-04-30 00:51:38,623 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 00:51:39,882 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 00:53:21,695 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"client1","pass":"pass"}
+2026-04-30 00:53:22,925 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 00:58:55,326 [] INFO  com.businessName.ticketApi.HelpTicketController - client create request attempt with: {"token":"client1_1_1","tableName":"ticket_requests","employee_id":"1","description":"mi teclado no funciona"}
+2026-04-30 00:58:57,869 [] INFO  com.businessName.ticketApi.HelpTicketController - client create request success!
+2026-04-30 01:00:34,495 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 01:00:35,838 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:00:56,616 [] INFO  com.businessName.ticketApi.HelpTicketController - tech view request attempt with: {"token":"admin_2_6","tableName":"ticket_requests"}
+2026-04-30 01:00:57,877 [] INFO  com.businessName.ticketApi.HelpTicketController - tech view request success!
+2026-04-30 01:01:29,430 [] INFO  com.businessName.ticketApi.HelpTicketController - filling create ticket form: {"token":"admin_2_6","tableName":"ticket_category"}
+2026-04-30 01:01:30,757 [] INFO  com.businessName.ticketApi.HelpTicketController - fill form success!
+2026-04-30 01:02:11,865 [] INFO  com.businessName.ticketApi.HelpTicketController - tech create ticket attempt with: {"token":"admin_2_6","tableName":"tickets","employee_id":"6","ticket_requests_id":3,"category":"1","ticket_comments":"Revisar teclado del cliente"}
+2026-04-30 01:02:14,267 [] INFO  com.businessName.ticketApi.HelpTicketController - tech create ticket success!

@@ -1,82 +1,138 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/sweetalert2@7.12.15/dist/sweetalert2.min.css'></link>
-    <style>
-        body {
-            background-image: url("revimage.png");
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            background-size: contain;
-            color: black
-        }
-    </style>
-    <meta charset="UTF-8">
-    <title>Employee Login</title>
+<meta charset="UTF-8">
+<title>Login - Universidad Nacional de Cañete</title>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+body {
+    background: rgba(0, 80, 0, 0.3);
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: url('universidad.jpg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+/* capa oscura */
+.overlay {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 80, 0, 0.5);
+}
+
+/* contenedor */
+.login-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255,255,255,0.9);
+    padding: 40px;
+    border-radius: 10px;
+    width: 350px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+.login-box {
+    animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translate(-50%, -60%); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+}
+/* logo */
+.logo {
+    width: 110px;
+    opacity: 0.9;
+    margin-bottom: 15px;
+}
+
+h2 {
+    margin-bottom: 20px;
+    color: #063d06;
+    font-weight: bold;
+}
+
+input {
+    width: 90%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background: #0a7a0a;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #055a05;
+}
+</style>
 </head>
-<body bgcolor="white">
-    <table>
-        <tr>
-            <td><h3>Enter login information:</h3></td>
-        </tr>
-        <tr>
-            <td align="right">Username:</td>
-            <td><input id="username"></td>
-        </tr>
-        <tr>
-            <td align="right">Password:</td>
-            <td><input id="password" type="password"><br></td>
-        </tr>
-        <tr>
-            <td></td>
-            <td><button id="submitInfo" onclick="doLogin()">Login</button></td>
-        </tr>
-    </table>
-</body>
+
+<body>
+
+<div class="overlay"></div>
+
+<div class="login-box">
+    <img src="logo.png" class="logo">
+    <h2>Universidad Nacional de Cañete</h2>
+
+    <input id="username" placeholder="Usuario">
+    <input id="password" type="password" placeholder="Contraseña">
+
+    <button onclick="doLogin()">Ingresar</button>
+</div>
 
 <script>
-  
-    async function doLogin() {
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("password").value;
-        loginJSON = {
-            "token": null,
-            "tableName": "employees",
-            "username": username,
-            "pass": password
-        }
-        let loginInfo = {
-            method:"POST",
-            headers:{'Content-Type':"application/json"},
-            body: JSON.stringify(loginJSON)
-        }
-        const response = await fetch("http://localhost:8080/login", loginInfo);
-        if (response.status === 201) {
-            const apiResponse = await response.json();
-            swal.fire({
-                title: 'Successful login, click continue!',
-                confirmButtonText: 'Continue'
-                }).then(function (result) {
-                /* Read more about isConfirmed, isDenied below */
-                if (result.isConfirmed) {
-                    //alert(apiResponse.token);
-                    window.sessionStorage.setItem("token", apiResponse.token);
-                    window.location.href="employee.html"
-                }
-                });
-        } else if (response.status === 400) {
-            const apiResponse = await response.json();
-            swal.fire(
-                'Unsuccessful login attempt!',
-                apiResponse.message,
-                'error'
-                );
-        } else {
-            alert("something went wrong?");
-        }
+async function doLogin() {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+
+    let loginJSON = {
+        token: null,
+        tableName: "employees",
+        username: username,
+        pass: password
     }
 
+    let response = await fetch("http://localhost:8080/login", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(loginJSON)
+    });
 
+    if (response.ok) {
+        let data = await response.json();
+
+        sessionStorage.setItem("token", data.token);
+
+        Swal.fire("Bienvenido", "Inicio de sesión exitoso", "success")
+        .then(() => {
+            window.location.href = "employee.html";
+        });
+
+    } else {
+        Swal.fire("Error", "Credenciales incorrectas", "error");
+    }
+
+    if (!username || !password) {
+    Swal.fire("Error", "Completa todos los campos", "warning");
+    return;
+}
+}
 </script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.10.1/dist/sweetalert2.all.min.js"></script>
+
+</body>
 </html>
