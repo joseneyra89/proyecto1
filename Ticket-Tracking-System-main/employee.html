@@ -388,7 +388,7 @@
         //alert(employeeId);
         const tableName =  "reimbursement_requests";
         
-        const fillURL = "http://localhost:8080/";
+        const fillURL = "http://localhost:8081/";
         function pickEmployeeType() {
             if(employeeType==1) {
                 const apiURL = "";
@@ -407,7 +407,7 @@
                 document.getElementById("employeeCancelResolve").innerHTML="<tr><td><h3>Ingrese el número ID de la solicitud:</h3></td><td><input type='number' id='ticket_requests_id'>"+
                 "</td></tr><tr><td><button id='cancel_request' onclick='cancelHelpRequest()'>Cancelar solicitud</button></td></tr>";
             } else {
-                const apiURL = "http://localhost:8080/technician";
+                const apiURL = "http://localhost:8081/technician";
                 document.title="Panel del Técnico"
                 document.getElementById("roleLabel").innerText = "Técnico / Administrador"
                 document.getElementById("createCollapseButton").innerText = "Crear ticket";
@@ -438,7 +438,7 @@
                 headers:{'Content-Type':"application/json"},
                 body: JSON.stringify(updateJSON)
             }
-            let response = await fetch("http://localhost:8080/", sendUpdate);
+            let response = await fetch("http://localhost:8081/", sendUpdate);
             //jsonResponse = await response.json();
             if (response.status === 201) {
                 const apiResponse = await response.json();
@@ -481,7 +481,7 @@
                 headers:{'Content-Type':"application/json"},
                 body: JSON.stringify(fillReasonJSON)
             }
-            let response = await fetch("http://localhost:8080/technician/", sendFillReason);
+            let response = await fetch("http://localhost:8081/technician/", sendFillReason);
             
             if (response.status === 201) {
                 jsonResponse = await response.json();
@@ -532,7 +532,7 @@
                 headers:{'Content-Type':"application/json"},
                 body: JSON.stringify(fillReasonJSON)
             }
-            let response = await fetch("http://localhost:8080/technician/", sendFillReason);
+            let response = await fetch("http://localhost:8081/technician/", sendFillReason);
             if (response.status === 201) {
                 jsonResponse = await response.json();
                 document.getElementById("employeeCancelResolve").innerHTML = "";
@@ -594,7 +594,7 @@
                 headers:{'Content-Type':"application/json"},
                 body: JSON.stringify(fillReasonJSON)
             }
-            let response = await fetch("http://localhost:8080/technician/", sendFillReason);
+            let response = await fetch("http://localhost:8081/technician/", sendFillReason);
             if (response.status === 201) {
                 jsonResponse = await response.json();
                 document.getElementById("employeeCreate").innerHTML="<tr><td><h3>Ingrese la descripción del problema del cliente:</h3></td>"+
@@ -653,7 +653,7 @@
                 headers:{'Content-Type':"application/json"},
                 body: JSON.stringify(helpRequestJSON)
             }
-            const response = await fetch("http://localhost:8080/technician/requests", sendRequest);
+            const response = await fetch("http://localhost:8081/technician/requests", sendRequest);
             if (response.status === 201) {
                 const apiResponse = await response.json();
                 swal.fire({
@@ -701,7 +701,7 @@
                 headers:{'Content-Type':"application/json"},
                 body: JSON.stringify(helpRequestJSON)
             }
-            const response = await fetch("http://localhost:8080/technician/requests", sendRequest);
+            const response = await fetch("http://localhost:8081/technician/requests", sendRequest);
             if (response.status === 201) {
                 const apiResponse = await response.json();
                 swal.fire({
@@ -744,7 +744,7 @@
                 headers:{'Content-Type':"application/json"},
                 body: JSON.stringify(helpRequestJSON)
             }
-            const response = await fetch("http://localhost:8080/client/requests", sendRequest);
+            const response = await fetch("http://localhost:8081/client/requests", sendRequest);
             if (response.status === 201) {
                 const apiResponse = await response.json();
                 swal.fire({
@@ -801,7 +801,7 @@
                 headers:{'Content-Type':"application/json"},
                 body: JSON.stringify(helpRequestJSON)
             }
-            const response = await fetch("http://localhost:8080/client/requests", sendRequest);
+            const response = await fetch("http://localhost:8081/client/requests", sendRequest);
             if (response.status === 201) {
                 const apiResponse = await response.json();
                 swal.fire({
@@ -850,7 +850,7 @@
                 headers:{'Content-Type':"application/json"},
                 body: JSON.stringify(helpRequestJSON)
             }
-            const response = await fetch("http://localhost:8080/client/requests", sendRequest);
+            const response = await fetch("http://localhost:8081/client/requests", sendRequest);
             if (response.status === 201) {
                 const apiResponse = await response.json();
                 swal.fire({
@@ -895,7 +895,7 @@
                 headers:{'Content-Type':"application/json"},
                 body: JSON.stringify(viewHelpRequestStatusJSON)
             }
-            const response = await fetch("http://localhost:8080/client/requests", sendRequest);
+            const response = await fetch("http://localhost:8081/client/requests", sendRequest);
             if (response.status === 201) {
                 const apiResponse = await response.json();
                 let statusPhrase = "";
@@ -944,7 +944,7 @@
                 headers:{'Content-Type':"application/json"},
                 body: JSON.stringify(cancelHelpRequestByIdJSON)
             }
-            const response = await fetch("http://localhost:8080/client/requests", sendRequest);
+            const response = await fetch("http://localhost:8081/client/requests", sendRequest);
             if (response.status === 201) {
                 const apiResponse = await response.json();
                 swal.fire({
@@ -992,7 +992,7 @@
                 headers:{'Content-Type':"application/json"},
                 body: JSON.stringify(resolveTicketByIdJSON)
             }
-            const response = await fetch("http://localhost:8080/technician/requests", sendRequest);
+            const response = await fetch("http://localhost:8081/technician/requests", sendRequest);
             if (response.status === 201) {
                 const apiResponse = await response.json();
                 swal.fire({
