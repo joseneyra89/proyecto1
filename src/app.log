@@ -167,3 +167,80 @@
 2026-04-30 01:01:30,757 [] INFO  com.businessName.ticketApi.HelpTicketController - fill form success!
 2026-04-30 01:02:11,865 [] INFO  com.businessName.ticketApi.HelpTicketController - tech create ticket attempt with: {"token":"admin_2_6","tableName":"tickets","employee_id":"6","ticket_requests_id":3,"category":"1","ticket_comments":"Revisar teclado del cliente"}
 2026-04-30 01:02:14,267 [] INFO  com.businessName.ticketApi.HelpTicketController - tech create ticket success!
+2026-04-30 01:37:52,910 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"client1","pass":"pass"}
+2026-04-30 01:37:54,493 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:37:58,441 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"client1","pass":"pass"}
+2026-04-30 01:37:59,236 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"client1","pass":"pass"}
+2026-04-30 01:37:59,590 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:38:00,447 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:38:05,563 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"client1","pass":"pass"}
+2026-04-30 01:38:05,850 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"client1","pass":"pass"}
+2026-04-30 01:38:06,052 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"client1","pass":"pass"}
+2026-04-30 01:38:06,241 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"client1","pass":"pass"}
+2026-04-30 01:38:06,436 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"client1","pass":"pass"}
+2026-04-30 01:38:06,647 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"client1","pass":"pass"}
+2026-04-30 01:38:06,822 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:38:07,107 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:38:07,233 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:38:07,502 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:38:07,616 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:38:07,905 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:38:10,818 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"client1","pass":"pass"}
+2026-04-30 01:38:11,993 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:38:13,451 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 01:38:14,534 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 01:38:14,636 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:38:14,734 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 01:38:14,919 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 01:38:15,080 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 01:38:15,267 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 01:38:15,472 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 01:38:15,706 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:38:15,891 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:38:16,094 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:38:16,256 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:38:16,458 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:38:16,619 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:38:21,516 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 01:38:21,696 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 01:38:21,891 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 01:38:22,096 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 01:38:22,654 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:38:22,830 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:38:22,957 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 01:38:23,146 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:38:23,206 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 01:38:23,330 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:38:24,151 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:38:24,495 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:38:59,080 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 01:39:00,147 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 01:39:00,518 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:39:01,311 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:39:09,936 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 01:39:10,617 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 01:39:10,820 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 01:39:11,121 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:39:11,812 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:39:11,993 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:41:54,709 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 01:41:56,042 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:43:40,008 [] INFO  com.businessName.ticketApi.HelpTicketController - client create request attempt with: {"token":"admin_2_6","tableName":"tickets","employee_id":"6"}
+2026-04-30 01:56:25,487 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"client1","pass":"pass"}
+2026-04-30 01:56:26,781 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:57:13,213 [] INFO  com.businessName.ticketApi.HelpTicketController - client create request attempt with: {"token":"client1_1_1","tableName":"ticket_requests","employee_id":"1","description":"pc lenta"}
+2026-04-30 01:57:15,629 [] INFO  com.businessName.ticketApi.HelpTicketController - client create request success!
+2026-04-30 01:57:29,318 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 01:57:30,580 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 01:57:35,386 [] INFO  com.businessName.ticketApi.HelpTicketController - tech view request attempt with: {"token":"admin_2_6","tableName":"ticket_requests"}
+2026-04-30 01:57:36,640 [] INFO  com.businessName.ticketApi.HelpTicketController - tech view request success!
+2026-04-30 01:57:38,671 [] INFO  com.businessName.ticketApi.HelpTicketController - filling create ticket form: {"token":"admin_2_6","tableName":"ticket_category"}
+2026-04-30 01:57:39,801 [] INFO  com.businessName.ticketApi.HelpTicketController - fill form success!
+2026-04-30 01:58:00,389 [] INFO  com.businessName.ticketApi.HelpTicketController - tech create ticket attempt with: {"token":"admin_2_6","tableName":"tickets","employee_id":"6","ticket_requests_id":4,"category":"1","ticket_comments":"pc tiene lentitud"}
+2026-04-30 01:58:02,866 [] INFO  com.businessName.ticketApi.HelpTicketController - tech create ticket success!
+2026-04-30 01:58:06,389 [] INFO  com.businessName.ticketApi.HelpTicketController - tech view request attempt with: {"token":"admin_2_6","tableName":"ticket_requests"}
+2026-04-30 01:58:07,573 [] INFO  com.businessName.ticketApi.HelpTicketController - tech view request success!
+2026-04-30 01:58:10,495 [] INFO  com.businessName.ticketApi.HelpTicketController - client create request attempt with: {"token":"admin_2_6","tableName":"tickets","employee_id":"6"}
+2026-04-30 01:58:25,302 [] INFO  com.businessName.ticketApi.HelpTicketController - client create request attempt with: {"token":"admin_2_6","tableName":"tickets","employee_id":"6"}
+2026-04-30 01:59:00,356 [] INFO  com.businessName.ticketApi.HelpTicketController - tech view request attempt with: {"token":"admin_2_6","tableName":"ticket_requests"}
+2026-04-30 01:59:01,480 [] INFO  com.businessName.ticketApi.HelpTicketController - tech view request fail: You have no open help requests.
