@@ -1,0 +1,155 @@
+2026-04-30 00:09:24,871 [main] INFO  com.businessName.ticketApi.HelpTicketApi - Javalin starting...
+2026-04-30 00:09:24,896 [main] INFO  com.businessName.ticketApi.HelpTicketApi - Javalin started...
+2026-04-30 00:11:02,876 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 00:11:04,028 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 00:11:04,947 [] INFO  com.businessName.ticketApi.HelpTicketController - login fail!
+2026-04-30 00:11:05,258 [] INFO  com.businessName.ticketApi.HelpTicketController - login fail!
+2026-04-30 00:11:18,728 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {"token":null,"tableName":"employees","username":"admin","pass":"admin123"}
+2026-04-30 00:11:19,997 [] INFO  com.businessName.ticketApi.HelpTicketController - login fail!
+2026-04-30 00:18:25,160 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: 
+2026-04-30 00:19:09,634 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {
+  "username": "admin",
+  "pass": "admin123"
+}
+2026-04-30 00:19:13,761 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {
+  "username": "admin",
+  "pass": "admin123"
+}
+2026-04-30 00:19:39,242 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {
+  "username": "admin",
+  "pass": "admin123"
+}
+2026-04-30 00:20:59,725 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {
+  "token": "login",
+  "tableName": "employees",
+  "username": "admin",
+  "pass": "admin123"
+}
+2026-04-30 00:21:01,010 [] INFO  com.businessName.ticketApi.HelpTicketController - login fail!
+2026-04-30 00:22:25,287 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {
+  "token": "login",
+  "tableName": "employees",
+  "username": "client1",
+  "pass": "pass"
+}
+2026-04-30 00:22:26,802 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 00:23:29,333 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {
+  "token": "login",
+  "tableName": "employees",
+  "username": "admin",
+  "pass": "admin123"
+}
+2026-04-30 00:23:30,617 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 00:25:06,976 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {
+  "token": "client1_1_1",
+  "tableName": "ticket_requests",
+  "description": "Mi computadora no enciende",
+  "type_id": 1
+}
+2026-04-30 00:25:39,102 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {
+  "token": "login",
+  "tableName": "employees",
+  "username": "client1",
+  "pass": "pass"
+}
+2026-04-30 00:25:40,366 [] INFO  com.businessName.ticketApi.HelpTicketController - login success!
+2026-04-30 00:25:58,695 [] INFO  com.businessName.ticketApi.HelpTicketController - login attempt with: {
+  "token": "client1_1_1",
+  "tableName": "ticket_requests",
+  "description": "No funciona mi laptop",
+  "type_id": 1
+}
+2026-04-30 00:26:11,310 [] INFO  com.businessName.ticketApi.HelpTicketController - client create request attempt with: {
+  "token": "client1_1_1",
+  "tableName": "ticket_requests",
+  "description": "No funciona mi laptop",
+  "type_id": 1
+}
+2026-04-30 00:27:09,418 [] INFO  com.businessName.ticketApi.HelpTicketController - client create request attempt with: {
+  "token": "client1_1_1",
+  "tableName": "ticket_requests",
+  "description": "No funciona mi laptop",
+  "type_id": 1
+}
+2026-04-30 00:28:14,086 [] INFO  com.businessName.ticketApi.HelpTicketController - client create request attempt with: {
+  "token": "client1_1_1",
+  "tableName": "ticket_requests",
+  "employee_id": 1,
+  "description": "No funciona mi laptop",
+  "status_id": 1
+}
+2026-04-30 00:28:17,306 [] INFO  com.businessName.ticketApi.HelpTicketController - client create request success!
+2026-04-30 00:28:45,479 [] INFO  com.businessName.ticketApi.HelpTicketController - tech create ticket attempt with: {
+  "token": "admin_2_6",
+  "tableName": "ticket_requests"
+}
+2026-04-30 00:28:45,495 [] INFO  com.businessName.ticketApi.HelpTicketController - tech create ticket fail: Incorrect comment key
+2026-04-30 00:29:34,676 [] INFO  com.businessName.ticketApi.HelpTicketController - tech create ticket attempt with: {
+  "token": "admin_2_6",
+  "tableName": "ticket_requests",
+  "ticket_id": 2,
+  "status_id": 2
+}
+2026-04-30 00:29:34,677 [] INFO  com.businessName.ticketApi.HelpTicketController - tech create ticket fail: Incorrect comment key
+2026-04-30 00:30:41,456 [] INFO  com.businessName.ticketApi.HelpTicketController - tech view request attempt with: {
+  "token": "admin_2_6",
+  "tableName": "ticket_requests"
+}
+2026-04-30 00:30:42,770 [] INFO  com.businessName.ticketApi.HelpTicketController - tech view request success!
+2026-04-30 00:30:59,577 [] INFO  com.businessName.ticketApi.HelpTicketController - tech create ticket attempt with: {
+  "token": "admin_2_6",
+  "tableName": "tickets",
+  "employee_id": "6",
+  "ticket_requests_id": "2",
+  "category": "1",
+  "ticket_comments": "Revisar laptop del cliente"
+}
+2026-04-30 00:31:02,216 [] INFO  com.businessName.ticketApi.HelpTicketController - tech create ticket success!
+2026-04-30 00:31:43,528 [] INFO  com.businessName.ticketApi.HelpTicketController - tech create ticket attempt with: {
+  "token": "admin_2_6",
+  "tableName": "tickets",
+  "employee_id": "6",
+  "ticket_requests_id": "2",
+  "category": "1",
+  "ticket_comments": "Revisar laptop del cliente"
+}
+2026-04-30 00:31:44,882 [] INFO  com.businessName.ticketApi.HelpTicketController - tech create ticket fail: Can not have more than one ticket open at a time
+2026-04-30 00:33:17,243 [] INFO  com.businessName.ticketApi.HelpTicketController - tech create ticket attempt with: {
+  "token": "admin_2_6",
+  "tableName": "tickets",
+  "tickets_id": "2",
+  "status_id": "2",
+  "resolution": "Se revisó la laptop y se solucionó el problema"
+}
+2026-04-30 00:33:17,246 [] INFO  com.businessName.ticketApi.HelpTicketController - tech create ticket fail: Incorrect comment key
+2026-04-30 00:34:11,106 [] INFO  com.businessName.ticketApi.HelpTicketController - tech create ticket attempt with: {
+  "token": "admin_2_6",
+  "tableName": "tickets",
+  "employee_id": "6",
+  "ticket_requests_id": "2",
+  "category": "1",
+  "ticket_comments": "Revisar laptop del cliente"
+}
+2026-04-30 00:34:12,468 [] INFO  com.businessName.ticketApi.HelpTicketController - tech create ticket fail: Can not have more than one ticket open at a time
+2026-04-30 00:34:52,323 [] INFO  com.businessName.ticketApi.HelpTicketController - tech update ticket attempt with: {
+  "token": "admin_2_6",
+  "tableName": "tickets",
+  "tickets_id": "2",
+  "status_id": "2",
+  "resolution": "Se solucionó el problema"
+}
+2026-04-30 00:35:29,330 [] INFO  com.businessName.ticketApi.HelpTicketController - tech create ticket attempt with: {
+  "token": "admin_2_6",
+  "tableName": "tickets",
+  "tickets_id": "2",
+  "status_id": "2",
+  "resolution": "Se solucionó el problema"
+}
+2026-04-30 00:35:29,330 [] INFO  com.businessName.ticketApi.HelpTicketController - tech create ticket fail: Incorrect comment key
+2026-04-30 00:36:00,511 [] INFO  com.businessName.ticketApi.HelpTicketController - tech update ticket attempt with: {
+  "token": "admin_2_6",
+  "tableName": "tickets",
+  "tickets_id": "2",
+  "status_id": "2",
+  "comment": "Se solucionó el problema"
+}
