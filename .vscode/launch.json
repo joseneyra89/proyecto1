@@ -5,6 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "java",
+            "name": "ConnectionObject",
+            "request": "launch",
+            "mainClass": "com.businessName.ticketDao.ConnectionObject",
+            "projectName": "The_Other_Guys_P2"
+        },
+        {
             "type": "msedge",
             "request": "launch",
             "name": "Open login.html",

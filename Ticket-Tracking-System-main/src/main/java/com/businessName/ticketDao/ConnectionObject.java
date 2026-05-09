@@ -10,9 +10,9 @@ public class ConnectionObject {
 
     public static Connection createConnection() {
         try {
-            String url = "jdbc:postgresql://mi-postgres-db.cfe68u8wo536.us-east-2.rds.amazonaws.com:5432/tickets_db";
-            String user = "postgres";
-            String password = "Joseneyra_17";
+            String url = "jdbc:postgresql://tickets-db.cfe68u8wo536.us-east-2.rds.amazonaws.com:5432/tickets_db";
+            String user = "postgres";  // Nombre de usuario
+            String password = "Joseneyra_17"; // Contraseña
 
             Connection dbConnection = DriverManager.getConnection(url, user, password);
             System.out.println("✅ Conectado a PostgreSQL en RDS");
