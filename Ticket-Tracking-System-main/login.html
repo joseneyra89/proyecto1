@@ -104,7 +104,7 @@ async function doLogin() {
         token: null,
         tableName: "employees",
         username: username,
-        pass: password
+        password: password
     }
 
     let response = await fetch("http://localhost:8081/login", {
