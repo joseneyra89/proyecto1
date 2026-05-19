@@ -1,4 +1,4 @@
-name: CI/CD Java + Docker
+name: CI Java
 
 on:
   pull_request:
@@ -33,4 +33,4 @@ jobs:
 
       - name: Build and run tests
         run: mvn clean install
-        working-directory: proyecto1/Ticket-Tracking-System-main
+        working-directory: Ticket-Tracking-System-main
