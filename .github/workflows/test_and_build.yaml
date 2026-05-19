@@ -1,36 +1,52 @@
-name: CI Java
+name: Java CI
 
 on:
-  pull_request:
-    branches:
-      - main
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  ci:
-    name: Build & Test Java
+  build:
+    name: Build and test
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    defaults:
+      run:
+        working-directory: Ticket-Tracking-System-main
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v3
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: "8"
+          cache: maven
 
-      - name: Cache Maven packages
-        uses: actions/cache@v3
+      - name: Validate Maven project
+        run: mvn -B -ntp validate
+
+      # The other test classes depend on an external PostgreSQL database or Windows browser drivers.
+      - name: Build and run unit tests
+        run: mvn -B -ntp clean verify -Dtest=EntityTests
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
-      - name: Build and run tests
-        run: mvn clean install
-        working-directory: Ticket-Tracking-System-main
+          name: surefire-reports
+          path: Ticket-Tracking-System-main/target/surefire-reports/
+          if-no-files-found: ignore
