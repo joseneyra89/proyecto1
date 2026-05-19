@@ -48,7 +48,15 @@ public class HelpTicketApi {
 
         app.post("/", controller.updatePersonalInfo);
 
-        app.start();
+        app.start(getPort());
 
+    }
+
+    private static int getPort() {
+        String port = System.getenv("PORT");
+        if (port == null || port.isEmpty()) {
+            return 8080;
+        }
+        return Integer.parseInt(port);
     }
 }

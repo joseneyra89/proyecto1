@@ -1,19 +1,19 @@
-# Dockerfile modificado para usar variables de entorno para la base de datos
-FROM maven:3.9.9-eclipse-temurin-21
+FROM maven:3.9.9-eclipse-temurin-8 AS build
 
 WORKDIR /app
 
 COPY pom.xml .
+RUN mvn -B -ntp dependency:go-offline
+
 COPY src ./src
+RUN mvn -B -ntp clean package dependency:copy-dependencies -Dmaven.test.skip=true -DincludeScope=runtime
 
-RUN mvn clean compile dependency:copy-dependencies -DskipTests
+FROM eclipse-temurin:8-jre
 
-# Establecer las variables de entorno para la conexión a la base de datos
-ENV DB_HOST=tickets-db.cfe68u8wo536.us-east-2.rds.amazonaws.com
-ENV DB_PORT=5432
-ENV DB_NAME=tickets_db
-ENV DB_USER=postgres
-ENV DB_PASSWORD=Joseneyra_17
+WORKDIR /app
+
+COPY --from=build /app/target/classes ./target/classes
+COPY --from=build /app/target/dependency ./target/dependency
 
 EXPOSE 8080
 

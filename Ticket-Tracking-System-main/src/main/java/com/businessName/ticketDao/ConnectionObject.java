@@ -5,23 +5,32 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
 public class ConnectionObject {
 
     public static Connection createConnection() {
         try {
-            String url = "jdbc:postgresql://tickets-db.cfe68u8wo536.us-east-2.rds.amazonaws.com:5432/tickets_db";
-            String user = "postgres";  // Nombre de usuario
-            String password = "Joseneyra_17"; // Contraseña
+            String host = getEnvOrDefault("DB_HOST", "localhost");
+            String port = getEnvOrDefault("DB_PORT", "5432");
+            String database = getEnvOrDefault("DB_NAME", "tickets_db");
+            String url = getEnvOrDefault("DB_URL", "jdbc:postgresql://" + host + ":" + port + "/" + database);
+            String user = getEnvOrDefault("DB_USER", "postgres");
+            String password = getEnvOrDefault("DB_PASSWORD", "");
 
             Connection dbConnection = DriverManager.getConnection(url, user, password);
-            System.out.println("✅ Conectado a PostgreSQL en RDS");
+            System.out.println("Connected to PostgreSQL");
             return dbConnection;
 
-        } catch(SQLException e) {
-            System.out.println("❌ Error de conexión");
+        } catch (SQLException e) {
+            System.out.println("PostgreSQL connection error");
             e.printStackTrace();
             return null;
         }
+    }
+
+    private static String getEnvOrDefault(String name, String defaultValue) {
+        String value = System.getenv(name);
+        return value == null || value.isEmpty() ? defaultValue : value;
     }
 
     public static void main(String[] args) {
