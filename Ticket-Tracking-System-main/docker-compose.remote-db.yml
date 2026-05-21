@@ -1,0 +1,18 @@
+services:
+  ticket-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ticket-tracking:latest
+    container_name: ticket-tracking-app
+    ports:
+      - "${APP_PORT:-8081}:8081"
+    environment:
+      PORT: "${PORT:-8081}"
+      DB_HOST: "${DB_HOST:?Define DB_HOST in .env}"
+      DB_PORT: "${DB_PORT:-5432}"
+      DB_NAME: "${DB_NAME:?Define DB_NAME in .env}"
+      DB_USER: "${DB_USER:?Define DB_USER in .env}"
+      DB_PASSWORD: "${DB_PASSWORD:?Define DB_PASSWORD in .env}"
+      DB_URL: "${DB_URL:-}"
+    restart: unless-stopped

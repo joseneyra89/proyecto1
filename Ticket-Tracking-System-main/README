@@ -1,6 +1,59 @@
-#PRUEBA
-#prueba333
-#pruba233333
-#prueba de luis
-#prueba modificacion codigo verificacion ci y cd
-#1232344
+# Ticket Tracking System
+
+## Levantar el proyecto desde cualquier PC
+
+Cada integrante puede abrir su rama y levantar la app completa con Docker:
+
+```powershell
+git fetch
+git checkout nombre-de-tu-rama
+cd Ticket-Tracking-System-main
+Copy-Item .env.example .env
+docker compose up --build
+```
+
+Servicios locales:
+
+- Web: http://localhost:8080/login.html
+- API: http://localhost:8081
+- Adminer para gestionar la base: http://localhost:8082
+- PostgreSQL desde la PC host: localhost:5432
+
+Nota: el frontend actual llama a la API en `localhost:8081`. Si ese puerto esta ocupado, libera el puerto antes de levantar el proyecto.
+
+Usuarios de prueba:
+
+- Cliente: `mb1` / `pass`
+- Tecnico: `tech1` / `pass`
+- Admin: `admin` / `pass`
+
+## Entrar a la base desde Adminer
+
+En http://localhost:8082 usa:
+
+- Sistema: PostgreSQL
+- Servidor: `postgres`
+- Usuario: `tickets_user`
+- Contrasena: `tickets_password`
+- Base de datos: `tickets_db`
+
+## Reiniciar la base desde cero
+
+Si quieres borrar datos de prueba y recrear la base:
+
+```powershell
+docker compose down -v
+docker compose up --build
+```
+
+## Conectarse a una base en otra PC
+
+Si quieren que la app Docker use una base compartida en otra PC:
+
+```powershell
+Copy-Item .env.remote-db.example .env
+notepad .env
+docker compose -f docker-compose.remote-db.yml up --build
+```
+
+En ese caso, cambia `DB_HOST` por la IP LAN de la PC donde esta PostgreSQL.
