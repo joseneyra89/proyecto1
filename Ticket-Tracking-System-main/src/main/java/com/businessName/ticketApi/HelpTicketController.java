@@ -9,6 +9,7 @@ import com.businessName.ticketService.ClientInteractions;
 import com.businessName.ticketService.EmployeeInteractions;
 import com.businessName.ticketService.TechnicianInteractions;
 import io.javalin.http.Handler;
+import org.json.JSONObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -95,6 +96,12 @@ public class HelpTicketController {
             ctx.result("{\"message\":\""+e.getMessage()+"\"}");
             ctx.status(400);
             logger.info("tech create ticket fail: "+e.getMessage());
+        } catch (Exception e) {
+            ctx.result(new JSONObject()
+                    .put("message", "Error creating ticket: " + e.getMessage())
+                    .toString());
+            ctx.status(500);
+            logger.error("unexpected tech create ticket fail", e);
         }
     };
 

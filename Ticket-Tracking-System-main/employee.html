@@ -462,9 +462,18 @@
                 );
                 resetInputs();
             } else {
+                let errorMessage = "Inténtalo nuevamente.";
+                try {
+                    const apiResponse = await response.json();
+                    if (apiResponse.message) {
+                        errorMessage = apiResponse.message;
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
                 swal.fire(
                     "Ocurrió un error inesperado",
-                    "Inténtalo nuevamente.",
+                    errorMessage,
                     "error"
                 );
 
@@ -676,9 +685,18 @@
                 );
                 resetInputs();
             } else {
+                let errorMessage = "Inténtalo nuevamente.";
+                try {
+                    const apiResponse = await response.json();
+                    if (apiResponse.message) {
+                        errorMessage = apiResponse.message;
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
                 swal.fire(
                     "Ocurrió un error inesperado",
-                    "Inténtalo nuevamente.",
+                    errorMessage,
                     "error"
                 );
 

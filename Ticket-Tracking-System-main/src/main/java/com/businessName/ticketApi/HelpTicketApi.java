@@ -55,7 +55,7 @@ public class HelpTicketApi {
     private static int getPort() {
         String port = System.getenv("PORT");
         if (port == null || port.isEmpty()) {
-            return 8080;
+            return 8081;
         }
         return Integer.parseInt(port);
     }

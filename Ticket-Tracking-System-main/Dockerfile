@@ -15,6 +15,6 @@ WORKDIR /app
 COPY --from=build /app/target/classes ./target/classes
 COPY --from=build /app/target/dependency ./target/dependency
 
-EXPOSE 8080
+EXPOSE 8081
 
 CMD ["java", "-cp", "target/classes:target/dependency/*", "com.businessName.ticketApi.HelpTicketApi"]
