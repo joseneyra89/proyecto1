@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS p2_sandbox.tickets (
 );
 
 INSERT INTO p2_sandbox.employee_type (type_id, description) VALUES
-    (1, 'Cliente'),
+    (1, 'Usuario'),
     (2, 'Tecnico')
 ON CONFLICT (type_id) DO NOTHING;
 
@@ -57,10 +57,10 @@ INSERT INTO p2_sandbox.ticket_category (type_id, description) VALUES
 ON CONFLICT (type_id) DO NOTHING;
 
 INSERT INTO p2_sandbox.employees (employees_id, first_name, last_name, username, pass, type_id) VALUES
-    (1, 'Ana', 'Cliente', 'cliente1', 'pass', 1),
+    (1, 'Ana', 'Usuario', 'cliente1', 'pass', 1),
     (2, 'Mary', 'Brown', 'mb1', 'pass', 1),
-    (3, 'Luis', 'Cliente', 'cliente2', 'pass', 1),
-    (4, 'Rosa', 'Cliente', 'cliente3', 'pass', 1),
+    (3, 'Luis', 'Usuario', 'cliente2', 'pass', 1),
+    (4, 'Rosa', 'Usuario', 'cliente3', 'pass', 1),
     (5, 'Tomas', 'Tecnico', 'tech1', 'pass', 2),
     (6, 'Mario', 'Tecnico', 'tech2', 'pass', 2),
     (7, 'Admin', 'Mesa', 'admin', 'pass', 2)

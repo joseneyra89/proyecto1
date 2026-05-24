@@ -1,8 +1,14 @@
 package com.businessName.ticketApi;
 
+import com.businessName.security.AccessPolicy;
+import com.businessName.security.AuthMiddleware;
+import com.businessName.security.AuthService;
 import io.javalin.Javalin;
+import io.javalin.http.ForbiddenResponse;
+import io.javalin.http.UnauthorizedResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
 
 
 public class HelpTicketApi {
@@ -21,12 +27,67 @@ public class HelpTicketApi {
         });
 
         HelpTicketController controller = new HelpTicketController();
+        AuthService authService = new AuthService();
+        AuthController authController = new AuthController(authService);
+        HelpdeskFlowController helpdeskFlowController = new HelpdeskFlowController();
+        AccessPolicy accessPolicy = new AccessPolicy();
 
-        app.post("/login", controller.employeeLogin);
+        app.exception(UnauthorizedResponse.class, (e, ctx) -> {
+            ctx.status(401).result(new JSONObject().put("message", e.getMessage()).toString());
+        });
+        app.exception(ForbiddenResponse.class, (e, ctx) -> {
+            ctx.status(403).result(new JSONObject().put("message", e.getMessage()).toString());
+        });
 
-        app.post("/client/requests", controller.clientCreateHelpRequest);
+        app.before(ctx -> AuthMiddleware.enforce(ctx, authService, accessPolicy));
 
-        app.put("/client/requests", controller.viewRequestStatus);
+        app.post("/login", authController.login);
+
+        app.post("/logout", authController.logout);
+
+        app.get("/me", authController.me);
+
+        app.patch("/me", authController.updateMe);
+
+        app.post("/password/forgot", authController.forgotPassword);
+
+        app.post("/password/reset", authController.resetPassword);
+
+        app.get("/admin/users", authController.listUsers);
+
+        app.patch("/admin/users/{userId}", authController.updateUser);
+
+        app.patch("/admin/users/{userId}/status", authController.updateUserStatus);
+
+        app.get("/sites", helpdeskFlowController.listSites);
+
+        app.get("/sites/{siteId}/locations", helpdeskFlowController.listLocations);
+
+        app.get("/users/technicians", helpdeskFlowController.listTechnicians);
+
+        app.post("/service-cases", helpdeskFlowController.createServiceCase);
+
+        app.get("/service-cases", helpdeskFlowController.listServiceCases);
+
+        app.get("/service-cases/{caseId}", helpdeskFlowController.getServiceCase);
+
+        app.get("/queues/service-cases", helpdeskFlowController.listQueues);
+
+        app.get("/tickets", helpdeskFlowController.listTickets);
+
+        app.get("/tickets/{ticketId}", helpdeskFlowController.getTicket);
+
+        app.post("/service-cases/{caseId}/tickets", helpdeskFlowController.createTicket);
+
+        app.patch("/tickets/{ticketId}", helpdeskFlowController.updateTicket);
+
+        app.post("/tickets/{ticketId}/assign", helpdeskFlowController.assignTicket);
+
+        app.post("/tickets/{ticketId}/resolve", helpdeskFlowController.resolveTicket);
+
+        app.post("/user/requests", controller.userCreateHelpRequest);
+
+        app.put("/user/requests", controller.viewRequestStatus);
 
         app.post("/technician/", controller.viewOpenRequestsTech);
 
@@ -35,6 +96,15 @@ public class HelpTicketApi {
         app.patch("/technician/", controller.fillCreateFormTech);
 
         app.post("/technician/requests", controller.createTicketTech);
+
+        app.patch("/user/requests", controller.userUpdateHelpRequest);
+
+        app.delete("/user/requests", controller.userCancelHelpRequest);
+
+        // Legacy aliases kept while the frontend and Postman collections move from "client" to "user".
+        app.post("/client/requests", controller.clientCreateHelpRequest);
+
+        app.put("/client/requests", controller.viewRequestStatus);
 
         app.patch("/client/requests", controller.clientUpdateHelpRequest);
 

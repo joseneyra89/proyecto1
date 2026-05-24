@@ -100,9 +100,12 @@ async function doLogin() {
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
 
+    if (!username || !password) {
+        Swal.fire("Error", "Completa todos los campos", "warning");
+        return;
+    }
+
     let loginJSON = {
-        token: null,
-        tableName: "employees",
         username: username,
         pass: password
     }
@@ -117,6 +120,7 @@ async function doLogin() {
         let data = await response.json();
 
         sessionStorage.setItem("token", data.token);
+        sessionStorage.setItem("user", JSON.stringify(data.user));
 
         Swal.fire("Bienvenido", "Inicio de sesión exitoso", "success")
         .then(() => {
@@ -127,10 +131,6 @@ async function doLogin() {
         Swal.fire("Error", "Credenciales incorrectas", "error");
     }
 
-    if (!username || !password) {
-    Swal.fire("Error", "Completa todos los campos", "warning");
-    return;
-}
 }
 </script>
 
