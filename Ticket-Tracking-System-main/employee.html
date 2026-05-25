@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@7.12.15/dist/sweetalert2.min.css">
     <title>Mesa de Ayuda</title>
     <style>
@@ -619,16 +622,16 @@
                 <form id="caseForm" class="form-grid">
                     <label>Tipo
                         <select id="caseType" required>
-                            <option value="REQUEST">REQUEST</option>
-                            <option value="INCIDENT">INCIDENT</option>
+                            <option value="REQUEST">Solicitud</option>
+                            <option value="INCIDENT">Incidente</option>
                         </select>
                     </label>
                     <label>Prioridad
                         <select id="casePriority" required>
-                            <option value="LOW">LOW</option>
-                            <option value="MEDIUM" selected>MEDIUM</option>
-                            <option value="HIGH">HIGH</option>
-                            <option value="CRITICAL">CRITICAL</option>
+                            <option value="LOW">Baja</option>
+                            <option value="MEDIUM" selected>Media</option>
+                            <option value="HIGH">Alta</option>
+                            <option value="CRITICAL">Critica</option>
                         </select>
                     </label>
                     <label>Sede
@@ -674,16 +677,16 @@
                 <div class="toolbar">
                     <div>
                         <h2>Colas sin ticket</h2>
-                        <p>Casos OPEN separados por tipo y listos para ser convertidos en ticket.</p>
+                        <p>Casos abiertos separados por tipo y listos para ser convertidos en ticket.</p>
                     </div>
                 </div>
                 <div class="queue-grid">
                     <div class="queue-block">
-                        <h3>REQUEST</h3>
+                        <h3>Solicitudes</h3>
                         <div id="requestQueue"></div>
                     </div>
                     <div class="queue-block">
-                        <h3>INCIDENT</h3>
+                        <h3>Incidentes</h3>
                         <div id="incidentQueue"></div>
                     </div>
                 </div>
@@ -709,18 +712,18 @@
                         <label>Tipo
                             <select id="ticketTypeFilter">
                                 <option value="">Todos</option>
-                                <option value="REQUEST">REQUEST</option>
-                                <option value="INCIDENT">INCIDENT</option>
+                                <option value="REQUEST">Solicitud</option>
+                                <option value="INCIDENT">Incidente</option>
                             </select>
                         </label>
                         <label>Estado
                             <select id="ticketStatusFilter">
                                 <option value="">Todos</option>
-                                <option value="OPEN">OPEN</option>
-                                <option value="IN_PROGRESS">IN_PROGRESS</option>
-                                <option value="RESOLVED">RESOLVED</option>
-                                <option value="CLOSED">CLOSED</option>
-                                <option value="CANCELLED">CANCELLED</option>
+                                <option value="OPEN">Abierto</option>
+                                <option value="IN_PROGRESS">En progreso</option>
+                                <option value="RESOLVED">Resuelto</option>
+                                <option value="CLOSED">Cerrado</option>
+                                <option value="CANCELLED">Cancelado</option>
                             </select>
                         </label>
                         <label>Sede
@@ -751,15 +754,15 @@
                 </div>
                 <div class="status-grid">
                     <div class="status-block">
-                        <h3>OPEN</h3>
+                        <h3>Abiertos</h3>
                         <div id="ticketsOpen"></div>
                     </div>
                     <div class="status-block">
-                        <h3>IN_PROGRESS</h3>
+                        <h3>En progreso</h3>
                         <div id="ticketsProgress"></div>
                     </div>
                     <div class="status-block">
-                        <h3>RESOLVED</h3>
+                        <h3>Resueltos</h3>
                         <div id="ticketsResolved"></div>
                     </div>
                 </div>
@@ -789,6 +792,26 @@
             activeCaseId: null,
             previousFocus: null,
             ticketRefreshTimer: null
+        };
+        const DISPLAY_LABELS = {
+            REQUEST: "Solicitud",
+            INCIDENT: "Incidente",
+            OPEN: "Abierto",
+            IN_PROGRESS: "En progreso",
+            RESOLVED: "Resuelto",
+            CLOSED: "Cerrado",
+            CANCELLED: "Cancelado",
+            LOW: "Baja",
+            MEDIUM: "Media",
+            HIGH: "Alta",
+            CRITICAL: "Critica",
+            PUBLIC: "Publica",
+            INTERNAL: "Interna",
+            COMMENT: "Comentario",
+            STATUS_CHANGE: "Cambio de estado",
+            ASSIGNMENT: "Asignacion",
+            SLA: "SLA",
+            SYSTEM: "Sistema"
         };
 
         document.addEventListener("DOMContentLoaded", init);
@@ -966,17 +989,18 @@
         function renderMetricPanel(metric) {
             const within = Number(metric.withinSlaPercent || 0);
             const outside = Number(metric.outsideSlaPercent || 0);
+            const typeLabel = labelFor(metric.type);
             return `
-                <article class="metric-panel" aria-label="Metricas ${escapeAttr(metric.type)}">
+                <article class="metric-panel" aria-label="Metricas ${escapeAttr(typeLabel)}">
                     <header>
-                        <h3>${escapeHtml(metric.type)}</h3>
+                        <h3>${escapeHtml(typeLabel)}</h3>
                         ${badge(metric.type)}
                     </header>
                     <div class="metric-total">${metric.ticketsTotal || 0}</div>
                     <div class="metric-list">
                         ${metricRow("Sin ticket", metric.casesWithoutTicket)}
-                        ${metricRow("OPEN", metric.openTickets)}
-                        ${metricRow("IN_PROGRESS", metric.inProgressTickets)}
+                        ${metricRow(labelFor("OPEN"), metric.openTickets)}
+                        ${metricRow(labelFor("IN_PROGRESS"), metric.inProgressTickets)}
                         ${metricRow("Resueltos/cerrados", metric.resolvedTickets)}
                         ${metricRow("En advertencia", metric.warningTickets)}
                     </div>
@@ -1257,10 +1281,10 @@
                         </label>
                         <label>Prioridad
                             <select id="ticketPriority" required>
-                                <option value="LOW">LOW</option>
-                                <option value="MEDIUM" ${serviceCase.priority === "MEDIUM" ? "selected" : ""}>MEDIUM</option>
-                                <option value="HIGH" ${serviceCase.priority === "HIGH" ? "selected" : ""}>HIGH</option>
-                                <option value="CRITICAL" ${serviceCase.priority === "CRITICAL" ? "selected" : ""}>CRITICAL</option>
+                                <option value="LOW">${labelFor("LOW")}</option>
+                                <option value="MEDIUM" ${serviceCase.priority === "MEDIUM" ? "selected" : ""}>${labelFor("MEDIUM")}</option>
+                                <option value="HIGH" ${serviceCase.priority === "HIGH" ? "selected" : ""}>${labelFor("HIGH")}</option>
+                                <option value="CRITICAL" ${serviceCase.priority === "CRITICAL" ? "selected" : ""}>${labelFor("CRITICAL")}</option>
                             </select>
                         </label>
                         <label class="span-2">Descripcion tecnica
@@ -1300,24 +1324,24 @@
                     <form class="form-grid" onsubmit="updateTicket(event, ${ticket.ticketId})">
                         <label>Visibilidad
                             <select id="updateVisibility">
-                                <option value="PUBLIC">PUBLIC</option>
-                                <option value="INTERNAL" selected>INTERNAL</option>
+                                <option value="PUBLIC">${labelFor("PUBLIC")}</option>
+                                <option value="INTERNAL" selected>${labelFor("INTERNAL")}</option>
                             </select>
                         </label>
                         <label>Estado
                             <select id="updateStatus">
                                 <option value="">Sin cambio</option>
-                                <option value="OPEN">OPEN</option>
-                                <option value="IN_PROGRESS">IN_PROGRESS</option>
+                                <option value="OPEN">${labelFor("OPEN")}</option>
+                                <option value="IN_PROGRESS">${labelFor("IN_PROGRESS")}</option>
                             </select>
                         </label>
                         <label>Prioridad
                             <select id="updatePriority">
                                 <option value="">Sin cambio</option>
-                                <option value="LOW">LOW</option>
-                                <option value="MEDIUM">MEDIUM</option>
-                                <option value="HIGH">HIGH</option>
-                                <option value="CRITICAL">CRITICAL</option>
+                                <option value="LOW">${labelFor("LOW")}</option>
+                                <option value="MEDIUM">${labelFor("MEDIUM")}</option>
+                                <option value="HIGH">${labelFor("HIGH")}</option>
+                                <option value="CRITICAL">${labelFor("CRITICAL")}</option>
                             </select>
                         </label>
                         <label class="span-2">Nota
@@ -1494,8 +1518,13 @@
         }
 
         function badge(value) {
-            const safe = escapeHtml(value || "-");
-            return `<span class="badge ${safe}">${safe}</span>`;
+            const raw = value || "-";
+            const safeClass = escapeHtml(raw);
+            return `<span class="badge ${safeClass}">${escapeHtml(labelFor(raw))}</span>`;
+        }
+
+        function labelFor(value) {
+            return DISPLAY_LABELS[value] || value || "-";
         }
 
         function slaBadge(sla) {
