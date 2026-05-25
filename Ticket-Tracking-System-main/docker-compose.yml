@@ -31,6 +31,16 @@ services:
       DB_USER: "${DB_USER:-tickets_user}"
       DB_PASSWORD: "${DB_PASSWORD:-tickets_password}"
       DB_URL: "${DB_URL:-}"
+      EMAIL_DELIVERY_MODE: "${EMAIL_DELIVERY_MODE:-log}"
+      EMAIL_FROM: "${EMAIL_FROM:-mesa-ayuda@localhost}"
+      EMAIL_MAX_ATTEMPTS: "${EMAIL_MAX_ATTEMPTS:-3}"
+      EMAIL_RETRY_DELAY_MINUTES: "${EMAIL_RETRY_DELAY_MINUTES:-15}"
+      SMTP_HOST: "${SMTP_HOST:-}"
+      SMTP_PORT: "${SMTP_PORT:-25}"
+      SMTP_AUTH: "${SMTP_AUTH:-false}"
+      SMTP_USERNAME: "${SMTP_USERNAME:-}"
+      SMTP_PASSWORD: "${SMTP_PASSWORD:-}"
+      SMTP_STARTTLS: "${SMTP_STARTTLS:-false}"
     ports:
       - "${APP_PORT:-8081}:8081"
     depends_on:

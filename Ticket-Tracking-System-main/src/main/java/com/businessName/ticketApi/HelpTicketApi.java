@@ -65,6 +65,8 @@ public class HelpTicketApi {
 
         app.get("/users/technicians", helpdeskFlowController.listTechnicians);
 
+        app.get("/dashboard/technician", helpdeskFlowController.technicianDashboard);
+
         app.post("/service-cases", helpdeskFlowController.createServiceCase);
 
         app.get("/service-cases", helpdeskFlowController.listServiceCases);
@@ -84,6 +86,8 @@ public class HelpTicketApi {
         app.post("/tickets/{ticketId}/assign", helpdeskFlowController.assignTicket);
 
         app.post("/tickets/{ticketId}/resolve", helpdeskFlowController.resolveTicket);
+
+        app.post("/notifications/retry", helpdeskFlowController.retryNotifications);
 
         app.post("/user/requests", controller.userCreateHelpRequest);
 

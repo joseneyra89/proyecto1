@@ -15,6 +15,12 @@ SET notification_email = COALESCE(notification_email, email),
             ELSE 'Usuario institucional'
         END);
 
+UPDATE p2_sandbox.app_users
+SET notification_email = email,
+    updated_at = NOW()
+WHERE legacy_employee_id IN (1, 3, 4)
+  AND notification_email IS DISTINCT FROM email;
+
 CREATE TABLE IF NOT EXISTS p2_sandbox.auth_sessions (
     session_id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES p2_sandbox.app_users(user_id),
@@ -81,6 +87,8 @@ VALUES
     ('SERVICE_CASE_CREATE', 'Crear casos de servicio REQUEST o INCIDENT'),
     ('SERVICE_CASE_READ', 'Leer casos de servicio segun alcance del rol'),
     ('QUEUE_READ', 'Leer colas de casos sin ticket'),
+    ('DASHBOARD_TECH_READ', 'Leer dashboard operativo de tecnico'),
+    ('NOTIFICATIONS_RETRY', 'Reintentar envios pendientes de correo'),
     ('ADMIN_USERS_READ', 'Listar y leer usuarios'),
     ('ADMIN_USERS_UPDATE_PROFILE', 'Actualizar perfil de usuarios'),
     ('ADMIN_USERS_UPDATE_STATUS', 'Activar o inactivar usuarios sin borrado duro')
@@ -118,6 +126,7 @@ JOIN p2_sandbox.permissions p ON p.code IN (
     'SERVICE_CASE_READ',
     'TECH_REQUEST_POOL_READ',
     'QUEUE_READ',
+    'DASHBOARD_TECH_READ',
     'TICKET_CREATE',
     'TICKET_READ',
     'TICKET_UPDATE',

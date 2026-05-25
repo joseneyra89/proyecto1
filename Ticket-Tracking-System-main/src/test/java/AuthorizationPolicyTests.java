@@ -96,4 +96,24 @@ public class AuthorizationPolicyTests {
         Assert.assertTrue(policy.isAllowed("USER", readPermission));
         Assert.assertFalse(policy.isAllowed("USER", updatePermission));
     }
+
+    @Test
+    public void retryNotificationsIsAdminOnly() {
+        AccessPolicy policy = new AccessPolicy();
+        String permission = policy.requiredPermission("POST", "/notifications/retry");
+        Assert.assertEquals(permission, "NOTIFICATIONS_RETRY");
+        Assert.assertFalse(policy.isAllowed("USER", permission));
+        Assert.assertFalse(policy.isAllowed("TECH", permission));
+        Assert.assertTrue(policy.isAllowed("ADMIN", permission));
+    }
+
+    @Test
+    public void technicianDashboardIsTechAndAdminOnly() {
+        AccessPolicy policy = new AccessPolicy();
+        String permission = policy.requiredPermission("GET", "/dashboard/technician");
+        Assert.assertEquals(permission, "DASHBOARD_TECH_READ");
+        Assert.assertFalse(policy.isAllowed("USER", permission));
+        Assert.assertTrue(policy.isAllowed("TECH", permission));
+        Assert.assertTrue(policy.isAllowed("ADMIN", permission));
+    }
 }

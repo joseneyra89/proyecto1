@@ -18,6 +18,9 @@ public class HelpdeskFlowController {
     public Handler listTechnicians = ctx -> handle(ctx, () ->
             service.listTechnicians().toString());
 
+    public Handler technicianDashboard = ctx -> handle(ctx, () ->
+            service.technicianDashboard(authUser(ctx), ctx.queryParam("dateFrom"), ctx.queryParam("dateTo")).toString());
+
     public Handler createServiceCase = ctx -> handle(ctx, () ->
             service.createServiceCase(authUser(ctx), ctx.body(), ctx).toString(), 201);
 
@@ -34,7 +37,10 @@ public class HelpdeskFlowController {
             service.createTicket(authUser(ctx), Long.parseLong(ctx.pathParam("caseId")), ctx.body(), ctx).toString(), 201);
 
     public Handler listTickets = ctx -> handle(ctx, () ->
-            service.listTickets(authUser(ctx), ctx.queryParam("status"), ctx.queryParam("type"), ctx.queryParam("q")).toString());
+            service.listTickets(authUser(ctx), ctx.queryParam("status"), ctx.queryParam("type"), ctx.queryParam("q"),
+                    ctx.queryParam("siteId"), ctx.queryParam("dateFrom"), ctx.queryParam("dateTo"), ctx.queryParam("due"),
+                    ctx.queryParam("ticketNumber"), ctx.queryParam("user"), ctx.queryParam("technician"),
+                    ctx.queryParam("email"), ctx.queryParam("title")).toString());
 
     public Handler getTicket = ctx -> handle(ctx, () ->
             service.getTicket(authUser(ctx), Long.parseLong(ctx.pathParam("ticketId"))).toString());
@@ -47,6 +53,9 @@ public class HelpdeskFlowController {
 
     public Handler resolveTicket = ctx -> handle(ctx, () ->
             service.resolveTicket(authUser(ctx), Long.parseLong(ctx.pathParam("ticketId")), ctx.body(), ctx).toString());
+
+    public Handler retryNotifications = ctx -> handle(ctx, () ->
+            service.retryDueNotifications().toString());
 
     private AuthenticatedUser authUser(io.javalin.http.Context ctx) {
         return ctx.attribute("authUser");

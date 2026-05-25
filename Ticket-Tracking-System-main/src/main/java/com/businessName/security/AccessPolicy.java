@@ -45,6 +45,7 @@ public class AccessPolicy {
         add("GET", "/sites", "METADATA_READ");
         add("GET", "/sites/*/locations", "METADATA_READ");
         add("GET", "/users/technicians", "TICKET_ASSIGN");
+        add("GET", "/dashboard/technician", "DASHBOARD_TECH_READ");
 
         add("POST", "/service-cases", "SERVICE_CASE_CREATE");
         add("GET", "/service-cases", "SERVICE_CASE_READ");
@@ -57,19 +58,20 @@ public class AccessPolicy {
         add("PATCH", "/tickets/*", "TICKET_UPDATE");
         add("POST", "/tickets/*/assign", "TICKET_ASSIGN");
         add("POST", "/tickets/*/resolve", "TICKET_RESOLVE");
+        add("POST", "/notifications/retry", "NOTIFICATIONS_RETRY");
 
         grant("USER", "AUTH_LOGOUT", "PROFILE_READ", "PROFILE_UPDATE",
                 "USER_REQUEST_CREATE", "USER_REQUEST_READ", "USER_REQUEST_UPDATE", "USER_REQUEST_CANCEL",
                 "METADATA_READ", "SERVICE_CASE_CREATE", "SERVICE_CASE_READ", "TICKET_READ");
         grant("TECH", "AUTH_LOGOUT", "PROFILE_READ", "PROFILE_UPDATE",
                 "METADATA_READ", "SERVICE_CASE_READ", "TECH_REQUEST_POOL_READ", "QUEUE_READ",
-                "TICKET_CREATE", "TICKET_READ", "TICKET_UPDATE", "TICKET_ASSIGN", "TICKET_RESOLVE");
+                "DASHBOARD_TECH_READ", "TICKET_CREATE", "TICKET_READ", "TICKET_UPDATE", "TICKET_ASSIGN", "TICKET_RESOLVE");
         grant("ADMIN", "AUTH_LOGOUT", "PROFILE_READ", "PROFILE_UPDATE",
                 "USER_REQUEST_CREATE", "USER_REQUEST_READ", "USER_REQUEST_UPDATE", "USER_REQUEST_CANCEL",
                 "METADATA_READ", "SERVICE_CASE_CREATE", "SERVICE_CASE_READ",
                 "TECH_REQUEST_POOL_READ", "QUEUE_READ", "TICKET_CREATE", "TICKET_READ", "TICKET_UPDATE",
                 "TICKET_ASSIGN", "TICKET_RESOLVE",
-                "ADMIN_USERS_READ", "ADMIN_USERS_UPDATE_PROFILE", "ADMIN_USERS_UPDATE_STATUS");
+                "DASHBOARD_TECH_READ", "NOTIFICATIONS_RETRY", "ADMIN_USERS_READ", "ADMIN_USERS_UPDATE_PROFILE", "ADMIN_USERS_UPDATE_STATUS");
     }
 
     public boolean isPublic(String method, String path) {

@@ -12,10 +12,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class HelpdeskFlowService {
+    private final NotificationService notificationService = new NotificationService();
 
     public JSONArray listSites() {
         try (Connection connection = requireConnection();
@@ -92,6 +96,35 @@ public class HelpdeskFlowService {
         }
     }
 
+    public JSONObject technicianDashboard(AuthenticatedUser user, String dateFrom, String dateTo) {
+        if ("USER".equals(user.roleCode)) {
+            throw new AuthException(403, "Access denied");
+        }
+        LocalDate to = parseDateOrDefault(dateTo, LocalDate.now());
+        LocalDate from = parseDateOrDefault(dateFrom, to.minusDays(30));
+        if (from.isAfter(to)) {
+            throw new AuthException(400, "dateFrom must be before or equal to dateTo");
+        }
+        LocalDate toExclusive = to.plusDays(1);
+        try (Connection connection = requireConnection()) {
+            JSONArray byType = new JSONArray()
+                    .put(dashboardMetricsForType(connection, user, "REQUEST", from, toExclusive))
+                    .put(dashboardMetricsForType(connection, user, "INCIDENT", from, toExclusive));
+            JSONObject totals = totalDashboardMetrics(byType);
+            return new JSONObject()
+                    .put("scope", "ADMIN".equals(user.roleCode) ? "ALL" : "OWN_ASSIGNED")
+                    .put("dateFrom", from.toString())
+                    .put("dateTo", to.toString())
+                    .put("generatedAt", Instant.now().toString())
+                    .put("byType", byType)
+                    .put("totals", totals);
+        } catch (AuthException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new AuthException(500, "Unable to build technician dashboard");
+        }
+    }
+
     public JSONObject createServiceCase(AuthenticatedUser user, String body, Context ctx) {
         JSONObject request = parseJson(body);
         String type = requireEnum(request.optString("type", ""), "type", "REQUEST", "INCIDENT");
@@ -107,11 +140,15 @@ public class HelpdeskFlowService {
 
         try (Connection connection = requireConnection()) {
             validateSiteAndLocation(connection, siteId, locationId);
+            SlaPolicyDetails policy = findSlaPolicyDetails(connection, type, priority);
+            Timestamp startAt = Timestamp.from(Instant.now());
+            Timestamp dueAt = SlaEngine.calculateDueAt(type, startAt, policy.resolutionMinutes,
+                    policy.calendarCode, policy.businessHoursOnly);
             try (PreparedStatement ps = connection.prepareStatement(
                     "INSERT INTO p2_sandbox.service_case " +
                             "(type, title, description, requester_user_id, affected_user_id, site_id, location_id, " +
-                            "status, priority, created_by_user_id) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?, 'OPEN', ?, ?) " +
+                            "status, priority, sla_policy_id, due_at, created_by_user_id, created_at, updated_at) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, 'OPEN', ?, ?, ?, ?, ?, ?) " +
                             "RETURNING case_id")) {
                 ps.setString(1, type);
                 ps.setString(2, title);
@@ -125,7 +162,15 @@ public class HelpdeskFlowService {
                     ps.setLong(7, locationId);
                 }
                 ps.setString(8, priority);
-                ps.setLong(9, user.userId);
+                if (policy.slaPolicyId == null) {
+                    ps.setNull(9, Types.INTEGER);
+                } else {
+                    ps.setInt(9, policy.slaPolicyId);
+                }
+                ps.setTimestamp(10, dueAt);
+                ps.setLong(11, user.userId);
+                ps.setTimestamp(12, startAt);
+                ps.setTimestamp(13, startAt);
                 long caseId;
                 try (ResultSet rs = ps.executeQuery()) {
                     rs.next();
@@ -134,6 +179,7 @@ public class HelpdeskFlowService {
                 JSONObject created = getServiceCase(connection, user, caseId);
                 audit(connection, user.userId, "service_case", String.valueOf(caseId), "SERVICE_CASE_CREATED",
                         null, created, ctx);
+                notificationService.notifyCaseCreated(connection, caseId);
                 return created;
             }
         } catch (AuthException e) {
@@ -146,7 +192,9 @@ public class HelpdeskFlowService {
     public JSONArray listServiceCases(AuthenticatedUser user, String type, String status) {
         StringBuilder sql = new StringBuilder(
                 "SELECT sc.case_id, sc.case_number, sc.type, sc.title, sc.description, sc.status, sc.priority, " +
-                        "sc.created_at, sc.updated_at, s.name AS site_name, l.name AS location_name, " +
+                        "sc.created_at, sc.updated_at, sc.resolved_at, sc.due_at, s.site_id, s.name AS site_name, " +
+                        "l.name AS location_name, sp.warning_percent, sp.resolution_minutes, sp.calendar_code, " +
+                        "sp.business_hours_only, " +
                         "u.username AS requester_username, EXISTS (" +
                         "SELECT 1 FROM p2_sandbox.ticket t WHERE t.service_case_id = sc.case_id AND t.deleted_at IS NULL" +
                         ") AS has_ticket " +
@@ -154,6 +202,7 @@ public class HelpdeskFlowService {
                         "JOIN p2_sandbox.app_users u ON u.user_id = sc.requester_user_id " +
                         "LEFT JOIN p2_sandbox.sites s ON s.site_id = sc.site_id " +
                         "LEFT JOIN p2_sandbox.locations l ON l.location_id = sc.location_id " +
+                        "LEFT JOIN p2_sandbox.sla_policies sp ON sp.sla_policy_id = sc.sla_policy_id " +
                         "WHERE sc.deleted_at IS NULL");
         List<Object> params = new ArrayList<>();
         if ("USER".equals(user.roleCode)) {
@@ -175,12 +224,15 @@ public class HelpdeskFlowService {
     public JSONArray listQueues(String type) {
         StringBuilder sql = new StringBuilder(
                 "SELECT sc.case_id, sc.case_number, sc.type, sc.title, sc.description, sc.status, sc.priority, " +
-                        "sc.created_at, sc.updated_at, s.name AS site_name, l.name AS location_name, " +
+                        "sc.created_at, sc.updated_at, sc.resolved_at, sc.due_at, s.site_id, s.name AS site_name, " +
+                        "l.name AS location_name, sp.warning_percent, sp.resolution_minutes, sp.calendar_code, " +
+                        "sp.business_hours_only, " +
                         "u.username AS requester_username, FALSE AS has_ticket " +
                         "FROM p2_sandbox.service_case sc " +
                         "JOIN p2_sandbox.app_users u ON u.user_id = sc.requester_user_id " +
                         "LEFT JOIN p2_sandbox.sites s ON s.site_id = sc.site_id " +
                         "LEFT JOIN p2_sandbox.locations l ON l.location_id = sc.location_id " +
+                        "LEFT JOIN p2_sandbox.sla_policies sp ON sp.sla_policy_id = sc.sla_policy_id " +
                         "WHERE sc.deleted_at IS NULL AND sc.status = 'OPEN' " +
                         "AND NOT EXISTS (SELECT 1 FROM p2_sandbox.ticket t WHERE t.service_case_id = sc.case_id AND t.deleted_at IS NULL)");
         List<Object> params = new ArrayList<>();
@@ -213,14 +265,19 @@ public class HelpdeskFlowService {
 
         try (Connection connection = requireConnection()) {
             ensureTechnician(connection, assignedToUserId);
-            ensureCaseCanReceiveTicket(connection, caseId);
-            Integer slaPolicyId = findSlaPolicy(connection, caseId, priority);
+            CaseTicketEligibility caseInfo = ensureCaseCanReceiveTicket(connection, caseId);
+            SlaPolicyDetails ticketPolicy = findSlaPolicyDetails(connection, caseInfo.caseType, priority);
+            Integer slaPolicyId = ticketPolicy.slaPolicyId == null ? caseInfo.slaPolicyId : ticketPolicy.slaPolicyId;
+            Timestamp dueAt = caseInfo.dueAt == null
+                    ? SlaEngine.calculateDueAt(caseInfo.caseType, Timestamp.from(Instant.now()),
+                    ticketPolicy.resolutionMinutes, ticketPolicy.calendarCode, ticketPolicy.businessHoursOnly)
+                    : caseInfo.dueAt;
             long ticketId;
             try (PreparedStatement ps = connection.prepareStatement(
                     "INSERT INTO p2_sandbox.ticket " +
                             "(service_case_id, assigned_to_user_id, created_by_user_id, sla_policy_id, category_code, " +
-                            "summary, description, status, priority) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?, 'IN_PROGRESS', ?) RETURNING ticket_id")) {
+                            "summary, description, status, priority, due_at) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, 'IN_PROGRESS', ?, ?) RETURNING ticket_id")) {
                 ps.setLong(1, caseId);
                 ps.setLong(2, assignedToUserId);
                 ps.setLong(3, user.userId);
@@ -233,6 +290,7 @@ public class HelpdeskFlowService {
                 ps.setString(6, summary);
                 ps.setString(7, trimToNull(description));
                 ps.setString(8, priority);
+                ps.setTimestamp(9, dueAt);
                 try (ResultSet rs = ps.executeQuery()) {
                     rs.next();
                     ticketId = rs.getLong("ticket_id");
@@ -243,6 +301,8 @@ public class HelpdeskFlowService {
                     "Ticket created and assigned.", null, "IN_PROGRESS");
             JSONObject ticket = getTicket(connection, user, ticketId);
             audit(connection, user.userId, "ticket", String.valueOf(ticketId), "TICKET_CREATED", null, ticket, ctx);
+            notificationService.notifyTicketCreated(connection, ticketId);
+            notificationService.notifyTicketAssigned(connection, ticketId);
             return ticket;
         } catch (AuthException e) {
             throw e;
@@ -251,7 +311,10 @@ public class HelpdeskFlowService {
         }
     }
 
-    public JSONArray listTickets(AuthenticatedUser user, String status, String type, String query) {
+    public JSONArray listTickets(AuthenticatedUser user, String status, String type, String query,
+                                 String siteId, String dateFrom, String dateTo, String due,
+                                 String ticketNumber, String userFilter, String technicianFilter,
+                                 String emailFilter, String titleFilter) {
         StringBuilder sql = new StringBuilder(ticketBaseSql() + " WHERE t.deleted_at IS NULL");
         List<Object> params = new ArrayList<>();
         if ("USER".equals(user.roleCode)) {
@@ -267,20 +330,73 @@ public class HelpdeskFlowService {
             params.add(requireEnum(type, "type", "REQUEST", "INCIDENT"));
         }
         if (query != null && !query.trim().isEmpty()) {
-            sql.append(" AND (LOWER(t.ticket_number) LIKE LOWER(?) OR LOWER(sc.case_number) LIKE LOWER(?) OR LOWER(sc.title) LIKE LOWER(?))");
+            sql.append(" AND (LOWER(t.ticket_number) LIKE LOWER(?) OR LOWER(sc.case_number) LIKE LOWER(?) " +
+                    "OR LOWER(sc.title) LIKE LOWER(?) OR LOWER(req.username) LIKE LOWER(?) " +
+                    "OR LOWER(req.first_name || ' ' || req.last_name) LIKE LOWER(?) " +
+                    "OR LOWER(COALESCE(req.email, '')) LIKE LOWER(?) OR LOWER(COALESCE(req.notification_email, '')) LIKE LOWER(?) " +
+                    "OR LOWER(COALESCE(assignee.username, '')) LIKE LOWER(?) " +
+                    "OR LOWER(COALESCE(assignee.first_name || ' ' || assignee.last_name, '')) LIKE LOWER(?) " +
+                    "OR LOWER(COALESCE(assignee.email, '')) LIKE LOWER(?) " +
+                    "OR LOWER(COALESCE(assignee.notification_email, '')) LIKE LOWER(?))");
             String like = "%" + query.trim() + "%";
+            for (int i = 0; i < 11; i++) {
+                params.add(like);
+            }
+        }
+        if (ticketNumber != null && !ticketNumber.trim().isEmpty()) {
+            sql.append(" AND LOWER(t.ticket_number) LIKE LOWER(?)");
+            params.add("%" + ticketNumber.trim() + "%");
+        }
+        if (userFilter != null && !userFilter.trim().isEmpty()) {
+            sql.append(" AND (LOWER(req.username) LIKE LOWER(?) OR LOWER(req.first_name || ' ' || req.last_name) LIKE LOWER(?))");
+            String like = "%" + userFilter.trim() + "%";
+            params.add(like);
+            params.add(like);
+        }
+        if (technicianFilter != null && !technicianFilter.trim().isEmpty()) {
+            sql.append(" AND (LOWER(COALESCE(assignee.username, '')) LIKE LOWER(?) " +
+                    "OR LOWER(COALESCE(assignee.first_name || ' ' || assignee.last_name, '')) LIKE LOWER(?))");
+            String like = "%" + technicianFilter.trim() + "%";
+            params.add(like);
+            params.add(like);
+        }
+        if (emailFilter != null && !emailFilter.trim().isEmpty()) {
+            sql.append(" AND (LOWER(COALESCE(req.email, '')) LIKE LOWER(?) OR LOWER(COALESCE(req.notification_email, '')) LIKE LOWER(?) " +
+                    "OR LOWER(COALESCE(assignee.email, '')) LIKE LOWER(?) OR LOWER(COALESCE(assignee.notification_email, '')) LIKE LOWER(?))");
+            String like = "%" + emailFilter.trim() + "%";
             params.add(like);
             params.add(like);
             params.add(like);
+            params.add(like);
+        }
+        if (titleFilter != null && !titleFilter.trim().isEmpty()) {
+            sql.append(" AND LOWER(sc.title) LIKE LOWER(?)");
+            params.add("%" + titleFilter.trim() + "%");
+        }
+        if (siteId != null && !siteId.trim().isEmpty()) {
+            sql.append(" AND sc.site_id = ?");
+            params.add(Integer.parseInt(siteId));
+        }
+        if (dateFrom != null && !dateFrom.trim().isEmpty()) {
+            sql.append(" AND sc.created_at >= CAST(? AS date)");
+            params.add(dateFrom.trim());
+        }
+        if (dateTo != null && !dateTo.trim().isEmpty()) {
+            sql.append(" AND sc.created_at < CAST(? AS date) + INTERVAL '1 day'");
+            params.add(dateTo.trim());
         }
         sql.append(" ORDER BY t.updated_at DESC, t.created_at DESC");
         try (Connection connection = requireConnection();
              PreparedStatement ps = connection.prepareStatement(sql.toString())) {
             bind(ps, params);
+            String dueFilter = normalizeDueFilter(due);
             JSONArray tickets = new JSONArray();
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    tickets.put(ticketSummaryJson(rs));
+                    JSONObject ticket = ticketSummaryJson(rs);
+                    if (dueFilter == null || dueFilter.equals(ticket.getJSONObject("sla").getString("code"))) {
+                        tickets.put(ticket);
+                    }
                 }
             }
             return tickets;
@@ -375,6 +491,7 @@ public class HelpdeskFlowService {
                     "Ticket reassigned.", before.optString("status"), "IN_PROGRESS");
             JSONObject after = getTicket(connection, user, ticketId);
             audit(connection, user.userId, "ticket", String.valueOf(ticketId), "TICKET_ASSIGNED", before, after, ctx);
+            notificationService.notifyTicketAssigned(connection, ticketId);
             return after;
         } catch (AuthException e) {
             throw e;
@@ -402,11 +519,104 @@ public class HelpdeskFlowService {
                     publicUpdate, before.optString("status"), "RESOLVED");
             JSONObject after = getTicket(connection, user, ticketId);
             audit(connection, user.userId, "ticket", String.valueOf(ticketId), "TICKET_RESOLVED", before, after, ctx);
+            notificationService.notifyTicketResolved(connection, ticketId);
             return after;
         } catch (AuthException e) {
             throw e;
         } catch (Exception e) {
             throw new AuthException(500, "Unable to resolve ticket");
+        }
+    }
+
+    public JSONObject retryDueNotifications() {
+        try (Connection connection = requireConnection()) {
+            return notificationService.retryDueEmailNotifications(connection);
+        } catch (Exception e) {
+            throw new AuthException(500, "Unable to retry notifications");
+        }
+    }
+
+    private JSONObject dashboardMetricsForType(Connection connection, AuthenticatedUser user, String type,
+                                               LocalDate from, LocalDate toExclusive) throws Exception {
+        DashboardMetrics.TypeCounters counters = new DashboardMetrics.TypeCounters(type);
+        counters.casesWithoutTicket = countCasesWithoutTicket(connection, type, from, toExclusive);
+        StringBuilder sql = new StringBuilder(
+                "SELECT t.status, sc.created_at AS case_created_at, t.resolved_at, " +
+                        "COALESCE(t.due_at, sc.due_at) AS due_at, sp.warning_percent " +
+                        "FROM p2_sandbox.ticket t " +
+                        "JOIN p2_sandbox.service_case sc ON sc.case_id = t.service_case_id " +
+                        "LEFT JOIN p2_sandbox.sla_policies sp ON sp.sla_policy_id = COALESCE(t.sla_policy_id, sc.sla_policy_id) " +
+                        "WHERE t.deleted_at IS NULL AND sc.deleted_at IS NULL AND sc.type = ? " +
+                        "AND sc.created_at >= ? AND sc.created_at < ?");
+        List<Object> params = new ArrayList<>();
+        params.add(type);
+        params.add(java.sql.Date.valueOf(from));
+        params.add(java.sql.Date.valueOf(toExclusive));
+        if ("TECH".equals(user.roleCode)) {
+            sql.append(" AND t.assigned_to_user_id = ?");
+            params.add(user.userId);
+        }
+        sql.append(" ORDER BY sc.created_at DESC");
+        try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+            bind(ps, params);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    SlaEngine.SlaSnapshot snapshot = SlaEngine.evaluate(
+                            type,
+                            rs.getTimestamp("case_created_at"),
+                            rs.getTimestamp("due_at"),
+                            rs.getTimestamp("resolved_at"),
+                            rs.getString("status"),
+                            doubleOrNull(rs, "warning_percent"));
+                    counters.addTicket(rs.getString("status"), snapshot.code);
+                }
+            }
+        }
+        return DashboardMetrics.toJson(counters);
+    }
+
+    private long countCasesWithoutTicket(Connection connection, String type, LocalDate from, LocalDate toExclusive) throws Exception {
+        try (PreparedStatement ps = connection.prepareStatement(
+                "SELECT COUNT(*) AS total " +
+                        "FROM p2_sandbox.service_case sc " +
+                        "WHERE sc.deleted_at IS NULL AND sc.status = 'OPEN' AND sc.type = ? " +
+                        "AND sc.created_at >= ? AND sc.created_at < ? " +
+                        "AND NOT EXISTS (SELECT 1 FROM p2_sandbox.ticket t " +
+                        "WHERE t.service_case_id = sc.case_id AND t.deleted_at IS NULL)")) {
+            ps.setString(1, type);
+            ps.setDate(2, java.sql.Date.valueOf(from));
+            ps.setDate(3, java.sql.Date.valueOf(toExclusive));
+            try (ResultSet rs = ps.executeQuery()) {
+                rs.next();
+                return rs.getLong("total");
+            }
+        }
+    }
+
+    private JSONObject totalDashboardMetrics(JSONArray byType) {
+        DashboardMetrics.TypeCounters counters = new DashboardMetrics.TypeCounters("TOTAL");
+        for (int i = 0; i < byType.length(); i++) {
+            JSONObject item = byType.getJSONObject(i);
+            counters.casesWithoutTicket += item.getLong("casesWithoutTicket");
+            counters.ticketsTotal += item.getLong("ticketsTotal");
+            counters.openTickets += item.getLong("openTickets");
+            counters.inProgressTickets += item.getLong("inProgressTickets");
+            counters.resolvedTickets += item.getLong("resolvedTickets");
+            counters.warningTickets += item.getLong("warningTickets");
+            counters.withinSla += item.getLong("withinSla");
+            counters.outsideSla += item.getLong("outsideSla");
+        }
+        return DashboardMetrics.toJson(counters);
+    }
+
+    private LocalDate parseDateOrDefault(String value, LocalDate defaultValue) {
+        if (value == null || value.trim().isEmpty()) {
+            return defaultValue;
+        }
+        try {
+            return LocalDate.parse(value.trim());
+        } catch (DateTimeParseException e) {
+            throw new AuthException(400, "Invalid date format. Use YYYY-MM-DD");
         }
     }
 
@@ -428,7 +638,9 @@ public class HelpdeskFlowService {
 
     private JSONObject getServiceCase(Connection connection, AuthenticatedUser user, Long caseId) throws Exception {
         String sql = "SELECT sc.case_id, sc.case_number, sc.type, sc.title, sc.description, sc.status, sc.priority, " +
-                "sc.created_at, sc.updated_at, s.name AS site_name, l.name AS location_name, " +
+                "sc.created_at, sc.updated_at, sc.resolved_at, sc.due_at, s.site_id, s.name AS site_name, " +
+                "l.name AS location_name, sp.warning_percent, sp.resolution_minutes, sp.calendar_code, " +
+                "sp.business_hours_only, " +
                 "u.username AS requester_username, EXISTS (" +
                 "SELECT 1 FROM p2_sandbox.ticket t WHERE t.service_case_id = sc.case_id AND t.deleted_at IS NULL" +
                 ") AS has_ticket " +
@@ -436,6 +648,7 @@ public class HelpdeskFlowService {
                 "JOIN p2_sandbox.app_users u ON u.user_id = sc.requester_user_id " +
                 "LEFT JOIN p2_sandbox.sites s ON s.site_id = sc.site_id " +
                 "LEFT JOIN p2_sandbox.locations l ON l.location_id = sc.location_id " +
+                "LEFT JOIN p2_sandbox.sla_policies sp ON sp.sla_policy_id = sc.sla_policy_id " +
                 "WHERE sc.case_id = ? AND sc.deleted_at IS NULL";
         if ("USER".equals(user.roleCode)) {
             sql += " AND sc.requester_user_id = ?";
@@ -524,17 +737,35 @@ public class HelpdeskFlowService {
 
     private String ticketBaseSql() {
         return "SELECT t.ticket_id, t.ticket_number, t.service_case_id, t.summary, t.description, t.resolution, " +
-                "t.status, t.priority, t.category_code, t.created_at, t.updated_at, t.resolved_at, " +
+                "t.status, t.priority, t.category_code, t.created_at, t.updated_at, t.resolved_at, t.due_at AS ticket_due_at, " +
                 "sc.case_number, sc.type AS case_type, sc.title AS case_title, sc.requester_user_id, " +
+                "sc.created_at AS case_created_at, sc.due_at AS service_case_due_at, sc.site_id, s.name AS site_name, " +
+                "sp.warning_percent, sp.resolution_minutes, sp.calendar_code, sp.business_hours_only, " +
+                "req.first_name AS requester_first_name, req.last_name AS requester_last_name, " +
+                "req.email AS requester_email, req.notification_email AS requester_notification_email, " +
                 "req.username AS requester_username, assignee.user_id AS assigned_to_user_id, " +
-                "assignee.username AS assigned_to_username " +
+                "assignee.username AS assigned_to_username, assignee.first_name AS assigned_to_first_name, " +
+                "assignee.last_name AS assigned_to_last_name, assignee.email AS assigned_to_email, " +
+                "assignee.notification_email AS assigned_to_notification_email " +
                 "FROM p2_sandbox.ticket t " +
                 "JOIN p2_sandbox.service_case sc ON sc.case_id = t.service_case_id " +
                 "JOIN p2_sandbox.app_users req ON req.user_id = sc.requester_user_id " +
-                "LEFT JOIN p2_sandbox.app_users assignee ON assignee.user_id = t.assigned_to_user_id";
+                "LEFT JOIN p2_sandbox.app_users assignee ON assignee.user_id = t.assigned_to_user_id " +
+                "LEFT JOIN p2_sandbox.sites s ON s.site_id = sc.site_id " +
+                "LEFT JOIN p2_sandbox.sla_policies sp ON sp.sla_policy_id = COALESCE(t.sla_policy_id, sc.sla_policy_id)";
     }
 
     private JSONObject serviceCaseSummaryJson(ResultSet rs) throws Exception {
+        Timestamp dueAt = rs.getTimestamp("due_at");
+        Timestamp createdAt = rs.getTimestamp("created_at");
+        Timestamp resolvedAt = rs.getTimestamp("resolved_at");
+        SlaEngine.SlaSnapshot sla = SlaEngine.evaluate(
+                rs.getString("type"),
+                createdAt,
+                dueAt,
+                resolvedAt,
+                rs.getString("status"),
+                doubleOrNull(rs, "warning_percent"));
         return new JSONObject()
                 .put("caseId", rs.getLong("case_id"))
                 .put("caseNumber", rs.getString("case_number"))
@@ -543,15 +774,31 @@ public class HelpdeskFlowService {
                 .put("description", rs.getString("description"))
                 .put("status", rs.getString("status"))
                 .put("priority", rs.getString("priority"))
+                .put("siteId", longOrNull(rs, "site_id"))
                 .put("siteName", nullToJson(rs.getString("site_name")))
                 .put("locationName", nullToJson(rs.getString("location_name")))
                 .put("requesterUsername", rs.getString("requester_username"))
                 .put("hasTicket", rs.getBoolean("has_ticket"))
                 .put("createdAt", timestampString(rs, "created_at"))
-                .put("updatedAt", timestampString(rs, "updated_at"));
+                .put("updatedAt", timestampString(rs, "updated_at"))
+                .put("dueAt", dueAt == null ? JSONObject.NULL : dueAt.toInstant().toString())
+                .put("sla", sla.toJson());
     }
 
     private JSONObject ticketSummaryJson(ResultSet rs) throws Exception {
+        Timestamp dueAt = rs.getTimestamp("ticket_due_at");
+        if (dueAt == null) {
+            dueAt = rs.getTimestamp("service_case_due_at");
+        }
+        Timestamp createdAt = rs.getTimestamp("case_created_at");
+        Timestamp resolvedAt = rs.getTimestamp("resolved_at");
+        SlaEngine.SlaSnapshot sla = SlaEngine.evaluate(
+                rs.getString("case_type"),
+                createdAt,
+                dueAt,
+                resolvedAt,
+                rs.getString("status"),
+                doubleOrNull(rs, "warning_percent"));
         return new JSONObject()
                 .put("ticketId", rs.getLong("ticket_id"))
                 .put("ticketNumber", rs.getString("ticket_number"))
@@ -565,13 +812,21 @@ public class HelpdeskFlowService {
                 .put("status", rs.getString("status"))
                 .put("priority", rs.getString("priority"))
                 .put("categoryCode", nullToJson(rs.getString("category_code")))
+                .put("siteId", longOrNull(rs, "site_id"))
+                .put("siteName", nullToJson(rs.getString("site_name")))
                 .put("requesterUserId", rs.getLong("requester_user_id"))
                 .put("requesterUsername", rs.getString("requester_username"))
+                .put("requesterName", fullName(rs.getString("requester_first_name"), rs.getString("requester_last_name")))
+                .put("requesterEmail", firstNonEmpty(rs.getString("requester_notification_email"), rs.getString("requester_email")))
                 .put("assignedToUserId", longOrNull(rs, "assigned_to_user_id"))
                 .put("assignedToUsername", nullToJson(rs.getString("assigned_to_username")))
+                .put("assignedToName", fullName(rs.getString("assigned_to_first_name"), rs.getString("assigned_to_last_name")))
+                .put("assignedToEmail", firstNonEmpty(rs.getString("assigned_to_notification_email"), rs.getString("assigned_to_email")))
                 .put("createdAt", timestampString(rs, "created_at"))
                 .put("updatedAt", timestampString(rs, "updated_at"))
-                .put("resolvedAt", timestampString(rs, "resolved_at"));
+                .put("resolvedAt", timestampString(rs, "resolved_at"))
+                .put("dueAt", dueAt == null ? JSONObject.NULL : dueAt.toInstant().toString())
+                .put("sla", sla.toJson());
     }
 
     private void validateSiteAndLocation(Connection connection, Integer siteId, Long locationId) throws Exception {
@@ -599,9 +854,10 @@ public class HelpdeskFlowService {
         }
     }
 
-    private void ensureCaseCanReceiveTicket(Connection connection, Long caseId) throws Exception {
+    private CaseTicketEligibility ensureCaseCanReceiveTicket(Connection connection, Long caseId) throws Exception {
+        CaseTicketEligibility caseInfo = null;
         try (PreparedStatement ps = connection.prepareStatement(
-                "SELECT status FROM p2_sandbox.service_case WHERE case_id = ? AND deleted_at IS NULL")) {
+                "SELECT type, status, sla_policy_id, due_at FROM p2_sandbox.service_case WHERE case_id = ? AND deleted_at IS NULL")) {
             ps.setLong(1, caseId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) {
@@ -610,6 +866,8 @@ public class HelpdeskFlowService {
                 if (!"OPEN".equals(rs.getString("status"))) {
                     throw new AuthException(400, "Only open service cases can receive a ticket");
                 }
+                Integer slaPolicyId = intOrNull(rs, "sla_policy_id");
+                caseInfo = new CaseTicketEligibility(rs.getString("type"), slaPolicyId, rs.getTimestamp("due_at"));
             }
         }
         try (PreparedStatement ps = connection.prepareStatement(
@@ -621,6 +879,7 @@ public class HelpdeskFlowService {
                 }
             }
         }
+        return caseInfo;
     }
 
     private void ensureTechnician(Connection connection, Long userId) throws Exception {
@@ -643,25 +902,24 @@ public class HelpdeskFlowService {
         }
     }
 
-    private Integer findSlaPolicy(Connection connection, Long caseId, String priority) throws Exception {
-        String caseType;
-        try (PreparedStatement ps = connection.prepareStatement("SELECT type FROM p2_sandbox.service_case WHERE case_id = ?")) {
-            ps.setLong(1, caseId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (!rs.next()) {
-                    return null;
-                }
-                caseType = rs.getString("type");
-            }
-        }
+    private SlaPolicyDetails findSlaPolicyDetails(Connection connection, String caseType, String priority) throws Exception {
         try (PreparedStatement ps = connection.prepareStatement(
-                "SELECT sla_policy_id FROM p2_sandbox.sla_policies " +
-                        "WHERE case_type = ? AND priority = ? AND is_active = TRUE AND deleted_at IS NULL " +
-                        "ORDER BY is_default DESC, sla_policy_id ASC LIMIT 1")) {
+                "SELECT sla_policy_id, resolution_minutes, warning_percent, calendar_code, business_hours_only " +
+                        "FROM p2_sandbox.sla_policies " +
+                        "WHERE case_type = ? AND is_active = TRUE AND deleted_at IS NULL " +
+                        "ORDER BY CASE WHEN priority = ? THEN 0 WHEN is_default THEN 1 ELSE 2 END, sla_policy_id ASC LIMIT 1")) {
             ps.setString(1, caseType);
             ps.setString(2, priority);
             try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() ? rs.getInt("sla_policy_id") : null;
+                if (!rs.next()) {
+                    return SlaPolicyDetails.defaultFor(caseType);
+                }
+                return new SlaPolicyDetails(
+                        rs.getInt("sla_policy_id"),
+                        rs.getInt("resolution_minutes"),
+                        doubleOrNull(rs, "warning_percent"),
+                        rs.getString("calendar_code"),
+                        rs.getBoolean("business_hours_only"));
             }
         }
     }
@@ -770,6 +1028,8 @@ public class HelpdeskFlowService {
                 ps.setLong(i + 1, (Long) param);
             } else if (param instanceof Integer) {
                 ps.setInt(i + 1, (Integer) param);
+            } else if (param instanceof java.sql.Date) {
+                ps.setDate(i + 1, (java.sql.Date) param);
             } else {
                 ps.setString(i + 1, String.valueOf(param));
             }
@@ -793,9 +1053,48 @@ public class HelpdeskFlowService {
         return rs.wasNull() ? JSONObject.NULL : value;
     }
 
+    private Integer intOrNull(ResultSet rs, String column) throws Exception {
+        int value = rs.getInt(column);
+        return rs.wasNull() ? null : value;
+    }
+
+    private Double doubleOrNull(ResultSet rs, String column) throws Exception {
+        double value = rs.getDouble(column);
+        return rs.wasNull() ? null : value;
+    }
+
     private Object timestampString(ResultSet rs, String column) throws Exception {
         Timestamp timestamp = rs.getTimestamp(column);
         return timestamp == null ? JSONObject.NULL : timestamp.toInstant().toString();
+    }
+
+    private Object firstNonEmpty(String first, String second) {
+        if (first != null && !first.trim().isEmpty()) {
+            return first;
+        }
+        if (second != null && !second.trim().isEmpty()) {
+            return second;
+        }
+        return JSONObject.NULL;
+    }
+
+    private Object fullName(String firstName, String lastName) {
+        String first = firstName == null ? "" : firstName.trim();
+        String last = lastName == null ? "" : lastName.trim();
+        String fullName = (first + " " + last).trim();
+        return fullName.isEmpty() ? JSONObject.NULL : fullName;
+    }
+
+    private String normalizeDueFilter(String due) {
+        if (due == null || due.trim().isEmpty()) {
+            return null;
+        }
+        String normalized = due.trim().toUpperCase();
+        if ("ON_TRACK".equals(normalized) || "WARNING".equals(normalized) || "BREACHED".equals(normalized)
+                || "MET".equals(normalized) || "MET_LATE".equals(normalized)) {
+            return normalized;
+        }
+        throw new AuthException(400, "Invalid due filter");
     }
 
     private String userAgent(Context ctx) {
@@ -807,5 +1106,39 @@ public class HelpdeskFlowService {
             return null;
         }
         return value.length() > 250 ? value.substring(0, 250) : value;
+    }
+
+    private static class SlaPolicyDetails {
+        private final Integer slaPolicyId;
+        private final Integer resolutionMinutes;
+        private final Double warningPercent;
+        private final String calendarCode;
+        private final boolean businessHoursOnly;
+
+        private SlaPolicyDetails(Integer slaPolicyId, Integer resolutionMinutes, Double warningPercent,
+                                 String calendarCode, boolean businessHoursOnly) {
+            this.slaPolicyId = slaPolicyId;
+            this.resolutionMinutes = resolutionMinutes;
+            this.warningPercent = warningPercent;
+            this.calendarCode = calendarCode == null || calendarCode.trim().isEmpty() ? "24x7" : calendarCode;
+            this.businessHoursOnly = businessHoursOnly;
+        }
+
+        private static SlaPolicyDetails defaultFor(String caseType) {
+            return new SlaPolicyDetails(null, SlaEngine.defaultResolutionMinutes(caseType),
+                    SlaEngine.defaultWarningPercent(), "24x7", false);
+        }
+    }
+
+    private static class CaseTicketEligibility {
+        private final String caseType;
+        private final Integer slaPolicyId;
+        private final Timestamp dueAt;
+
+        private CaseTicketEligibility(String caseType, Integer slaPolicyId, Timestamp dueAt) {
+            this.caseType = caseType;
+            this.slaPolicyId = slaPolicyId;
+            this.dueAt = dueAt;
+        }
     }
 }

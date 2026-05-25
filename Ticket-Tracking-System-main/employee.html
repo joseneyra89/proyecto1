@@ -17,6 +17,7 @@
             --blue: #1b5fa7;
             --amber: #a56300;
             --red: #a42b2b;
+            --ok: #0b6b3a;
             --shadow: 0 14px 32px rgba(20, 34, 27, 0.12);
         }
 
@@ -193,6 +194,12 @@
             box-shadow: 0 0 0 3px rgba(27, 95, 167, 0.14);
         }
 
+        button:focus-visible,
+        .drawer:focus-visible {
+            outline: 3px solid rgba(27, 95, 167, 0.35);
+            outline-offset: 3px;
+        }
+
         .toolbar {
             display: flex;
             gap: 10px;
@@ -204,7 +211,7 @@
 
         .filters {
             display: grid;
-            grid-template-columns: 150px 150px minmax(200px, 320px);
+            grid-template-columns: repeat(4, minmax(140px, 1fr));
             gap: 10px;
             align-items: end;
         }
@@ -214,6 +221,83 @@
             gap: 10px;
             flex-wrap: wrap;
             align-items: center;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .metric-panel {
+            border: 1px solid var(--line);
+            background: #fbfdfc;
+            padding: 16px;
+            min-width: 0;
+        }
+
+        .metric-panel header {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .metric-total {
+            font-size: 30px;
+            font-weight: 800;
+            color: var(--green-dark);
+            line-height: 1;
+        }
+
+        .metric-list {
+            display: grid;
+            gap: 8px;
+            margin: 14px 0;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            border-bottom: 1px solid #edf2ef;
+            padding-bottom: 8px;
+            color: var(--muted);
+        }
+
+        .metric-row strong {
+            color: var(--ink);
+        }
+
+        .sla-bars {
+            display: grid;
+            gap: 8px;
+        }
+
+        .sla-bar-label {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .sla-bar-track {
+            height: 12px;
+            background: #edf2ef;
+            border: 1px solid #d7e1dc;
+            overflow: hidden;
+        }
+
+        .sla-bar-fill {
+            height: 100%;
+            min-width: 2px;
+            background: var(--green);
+        }
+
+        .sla-bar-fill.out {
+            background: var(--red);
         }
 
         .btn {
@@ -254,7 +338,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 720px;
+            min-width: 860px;
             background: #fff;
         }
 
@@ -314,11 +398,41 @@
         .badge.PUBLIC { background: #e9f6ee; color: #07582a; }
         .badge.INTERNAL { background: #f4edf9; color: #67328c; }
 
+        .sla-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 26px;
+            padding: 4px 9px;
+            border: 1px solid transparent;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .sla-ok { background: #e9f6ee; color: var(--ok); border-color: #b9dfc8; }
+        .sla-warning { background: #fff7e8; color: var(--amber); border-color: #ffd891; }
+        .sla-breached { background: #fdeeee; color: var(--red); border-color: #f3b8b8; }
+        .sla-neutral { background: #f0f1f3; color: #41464d; border-color: #d6d8dc; }
+
         .empty {
             padding: 18px;
             color: var(--muted);
             background: #f9fbfa;
             border: 1px dashed #cbd8d2;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
         }
 
         .hidden {
@@ -416,7 +530,8 @@
             }
 
             .status-grid,
-            .queue-grid {
+            .queue-grid,
+            .dashboard-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -534,6 +649,27 @@
                 </form>
             </section>
 
+            <section class="workspace-section" id="dashboardSection">
+                <div class="toolbar">
+                    <div>
+                        <h2>Dashboard tecnico</h2>
+                        <p id="dashboardScope">Metricas del rango seleccionado.</p>
+                    </div>
+                    <div class="filters">
+                        <label>Desde
+                            <input id="dashboardDateFrom" type="date">
+                        </label>
+                        <label>Hasta
+                            <input id="dashboardDateTo" type="date">
+                        </label>
+                        <div class="btn-row">
+                            <button class="btn secondary" type="button" id="dashboardRefreshButton">Aplicar</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="dashboardMetrics" class="dashboard-grid" aria-live="polite"></div>
+            </section>
+
             <section class="workspace-section" id="queuesSection">
                 <div class="toolbar">
                     <div>
@@ -577,13 +713,39 @@
                                 <option value="INCIDENT">INCIDENT</option>
                             </select>
                         </label>
-                        <label>Prioridad
-                            <select id="priorityHint" disabled>
-                                <option>Ver en tabla</option>
+                        <label>Estado
+                            <select id="ticketStatusFilter">
+                                <option value="">Todos</option>
+                                <option value="OPEN">OPEN</option>
+                                <option value="IN_PROGRESS">IN_PROGRESS</option>
+                                <option value="RESOLVED">RESOLVED</option>
+                                <option value="CLOSED">CLOSED</option>
+                                <option value="CANCELLED">CANCELLED</option>
                             </select>
                         </label>
+                        <label>Sede
+                            <select id="ticketSiteFilter">
+                                <option value="">Todas</option>
+                            </select>
+                        </label>
+                        <label>Vencimiento
+                            <select id="ticketDueFilter">
+                                <option value="">Todos</option>
+                                <option value="ON_TRACK">En plazo</option>
+                                <option value="WARNING">En advertencia</option>
+                                <option value="BREACHED">Vencido</option>
+                                <option value="MET">Cumplido</option>
+                                <option value="MET_LATE">Cumplido tarde</option>
+                            </select>
+                        </label>
+                        <label>Desde
+                            <input id="ticketDateFrom" type="date">
+                        </label>
+                        <label>Hasta
+                            <input id="ticketDateTo" type="date">
+                        </label>
                         <label>Buscar
-                            <input id="ticketSearch" type="search" placeholder="Ticket, caso o titulo">
+                            <input id="ticketSearch" type="search" placeholder="Ticket, usuario, tecnico, correo o titulo">
                         </label>
                     </div>
                 </div>
@@ -605,8 +767,8 @@
         </main>
     </div>
 
-    <div class="drawer-backdrop" id="drawerBackdrop"></div>
-    <aside class="drawer" id="detailDrawer" aria-hidden="true">
+    <div class="drawer-backdrop" id="drawerBackdrop" aria-hidden="true"></div>
+    <aside class="drawer" id="detailDrawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle" aria-describedby="drawerSubtitle" aria-hidden="true" tabindex="-1">
         <div class="drawer-header">
             <div>
                 <h2 id="drawerTitle">Detalle</h2>
@@ -625,6 +787,7 @@
             sites: [],
             technicians: [],
             activeCaseId: null,
+            previousFocus: null,
             ticketRefreshTimer: null
         };
 
@@ -668,10 +831,19 @@
             document.getElementById("profileForm").addEventListener("submit", updateProfile);
             document.getElementById("caseForm").addEventListener("submit", createServiceCase);
             document.getElementById("caseSite").addEventListener("change", onSiteChanged);
+            document.getElementById("dashboardRefreshButton").addEventListener("click", refreshDashboard);
+            document.getElementById("dashboardDateFrom").addEventListener("change", refreshDashboard);
+            document.getElementById("dashboardDateTo").addEventListener("change", refreshDashboard);
             document.getElementById("ticketTypeFilter").addEventListener("change", refreshTickets);
+            document.getElementById("ticketStatusFilter").addEventListener("change", refreshTickets);
+            document.getElementById("ticketSiteFilter").addEventListener("change", refreshTickets);
+            document.getElementById("ticketDueFilter").addEventListener("change", refreshTickets);
+            document.getElementById("ticketDateFrom").addEventListener("change", refreshTickets);
+            document.getElementById("ticketDateTo").addEventListener("change", refreshTickets);
             document.getElementById("ticketSearch").addEventListener("input", debounce(refreshTickets, 250));
             document.getElementById("closeDrawerButton").addEventListener("click", closeDrawer);
             document.getElementById("drawerBackdrop").addEventListener("click", closeDrawer);
+            document.addEventListener("keydown", onGlobalKeydown);
         }
 
         async function api(path, options) {
@@ -716,9 +888,12 @@
 
         function applyRoleVisibility() {
             document.getElementById("newCaseSection").classList.toggle("hidden", !canCreateCases());
+            document.getElementById("dashboardSection").classList.toggle("hidden", !canOperateTickets());
             document.getElementById("queuesSection").classList.toggle("hidden", !canOperateTickets());
-            document.getElementById("ticketSearch").disabled = state.user.role === "USER";
+            document.getElementById("ticketSearch").disabled = false;
+            setDefaultDashboardDates();
             renderSiteOptions();
+            renderTicketSiteOptions();
         }
 
         async function loadSites() {
@@ -734,6 +909,12 @@
         function renderSiteOptions() {
             const select = document.getElementById("caseSite");
             select.innerHTML = "<option value=''>Seleccione sede</option>" +
+                state.sites.map(site => `<option value="${site.siteId}">${escapeHtml(site.name)}</option>`).join("");
+        }
+
+        function renderTicketSiteOptions() {
+            const select = document.getElementById("ticketSiteFilter");
+            select.innerHTML = "<option value=''>Todas</option>" +
                 state.sites.map(site => `<option value="${site.siteId}">${escapeHtml(site.name)}</option>`).join("");
         }
 
@@ -755,8 +936,87 @@
             const work = [refreshCases(), refreshTickets()];
             if (canOperateTickets()) {
                 work.push(refreshQueues());
+                work.push(refreshDashboard());
             }
             await Promise.all(work);
+        }
+
+        async function refreshDashboard() {
+            if (!canOperateTickets()) {
+                return;
+            }
+            const params = new URLSearchParams();
+            const dateFrom = document.getElementById("dashboardDateFrom").value;
+            const dateTo = document.getElementById("dashboardDateTo").value;
+            if (dateFrom) params.set("dateFrom", dateFrom);
+            if (dateTo) params.set("dateTo", dateTo);
+            const suffix = params.toString() ? "?" + params.toString() : "";
+            const dashboard = await api("/dashboard/technician" + suffix);
+            renderDashboard(dashboard);
+        }
+
+        function renderDashboard(dashboard) {
+            document.getElementById("dashboardScope").textContent =
+                (dashboard.scope === "ALL" ? "Vista ADMIN global" : "Vista de tickets asignados") +
+                " | " + dashboard.dateFrom + " a " + dashboard.dateTo;
+            const metrics = dashboard.byType || [];
+            document.getElementById("dashboardMetrics").innerHTML = metrics.map(renderMetricPanel).join("");
+        }
+
+        function renderMetricPanel(metric) {
+            const within = Number(metric.withinSlaPercent || 0);
+            const outside = Number(metric.outsideSlaPercent || 0);
+            return `
+                <article class="metric-panel" aria-label="Metricas ${escapeAttr(metric.type)}">
+                    <header>
+                        <h3>${escapeHtml(metric.type)}</h3>
+                        ${badge(metric.type)}
+                    </header>
+                    <div class="metric-total">${metric.ticketsTotal || 0}</div>
+                    <div class="metric-list">
+                        ${metricRow("Sin ticket", metric.casesWithoutTicket)}
+                        ${metricRow("OPEN", metric.openTickets)}
+                        ${metricRow("IN_PROGRESS", metric.inProgressTickets)}
+                        ${metricRow("Resueltos/cerrados", metric.resolvedTickets)}
+                        ${metricRow("En advertencia", metric.warningTickets)}
+                    </div>
+                    <div class="sla-bars">
+                        ${slaBar("Dentro de SLA", within, "ok", metric.withinSla)}
+                        ${slaBar("Fuera de SLA", outside, "out", metric.outsideSla)}
+                    </div>
+                </article>
+            `;
+        }
+
+        function metricRow(label, value) {
+            return `<div class="metric-row"><span>${escapeHtml(label)}</span><strong>${Number(value || 0)}</strong></div>`;
+        }
+
+        function slaBar(label, percent, kind, count) {
+            const safePercent = Math.max(0, Math.min(100, Number(percent || 0)));
+            return `
+                <div>
+                    <div class="sla-bar-label">
+                        <span>${escapeHtml(label)}</span>
+                        <span>${safePercent.toFixed(1)}% (${Number(count || 0)})</span>
+                    </div>
+                    <div class="sla-bar-track" role="meter" aria-label="${escapeAttr(label)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${safePercent.toFixed(1)}">
+                        <div class="sla-bar-fill ${kind === "out" ? "out" : ""}" style="width: ${safePercent}%"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function setDefaultDashboardDates() {
+            const from = document.getElementById("dashboardDateFrom");
+            const to = document.getElementById("dashboardDateTo");
+            if (!from.value || !to.value) {
+                const today = new Date();
+                const past = new Date(today.getTime());
+                past.setDate(today.getDate() - 30);
+                if (!from.value) from.value = dateInputValue(past);
+                if (!to.value) to.value = dateInputValue(today);
+            }
         }
 
         async function refreshQueues() {
@@ -774,9 +1034,19 @@
         async function refreshTickets() {
             const params = new URLSearchParams();
             const type = document.getElementById("ticketTypeFilter").value;
+            const status = document.getElementById("ticketStatusFilter").value;
+            const siteId = document.getElementById("ticketSiteFilter").value;
+            const due = document.getElementById("ticketDueFilter").value;
+            const dateFrom = document.getElementById("ticketDateFrom").value;
+            const dateTo = document.getElementById("ticketDateTo").value;
             const query = document.getElementById("ticketSearch").value.trim();
             if (type) params.set("type", type);
-            if (query && state.user.role !== "USER") params.set("q", query);
+            if (status) params.set("status", status);
+            if (siteId) params.set("siteId", siteId);
+            if (due) params.set("due", due);
+            if (dateFrom) params.set("dateFrom", dateFrom);
+            if (dateTo) params.set("dateTo", dateTo);
+            if (query) params.set("q", query);
             const suffix = params.toString() ? "?" + params.toString() : "";
             const tickets = await api("/tickets" + suffix);
             renderTicketsGroup(tickets);
@@ -797,6 +1067,7 @@
                             <th>Titulo</th>
                             <th>Estado</th>
                             <th>Prioridad</th>
+                            <th>SLA</th>
                             <th>Sede / ubicacion</th>
                             <th></th>
                         </tr>
@@ -808,6 +1079,7 @@
                             <td>${escapeHtml(item.title)}</td>
                             <td>${badge(item.status)}</td>
                             <td>${badge(item.priority)}</td>
+                            <td>${slaBadge(item.sla)}</td>
                             <td>${escapeHtml(joinLocation(item.siteName, item.locationName))}</td>
                             <td><button class="btn ${isQueue ? "blue" : "secondary"}" type="button" onclick="openCase(${item.caseId})">${isQueue ? "Atender" : "Ver"}</button></td>
                         </tr>`).join("")}
@@ -825,6 +1097,8 @@
             (tickets || []).forEach(ticket => {
                 if (groups[ticket.status]) {
                     groups[ticket.status].push(ticket);
+                } else if (ticket.status === "CLOSED" || ticket.status === "CANCELLED") {
+                    groups.RESOLVED.push(ticket);
                 }
             });
             renderTicketsTable("ticketsOpen", groups.OPEN);
@@ -845,7 +1119,9 @@
                             <th>Ticket</th>
                             <th>Caso</th>
                             <th>Tipo</th>
+                            <th>Solicitante</th>
                             <th>Asignado</th>
+                            <th>SLA</th>
                             <th>Prioridad</th>
                             <th></th>
                         </tr>
@@ -855,7 +1131,9 @@
                             <td>${escapeHtml(ticket.ticketNumber)}</td>
                             <td>${escapeHtml(ticket.caseNumber)}<br>${escapeHtml(ticket.caseTitle)}</td>
                             <td>${badge(ticket.caseType)}</td>
+                            <td>${escapeHtml(ticket.requesterUsername || "-")}<br>${escapeHtml(ticket.requesterEmail || "")}</td>
                             <td>${escapeHtml(ticket.assignedToUsername || "Sin asignar")}</td>
+                            <td>${slaBadge(ticket.sla)}<br>${escapeHtml(formatDate(ticket.dueAt))}</td>
                             <td>${badge(ticket.priority)}</td>
                             <td><button class="btn secondary" type="button" onclick="openCase(${ticket.serviceCaseId})">Ver</button></td>
                         </tr>`).join("")}
@@ -928,10 +1206,12 @@
             try {
                 const detail = await api("/service-cases/" + caseId);
                 state.activeCaseId = caseId;
+                state.previousFocus = document.activeElement;
                 renderDrawer(detail);
                 document.getElementById("drawerBackdrop").classList.add("open");
                 document.getElementById("detailDrawer").classList.add("open");
                 document.getElementById("detailDrawer").setAttribute("aria-hidden", "false");
+                document.getElementById("detailDrawer").focus();
             } catch (error) {
                 notifyError(error.message);
             }
@@ -940,7 +1220,7 @@
         function renderDrawer(serviceCase) {
             document.getElementById("drawerTitle").textContent = serviceCase.caseNumber + " | " + serviceCase.title;
             document.getElementById("drawerSubtitle").innerHTML =
-                badge(serviceCase.type) + " " + badge(serviceCase.status) + " " + badge(serviceCase.priority);
+                badge(serviceCase.type) + " " + badge(serviceCase.status) + " " + badge(serviceCase.priority) + " " + slaBadge(serviceCase.sla);
             const ticket = serviceCase.ticket;
             let html = `
                 <section>
@@ -948,6 +1228,8 @@
                     ${detailLine("Solicitante", serviceCase.requesterUsername)}
                     ${detailLine("Sede", joinLocation(serviceCase.siteName, serviceCase.locationName))}
                     ${detailLine("Creado", formatDate(serviceCase.createdAt))}
+                    ${detailLine("Vence", formatDate(serviceCase.dueAt))}
+                    ${detailLineHtml("SLA", slaBadge(serviceCase.sla))}
                     ${detailLine("Descripcion", serviceCase.description)}
                 </section>
             `;
@@ -1000,6 +1282,8 @@
                     ${detailLineHtml("Estado", badge(ticket.status))}
                     ${detailLine("Asignado", ticket.assignedToUsername || "Sin asignar")}
                     ${detailLineHtml("Prioridad", badge(ticket.priority))}
+                    ${detailLine("Vence", formatDate(ticket.dueAt))}
+                    ${detailLineHtml("SLA", slaBadge(ticket.sla))}
                     ${detailLine("Resolucion", ticket.resolution || "Pendiente")}
                 </section>
                 <section>
@@ -1214,6 +1498,16 @@
             return `<span class="badge ${safe}">${safe}</span>`;
         }
 
+        function slaBadge(sla) {
+            if (!sla) {
+                return "<span class='sla-badge sla-neutral'>[i] Sin SLA</span>";
+            }
+            const colorClass = escapeHtml(sla.colorClass || "sla-neutral");
+            const icon = escapeHtml(sla.icon || "[i]");
+            const text = escapeHtml(sla.text || sla.code || "Sin SLA");
+            return `<span class="sla-badge ${colorClass}"><span aria-hidden="true">${icon}</span><span>${text}</span></span>`;
+        }
+
         function joinLocation(site, location) {
             return [site, location].filter(Boolean).join(" / ") || "-";
         }
@@ -1223,6 +1517,16 @@
             document.getElementById("detailDrawer").classList.remove("open");
             document.getElementById("detailDrawer").setAttribute("aria-hidden", "true");
             state.activeCaseId = null;
+            if (state.previousFocus && typeof state.previousFocus.focus === "function") {
+                state.previousFocus.focus();
+            }
+            state.previousFocus = null;
+        }
+
+        function onGlobalKeydown(event) {
+            if (event.key === "Escape" && document.getElementById("detailDrawer").classList.contains("open")) {
+                closeDrawer();
+            }
         }
 
         function redirectToLogin() {
@@ -1246,6 +1550,13 @@
                 return "-";
             }
             return date.toLocaleString();
+        }
+
+        function dateInputValue(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            return year + "-" + month + "-" + day;
         }
 
         function escapeHtml(value) {
