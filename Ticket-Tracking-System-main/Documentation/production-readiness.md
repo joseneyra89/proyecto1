@@ -45,6 +45,12 @@ Catalogos:
 
 - `GET /sites`
 - `GET /sites/{siteId}/locations`
+- `POST /sites`
+- `PATCH /sites/{siteId}`
+- `PATCH /sites/{siteId}/status`
+- `POST /sites/{siteId}/locations`
+- `PATCH /locations/{locationId}`
+- `PATCH /locations/{locationId}/status`
 - `GET /users/technicians`
 
 Casos y colas:
@@ -71,6 +77,7 @@ Dashboard y notificaciones:
 Administracion:
 
 - `GET /admin/users`
+- `POST /admin/users`
 - `PATCH /admin/users/{userId}`
 - `PATCH /admin/users/{userId}/status`
 
@@ -101,8 +108,10 @@ La politica runtime es deny-by-default. Si una ruta no esta en `AccessPolicy`, s
 | `TICKET_RESOLVE` | no | si | si |
 | `NOTIFICATIONS_RETRY` | no | no | si |
 | `ADMIN_USERS_READ` | no | no | si |
+| `ADMIN_USERS_CREATE` | no | no | si |
 | `ADMIN_USERS_UPDATE_PROFILE` | no | no | si |
 | `ADMIN_USERS_UPDATE_STATUS` | no | no | si |
+| `CATALOG_MANAGE` | no | no | si |
 
 Reglas adicionales en servicios:
 

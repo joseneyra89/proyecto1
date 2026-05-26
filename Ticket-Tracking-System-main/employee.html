@@ -10,7 +10,7 @@
     <title>Mesa de Ayuda</title>
     <style>
         :root {
-            --bg: #eef3f0;
+            --bg: #f3f6f5;
             --ink: #14221b;
             --muted: #5d6a63;
             --line: #d7e1dc;
@@ -21,7 +21,7 @@
             --amber: #a56300;
             --red: #a42b2b;
             --ok: #0b6b3a;
-            --shadow: 0 14px 32px rgba(20, 34, 27, 0.12);
+            --shadow: 0 10px 26px rgba(20, 34, 27, 0.10);
         }
 
         * { box-sizing: border-box; }
@@ -52,6 +52,7 @@
             padding: 12px 28px;
             background: #ffffff;
             border-bottom: 1px solid var(--line);
+            box-shadow: 0 4px 18px rgba(20, 34, 27, .06);
             position: sticky;
             top: 0;
             z-index: 20;
@@ -105,6 +106,8 @@
             grid-template-columns: 310px minmax(0, 1fr);
             gap: 24px;
             padding: 24px;
+            max-width: 1500px;
+            margin: 0 auto;
         }
 
         aside, main {
@@ -116,6 +119,7 @@
             background: var(--panel);
             border: 1px solid var(--line);
             box-shadow: var(--shadow);
+            border-radius: 8px;
         }
 
         .profile-panel {
@@ -130,8 +134,12 @@
         }
 
         .workspace-section {
-            padding: 20px;
+            padding: 22px;
             min-width: 0;
+        }
+
+        .workspace-section.primary-case {
+            border-top: 4px solid var(--green);
         }
 
         h1, h2, h3 {
@@ -157,6 +165,7 @@
         p {
             color: var(--muted);
             line-height: 1.5;
+            margin: 6px 0 0;
         }
 
         .form-grid {
@@ -182,9 +191,10 @@
             border: 1px solid #c8d6cf;
             background: #fff;
             color: var(--ink);
-            padding: 10px 11px;
-            min-height: 42px;
+            padding: 11px 12px;
+            min-height: 44px;
             outline: 0;
+            border-radius: 6px;
         }
 
         textarea {
@@ -209,7 +219,7 @@
             align-items: end;
             justify-content: space-between;
             flex-wrap: wrap;
-            margin-bottom: 14px;
+            margin-bottom: 18px;
         }
 
         .filters {
@@ -230,6 +240,13 @@
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 14px;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            align-items: start;
         }
 
         .metric-panel {
@@ -309,6 +326,7 @@
             font-weight: 800;
             color: #fff;
             background: var(--green);
+            border-radius: 6px;
         }
 
         .btn.secondary {
@@ -336,6 +354,7 @@
             min-width: 0;
             overflow-x: auto;
             border: 1px solid var(--line);
+            border-radius: 8px;
         }
 
         table {
@@ -381,6 +400,88 @@
             min-width: 0;
         }
 
+        .user-overview-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .summary-card {
+            border: 1px solid var(--line);
+            background: #fbfdfc;
+            border-radius: 8px;
+            padding: 14px;
+            min-width: 0;
+        }
+
+        .summary-card span {
+            display: block;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0;
+        }
+
+        .summary-card strong {
+            display: block;
+            margin-top: 8px;
+            font-size: 28px;
+            line-height: 1;
+            color: var(--green-dark);
+        }
+
+        .card-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .case-card {
+            display: grid;
+            gap: 12px;
+            border: 1px solid var(--line);
+            background: #fff;
+            border-radius: 8px;
+            padding: 14px;
+        }
+
+        .case-card header {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .case-card-title {
+            display: grid;
+            gap: 4px;
+            min-width: 0;
+        }
+
+        .case-card-title strong {
+            font-size: 16px;
+            color: var(--green-dark);
+        }
+
+        .case-card-title span,
+        .card-meta {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .card-badges,
+        .card-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .card-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+
         .badge {
             display: inline-flex;
             align-items: center;
@@ -424,6 +525,7 @@
             color: var(--muted);
             background: #f9fbfa;
             border: 1px dashed #cbd8d2;
+            border-radius: 8px;
         }
 
         .sr-only {
@@ -528,13 +630,23 @@
                 grid-template-columns: 1fr;
             }
 
+            .workspace {
+                order: 1;
+            }
+
+            aside {
+                order: 2;
+            }
+
             .profile-panel {
                 position: static;
             }
 
             .status-grid,
             .queue-grid,
-            .dashboard-grid {
+            .dashboard-grid,
+            .admin-grid,
+            .user-overview-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -548,6 +660,7 @@
 
             .shell {
                 padding: 14px;
+                grid-template-columns: 1fr;
             }
 
             .form-grid,
@@ -612,11 +725,123 @@
         </aside>
 
         <main class="workspace">
-            <section class="workspace-section" id="newCaseSection">
+            <section class="workspace-section hidden" id="adminManagementSection">
+                <div class="toolbar">
+                    <div>
+                        <h2>Administracion</h2>
+                        <p>Alta de usuarios, sedes y ambientes activos para el flujo de mesa de ayuda.</p>
+                    </div>
+                </div>
+                <div class="admin-grid">
+                    <form id="adminUserForm" class="form-grid">
+                        <h3 class="span-2">Crear usuario</h3>
+                        <label>Rol
+                            <select id="adminUserRole" required>
+                                <option value="USER">Usuario</option>
+                                <option value="TECH">Tecnico</option>
+                                <option value="ADMIN">Administrador</option>
+                            </select>
+                        </label>
+                        <label>Username
+                            <input id="adminUsername" type="text" minlength="3" maxlength="80" required>
+                        </label>
+                        <label>Nombres
+                            <input id="adminFirstName" type="text" maxlength="80" required>
+                        </label>
+                        <label>Apellidos
+                            <input id="adminLastName" type="text" maxlength="80" required>
+                        </label>
+                        <label class="span-2">Email
+                            <input id="adminEmail" type="email" maxlength="160">
+                        </label>
+                        <label class="span-2">Email de notificaciones
+                            <input id="adminNotificationEmail" type="email" maxlength="160">
+                        </label>
+                        <label>Cargo
+                            <input id="adminJobTitle" type="text" maxlength="120">
+                        </label>
+                        <label>Telefono
+                            <input id="adminPhone" type="tel" maxlength="40">
+                        </label>
+                        <label class="span-2">Contrasena temporal
+                            <input id="adminPassword" type="password" minlength="8" maxlength="120" autocomplete="new-password" required>
+                        </label>
+                        <div class="span-2 btn-row">
+                            <button class="btn" type="submit">Crear usuario</button>
+                        </div>
+                    </form>
+
+                    <form id="adminSiteForm" class="form-grid">
+                        <h3 class="span-2">Crear sede</h3>
+                        <label>Codigo
+                            <input id="adminSiteCode" type="text" minlength="2" maxlength="40" required>
+                        </label>
+                        <label>Nombre
+                            <input id="adminSiteName" type="text" minlength="3" maxlength="160" required>
+                        </label>
+                        <label class="span-2">Direccion
+                            <input id="adminSiteAddress" type="text" maxlength="250">
+                        </label>
+                        <label>Ciudad
+                            <input id="adminSiteCity" type="text" maxlength="80" value="Canete">
+                        </label>
+                        <label>Provincia
+                            <input id="adminSiteProvince" type="text" maxlength="80" value="Canete">
+                        </label>
+                        <label>Pais
+                            <input id="adminSiteCountry" type="text" minlength="2" maxlength="2" value="PE">
+                        </label>
+                        <div class="span-2 btn-row">
+                            <button class="btn" type="submit">Crear sede</button>
+                        </div>
+                    </form>
+
+                    <form id="adminLocationForm" class="form-grid">
+                        <h3 class="span-2">Crear ambiente</h3>
+                        <label class="span-2">Sede
+                            <select id="adminLocationSite" required></select>
+                        </label>
+                        <label>Tipo
+                            <select id="adminLocationType" required>
+                                <option value="AULA">Aula</option>
+                                <option value="LAB">Laboratorio</option>
+                                <option value="AREA">Area</option>
+                            </select>
+                        </label>
+                        <label>Codigo
+                            <input id="adminLocationCode" type="text" minlength="2" maxlength="60" required>
+                        </label>
+                        <label class="span-2">Nombre
+                            <input id="adminLocationName" type="text" minlength="3" maxlength="160" required>
+                        </label>
+                        <label>Piso
+                            <input id="adminLocationFloor" type="text" maxlength="20">
+                        </label>
+                        <label class="span-2">Descripcion
+                            <input id="adminLocationDescription" type="text" maxlength="250">
+                        </label>
+                        <div class="span-2 btn-row">
+                            <button class="btn" type="submit">Crear ambiente</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <section class="workspace-section hidden" id="userOverviewSection">
+                <div class="toolbar">
+                    <div>
+                        <h1>Mi mesa de ayuda</h1>
+                        <p>Resumen de tus solicitudes e incidencias.</p>
+                    </div>
+                </div>
+                <div id="userOverviewCards" class="user-overview-grid" aria-live="polite"></div>
+            </section>
+
+            <section class="workspace-section primary-case" id="newCaseSection">
                 <div class="toolbar">
                     <div>
                         <h1>Nuevo caso de servicio</h1>
-                        <p>Crea una solicitud o incidente con sede, ubicacion, titulo y descripcion suficiente para atencion.</p>
+                        <p>Registra una solicitud o incidencia con la sede, ubicacion y detalle necesario.</p>
                     </div>
                 </div>
                 <form id="caseForm" class="form-grid">
@@ -705,8 +930,8 @@
             <section class="workspace-section">
                 <div class="toolbar">
                     <div>
-                        <h2>Bandejas de tickets</h2>
-                        <p>Tickets agrupados por estado. ADMIN puede buscar sobre todo el universo.</p>
+                        <h2 id="ticketsTitle">Bandejas de tickets</h2>
+                        <p id="ticketsSubtitle">Tickets agrupados por estado. ADMIN puede buscar sobre todo el universo.</p>
                     </div>
                     <div class="filters">
                         <label>Tipo
@@ -789,11 +1014,16 @@
             user: null,
             sites: [],
             technicians: [],
+            cases: [],
+            tickets: [],
             activeCaseId: null,
             previousFocus: null,
             ticketRefreshTimer: null
         };
         const DISPLAY_LABELS = {
+            USER: "Usuario",
+            TECH: "Tecnico",
+            ADMIN: "Administrador",
             REQUEST: "Solicitud",
             INCIDENT: "Incidente",
             OPEN: "Abierto",
@@ -811,7 +1041,10 @@
             STATUS_CHANGE: "Cambio de estado",
             ASSIGNMENT: "Asignacion",
             SLA: "SLA",
-            SYSTEM: "Sistema"
+            SYSTEM: "Sistema",
+            AULA: "Aula",
+            LAB: "Laboratorio",
+            AREA: "Area"
         };
 
         document.addEventListener("DOMContentLoaded", init);
@@ -826,6 +1059,10 @@
 
         function canCreateCases() {
             return state.user && (state.user.role === "USER" || state.user.role === "ADMIN");
+        }
+
+        function isAdmin() {
+            return state.user && state.user.role === "ADMIN";
         }
 
         async function init() {
@@ -853,6 +1090,9 @@
             document.getElementById("refreshButton").addEventListener("click", refreshAll);
             document.getElementById("profileForm").addEventListener("submit", updateProfile);
             document.getElementById("caseForm").addEventListener("submit", createServiceCase);
+            document.getElementById("adminUserForm").addEventListener("submit", createAdminUser);
+            document.getElementById("adminSiteForm").addEventListener("submit", createAdminSite);
+            document.getElementById("adminLocationForm").addEventListener("submit", createAdminLocation);
             document.getElementById("caseSite").addEventListener("change", onSiteChanged);
             document.getElementById("dashboardRefreshButton").addEventListener("click", refreshDashboard);
             document.getElementById("dashboardDateFrom").addEventListener("change", refreshDashboard);
@@ -894,9 +1134,9 @@
         }
 
         function renderUser() {
-            document.getElementById("roleLabel").textContent = state.user.role + " | " + state.user.username;
+            document.getElementById("roleLabel").textContent = labelFor(state.user.role) + " | " + state.user.username;
             document.getElementById("profileSummary").textContent =
-                (state.user.firstName || "") + " " + (state.user.lastName || "") + " - " + state.user.role;
+                (state.user.firstName || "") + " " + (state.user.lastName || "") + " - " + labelFor(state.user.role);
             document.getElementById("profileUsername").value = state.user.username || "";
             document.getElementById("profileFirstName").value = state.user.firstName || "";
             document.getElementById("profileLastName").value = state.user.lastName || "";
@@ -904,12 +1144,18 @@
             document.getElementById("profileNotificationEmail").value = state.user.notificationEmail || "";
             document.getElementById("profileJobTitle").value = state.user.jobTitle || "";
             document.getElementById("profilePhone").value = state.user.phone || "";
-            document.getElementById("casesTitle").textContent = state.user.role === "USER" ? "Mis casos" : "Casos";
+            document.getElementById("casesTitle").textContent = state.user.role === "USER" ? "Mis solicitudes e incidencias" : "Casos";
             document.getElementById("casesSubtitle").textContent =
-                state.user.role === "USER" ? "Solo ves tus propios casos y sus actualizaciones publicas." : "Vista operativa segun permisos del rol.";
+                state.user.role === "USER" ? "Estado, sede y SLA de los casos que registraste." : "Vista operativa segun permisos del rol.";
+            document.getElementById("ticketsTitle").textContent =
+                state.user.role === "USER" ? "Seguimiento de tickets" : "Bandejas de tickets";
+            document.getElementById("ticketsSubtitle").textContent =
+                state.user.role === "USER" ? "Tickets vinculados a tus casos, agrupados por estado." : "Tickets agrupados por estado. ADMIN puede buscar sobre todo el universo.";
         }
 
         function applyRoleVisibility() {
+            document.getElementById("adminManagementSection").classList.toggle("hidden", !isAdmin());
+            document.getElementById("userOverviewSection").classList.toggle("hidden", state.user.role !== "USER");
             document.getElementById("newCaseSection").classList.toggle("hidden", !canCreateCases());
             document.getElementById("dashboardSection").classList.toggle("hidden", !canOperateTickets());
             document.getElementById("queuesSection").classList.toggle("hidden", !canOperateTickets());
@@ -917,11 +1163,14 @@
             setDefaultDashboardDates();
             renderSiteOptions();
             renderTicketSiteOptions();
+            renderAdminSiteOptions();
         }
 
         async function loadSites() {
             state.sites = await api("/sites");
             renderSiteOptions();
+            renderTicketSiteOptions();
+            renderAdminSiteOptions();
             await onSiteChanged();
         }
 
@@ -941,6 +1190,12 @@
                 state.sites.map(site => `<option value="${site.siteId}">${escapeHtml(site.name)}</option>`).join("");
         }
 
+        function renderAdminSiteOptions() {
+            const select = document.getElementById("adminLocationSite");
+            select.innerHTML = "<option value=''>Seleccione sede</option>" +
+                state.sites.map(site => `<option value="${site.siteId}">${escapeHtml(site.name)}</option>`).join("");
+        }
+
         async function onSiteChanged() {
             const siteId = document.getElementById("caseSite").value;
             const select = document.getElementById("caseLocation");
@@ -952,7 +1207,7 @@
             const locations = await api("/sites/" + siteId + "/locations");
             select.disabled = false;
             select.innerHTML = "<option value=''>Sin ubicacion especifica</option>" +
-                locations.map(location => `<option value="${location.locationId}">${escapeHtml(location.type)} - ${escapeHtml(location.name)}</option>`).join("");
+                locations.map(location => `<option value="${location.locationId}">${escapeHtml(labelFor(location.type))} - ${escapeHtml(location.name)}</option>`).join("");
         }
 
         async function refreshAll() {
@@ -962,6 +1217,7 @@
                 work.push(refreshDashboard());
             }
             await Promise.all(work);
+            renderUserOverview();
         }
 
         async function refreshDashboard() {
@@ -1052,6 +1308,7 @@
 
         async function refreshCases() {
             const cases = await api("/service-cases");
+            state.cases = cases || [];
             renderCasesTable("casesTable", cases, false);
         }
 
@@ -1073,13 +1330,40 @@
             if (query) params.set("q", query);
             const suffix = params.toString() ? "?" + params.toString() : "";
             const tickets = await api("/tickets" + suffix);
+            state.tickets = tickets || [];
             renderTicketsGroup(tickets);
+        }
+
+        function renderUserOverview() {
+            if (!state.user || state.user.role !== "USER") {
+                return;
+            }
+            const cases = state.cases || [];
+            const tickets = state.tickets || [];
+            const openCases = cases.filter(item => item.status === "OPEN").length;
+            const activeTickets = tickets.filter(item => item.status === "IN_PROGRESS" || item.status === "OPEN").length;
+            const breached = cases.filter(item => item.sla && item.sla.code === "BREACHED").length +
+                tickets.filter(item => item.sla && item.sla.code === "BREACHED").length;
+            document.getElementById("userOverviewCards").innerHTML = [
+                summaryCard("Casos registrados", cases.length),
+                summaryCard("Casos abiertos", openCases),
+                summaryCard("Tickets en atencion", activeTickets),
+                summaryCard("Fuera de SLA", breached)
+            ].join("");
+        }
+
+        function summaryCard(label, value) {
+            return `<article class="summary-card"><span>${escapeHtml(label)}</span><strong>${Number(value || 0)}</strong></article>`;
         }
 
         function renderCasesTable(targetId, cases, isQueue) {
             const target = document.getElementById(targetId);
             if (!cases || cases.length === 0) {
                 target.innerHTML = "<div class='empty'>Sin registros.</div>";
+                return;
+            }
+            if (!isQueue && state.user && state.user.role === "USER") {
+                target.innerHTML = renderCaseCards(cases);
                 return;
             }
             target.innerHTML = `<div class="table-wrap">
@@ -1112,6 +1396,33 @@
             </div>`;
         }
 
+        function renderCaseCards(cases) {
+            return `<div class="card-grid">${cases.map(item => `
+                <article class="case-card">
+                    <header>
+                        <div class="case-card-title">
+                            <span>${escapeHtml(item.caseNumber)}</span>
+                            <strong>${escapeHtml(item.title)}</strong>
+                        </div>
+                        ${slaBadge(item.sla)}
+                    </header>
+                    <div class="card-badges">
+                        ${badge(item.type)}
+                        ${badge(item.status)}
+                        ${badge(item.priority)}
+                    </div>
+                    <div class="card-meta">
+                        <span>${escapeHtml(joinLocation(item.siteName, item.locationName))}</span>
+                        <span>Creado: ${escapeHtml(formatDate(item.createdAt))}</span>
+                        <span>Vence: ${escapeHtml(formatDate(item.dueAt))}</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn secondary" type="button" onclick="openCase(${item.caseId})">Ver detalle</button>
+                    </div>
+                </article>
+            `).join("")}</div>`;
+        }
+
         function renderTicketsGroup(tickets) {
             const groups = {
                 OPEN: [],
@@ -1134,6 +1445,10 @@
             const target = document.getElementById(targetId);
             if (!tickets || tickets.length === 0) {
                 target.innerHTML = "<div class='empty'>Sin tickets.</div>";
+                return;
+            }
+            if (state.user && state.user.role === "USER") {
+                target.innerHTML = renderTicketCards(tickets);
                 return;
             }
             target.innerHTML = `<div class="table-wrap">
@@ -1164,6 +1479,33 @@
                     </tbody>
                 </table>
             </div>`;
+        }
+
+        function renderTicketCards(tickets) {
+            return `<div class="card-grid">${tickets.map(ticket => `
+                <article class="case-card">
+                    <header>
+                        <div class="case-card-title">
+                            <span>${escapeHtml(ticket.ticketNumber)}</span>
+                            <strong>${escapeHtml(ticket.caseTitle || ticket.summary)}</strong>
+                        </div>
+                        ${slaBadge(ticket.sla)}
+                    </header>
+                    <div class="card-badges">
+                        ${badge(ticket.caseType)}
+                        ${badge(ticket.status)}
+                        ${badge(ticket.priority)}
+                    </div>
+                    <div class="card-meta">
+                        <span>${escapeHtml(ticket.caseNumber)}</span>
+                        <span>Asignado: ${escapeHtml(ticket.assignedToUsername || "Sin asignar")}</span>
+                        <span>Vence: ${escapeHtml(formatDate(ticket.dueAt))}</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn secondary" type="button" onclick="openCase(${ticket.serviceCaseId})">Ver detalle</button>
+                    </div>
+                </article>
+            `).join("")}</div>`;
         }
 
         async function createServiceCase(event) {
@@ -1202,6 +1544,89 @@
                 await refreshAll();
                 notifyOk("Caso creado correctamente.");
                 openCase(created.caseId);
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function createAdminUser(event) {
+            event.preventDefault();
+            const password = document.getElementById("adminPassword").value;
+            if (password.length < 8) {
+                notifyError("La contrasena temporal debe tener al menos 8 caracteres.");
+                return;
+            }
+            const payload = {
+                role: document.getElementById("adminUserRole").value,
+                username: document.getElementById("adminUsername").value.trim(),
+                firstName: document.getElementById("adminFirstName").value.trim(),
+                lastName: document.getElementById("adminLastName").value.trim(),
+                email: document.getElementById("adminEmail").value.trim(),
+                notificationEmail: document.getElementById("adminNotificationEmail").value.trim(),
+                jobTitle: document.getElementById("adminJobTitle").value.trim(),
+                phone: document.getElementById("adminPhone").value.trim(),
+                password
+            };
+            try {
+                const created = await api("/admin/users", { method: "POST", body: JSON.stringify(payload) });
+                document.getElementById("adminUserForm").reset();
+                document.getElementById("adminUserRole").value = "USER";
+                if (created.role === "TECH") {
+                    await loadTechnicians();
+                }
+                notifyOk("Usuario creado: " + created.username);
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function createAdminSite(event) {
+            event.preventDefault();
+            const payload = {
+                code: document.getElementById("adminSiteCode").value.trim(),
+                name: document.getElementById("adminSiteName").value.trim(),
+                address: document.getElementById("adminSiteAddress").value.trim(),
+                city: document.getElementById("adminSiteCity").value.trim(),
+                province: document.getElementById("adminSiteProvince").value.trim(),
+                country: document.getElementById("adminSiteCountry").value.trim()
+            };
+            try {
+                const created = await api("/sites", { method: "POST", body: JSON.stringify(payload) });
+                document.getElementById("adminSiteForm").reset();
+                document.getElementById("adminSiteCity").value = "Canete";
+                document.getElementById("adminSiteProvince").value = "Canete";
+                document.getElementById("adminSiteCountry").value = "PE";
+                await loadSites();
+                document.getElementById("adminLocationSite").value = String(created.siteId);
+                notifyOk("Sede creada: " + created.name);
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function createAdminLocation(event) {
+            event.preventDefault();
+            const siteId = document.getElementById("adminLocationSite").value;
+            if (!siteId) {
+                notifyError("Seleccione la sede del ambiente.");
+                return;
+            }
+            const payload = {
+                type: document.getElementById("adminLocationType").value,
+                code: document.getElementById("adminLocationCode").value.trim(),
+                name: document.getElementById("adminLocationName").value.trim(),
+                floor: document.getElementById("adminLocationFloor").value.trim(),
+                description: document.getElementById("adminLocationDescription").value.trim()
+            };
+            try {
+                const created = await api("/sites/" + siteId + "/locations", { method: "POST", body: JSON.stringify(payload) });
+                const selectedSite = siteId;
+                document.getElementById("adminLocationForm").reset();
+                document.getElementById("adminLocationSite").value = selectedSite;
+                if (document.getElementById("caseSite").value === selectedSite) {
+                    await onSiteChanged();
+                }
+                notifyOk("Ambiente creado: " + labelFor(created.type) + " - " + created.name);
             } catch (error) {
                 notifyError(error.message);
             }

@@ -67,6 +67,15 @@ public class AuthController {
         }
     };
 
+    public Handler createUser = ctx -> {
+        try {
+            AuthenticatedUser actor = ctx.attribute("authUser");
+            ctx.status(201).result(authService.createUser(ctx.body(), actor, ctx).toString());
+        } catch (AuthException e) {
+            ctx.status(e.getStatusCode()).result(new JSONObject().put("message", e.getMessage()).toString());
+        }
+    };
+
     public Handler updateUser = ctx -> {
         try {
             AuthenticatedUser actor = ctx.attribute("authUser");

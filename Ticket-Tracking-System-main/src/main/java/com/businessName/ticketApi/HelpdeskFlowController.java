@@ -15,6 +15,24 @@ public class HelpdeskFlowController {
     public Handler listLocations = ctx -> handle(ctx, () ->
             service.listLocations(Integer.parseInt(ctx.pathParam("siteId"))).toString());
 
+    public Handler createSite = ctx -> handle(ctx, () ->
+            service.createSite(authUser(ctx), ctx.body(), ctx).toString(), 201);
+
+    public Handler updateSite = ctx -> handle(ctx, () ->
+            service.updateSite(authUser(ctx), Integer.parseInt(ctx.pathParam("siteId")), ctx.body(), ctx).toString());
+
+    public Handler updateSiteStatus = ctx -> handle(ctx, () ->
+            service.updateSiteStatus(authUser(ctx), Integer.parseInt(ctx.pathParam("siteId")), ctx.body(), ctx).toString());
+
+    public Handler createLocation = ctx -> handle(ctx, () ->
+            service.createLocation(authUser(ctx), Integer.parseInt(ctx.pathParam("siteId")), ctx.body(), ctx).toString(), 201);
+
+    public Handler updateLocation = ctx -> handle(ctx, () ->
+            service.updateLocation(authUser(ctx), Long.parseLong(ctx.pathParam("locationId")), ctx.body(), ctx).toString());
+
+    public Handler updateLocationStatus = ctx -> handle(ctx, () ->
+            service.updateLocationStatus(authUser(ctx), Long.parseLong(ctx.pathParam("locationId")), ctx.body(), ctx).toString());
+
     public Handler listTechnicians = ctx -> handle(ctx, () ->
             service.listTechnicians().toString());
 

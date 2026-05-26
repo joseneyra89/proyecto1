@@ -258,6 +258,62 @@ public class AuthService {
         }
     }
 
+    public JSONObject createUser(String body, AuthenticatedUser actor, Context ctx) {
+        JSONObject request = parseJson(body);
+        String role = request.optString("role", "USER").trim().toUpperCase();
+        validateRole(role);
+        String username = requireString(request, "username", 3, 80);
+        String firstName = requireString(request, "firstName", 1, 80);
+        String lastName = requireString(request, "lastName", 1, 80);
+        String password = request.optString("password", request.optString("temporaryPassword", ""));
+        if (password.length() < 8 || password.length() > 120) {
+            throw new AuthException(400, "Temporary password must be between 8 and 120 characters");
+        }
+        String email = optionalString(request, "email");
+        String notificationEmail = optionalString(request, "notificationEmail");
+        if (notificationEmail == null) {
+            notificationEmail = email;
+        }
+        boolean isActive = !request.has("isActive") || request.getBoolean("isActive");
+
+        try (Connection connection = requireConnection();
+             PreparedStatement ps = connection.prepareStatement(
+                     "INSERT INTO p2_sandbox.app_users " +
+                             "(role_id, username, password_hash, first_name, last_name, email, notification_email, " +
+                             "job_title, phone, is_active, created_at, updated_at) " +
+                             "VALUES ((SELECT role_id FROM p2_sandbox.roles WHERE code = ?), ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW()) " +
+                             "RETURNING user_id, legacy_employee_id, " +
+                             "(SELECT code FROM p2_sandbox.roles WHERE role_id = app_users.role_id) AS role_code, " +
+                             "username, first_name, last_name, email, notification_email, job_title, phone, is_active")) {
+            ps.setString(1, role);
+            ps.setString(2, username);
+            ps.setString(3, PasswordHasher.hashPassword(password));
+            ps.setString(4, firstName);
+            ps.setString(5, lastName);
+            setNullableString(ps, 6, email);
+            setNullableString(ps, 7, notificationEmail);
+            setNullableString(ps, 8, optionalString(request, "jobTitle"));
+            setNullableString(ps, 9, optionalString(request, "phone"));
+            ps.setBoolean(10, isActive);
+            try (ResultSet rs = ps.executeQuery()) {
+                rs.next();
+                AuthenticatedUser created = readUser(rs);
+                audit(connection, actor.userId, "app_users", created.userId.toString(), "ADMIN_USER_CREATED",
+                        null, created.toJson(), ctx);
+                return created.toJson();
+            }
+        } catch (AuthException e) {
+            throw e;
+        } catch (java.sql.SQLException e) {
+            if ("23505".equals(e.getSQLState())) {
+                throw new AuthException(409, "Username already exists");
+            }
+            throw new AuthException(500, "Unable to create user");
+        } catch (Exception e) {
+            throw new AuthException(500, "Unable to create user");
+        }
+    }
+
     public JSONObject updateUser(Long targetUserId, String body, AuthenticatedUser actor, Context ctx) {
         JSONObject request = parseJson(body);
         validateRole(request.optString("role", null));
@@ -529,6 +585,14 @@ public class AuthService {
         }
         String value = json.optString(key, null);
         return value == null || value.trim().isEmpty() ? null : value.trim();
+    }
+
+    private String requireString(JSONObject json, String key, int minLength, int maxLength) {
+        String value = optionalString(json, key);
+        if (value == null || value.length() < minLength || value.length() > maxLength) {
+            throw new AuthException(400, key + " must be between " + minLength + " and " + maxLength + " characters");
+        }
+        return value;
     }
 
     private void setNullableString(PreparedStatement ps, int index, String value) throws Exception {

@@ -90,8 +90,10 @@ VALUES
     ('DASHBOARD_TECH_READ', 'Leer dashboard operativo de tecnico'),
     ('NOTIFICATIONS_RETRY', 'Reintentar envios pendientes de correo'),
     ('ADMIN_USERS_READ', 'Listar y leer usuarios'),
+    ('ADMIN_USERS_CREATE', 'Crear usuarios con rol USER, TECH o ADMIN'),
     ('ADMIN_USERS_UPDATE_PROFILE', 'Actualizar perfil de usuarios'),
-    ('ADMIN_USERS_UPDATE_STATUS', 'Activar o inactivar usuarios sin borrado duro')
+    ('ADMIN_USERS_UPDATE_STATUS', 'Activar o inactivar usuarios sin borrado duro'),
+    ('CATALOG_MANAGE', 'Crear y administrar sedes y ubicaciones activas')
 ON CONFLICT (code) DO UPDATE
 SET description = EXCLUDED.description,
     is_active = TRUE;

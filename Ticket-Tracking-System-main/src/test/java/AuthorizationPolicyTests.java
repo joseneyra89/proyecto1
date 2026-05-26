@@ -57,6 +57,28 @@ public class AuthorizationPolicyTests {
     }
 
     @Test
+    public void adminUserCreationIsAdminOnly() {
+        AccessPolicy policy = new AccessPolicy();
+        String permission = policy.requiredPermission("POST", "/admin/users");
+        Assert.assertEquals(permission, "ADMIN_USERS_CREATE");
+        Assert.assertFalse(policy.isAllowed("USER", permission));
+        Assert.assertFalse(policy.isAllowed("TECH", permission));
+        Assert.assertTrue(policy.isAllowed("ADMIN", permission));
+    }
+
+    @Test
+    public void catalogManagementIsAdminOnly() {
+        AccessPolicy policy = new AccessPolicy();
+        String sitePermission = policy.requiredPermission("POST", "/sites");
+        String locationPermission = policy.requiredPermission("POST", "/sites/3/locations");
+        Assert.assertEquals(sitePermission, "CATALOG_MANAGE");
+        Assert.assertEquals(locationPermission, "CATALOG_MANAGE");
+        Assert.assertFalse(policy.isAllowed("USER", sitePermission));
+        Assert.assertFalse(policy.isAllowed("TECH", sitePermission));
+        Assert.assertTrue(policy.isAllowed("ADMIN", sitePermission));
+    }
+
+    @Test
     public void serviceCaseCreationIsUserAndAdminOnly() {
         AccessPolicy policy = new AccessPolicy();
         String permission = policy.requiredPermission("POST", "/service-cases");

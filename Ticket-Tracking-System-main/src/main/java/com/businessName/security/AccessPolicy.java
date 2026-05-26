@@ -39,11 +39,18 @@ public class AccessPolicy {
         add("DELETE", "/technician/requests", "TICKET_RESOLVE");
 
         add("GET", "/admin/users", "ADMIN_USERS_READ");
+        add("POST", "/admin/users", "ADMIN_USERS_CREATE");
         add("PATCH", "/admin/users/*", "ADMIN_USERS_UPDATE_PROFILE");
         add("PATCH", "/admin/users/*/status", "ADMIN_USERS_UPDATE_STATUS");
 
         add("GET", "/sites", "METADATA_READ");
+        add("POST", "/sites", "CATALOG_MANAGE");
+        add("PATCH", "/sites/*", "CATALOG_MANAGE");
+        add("PATCH", "/sites/*/status", "CATALOG_MANAGE");
         add("GET", "/sites/*/locations", "METADATA_READ");
+        add("POST", "/sites/*/locations", "CATALOG_MANAGE");
+        add("PATCH", "/locations/*", "CATALOG_MANAGE");
+        add("PATCH", "/locations/*/status", "CATALOG_MANAGE");
         add("GET", "/users/technicians", "TICKET_ASSIGN");
         add("GET", "/dashboard/technician", "DASHBOARD_TECH_READ");
 
@@ -71,7 +78,8 @@ public class AccessPolicy {
                 "METADATA_READ", "SERVICE_CASE_CREATE", "SERVICE_CASE_READ",
                 "TECH_REQUEST_POOL_READ", "QUEUE_READ", "TICKET_CREATE", "TICKET_READ", "TICKET_UPDATE",
                 "TICKET_ASSIGN", "TICKET_RESOLVE",
-                "DASHBOARD_TECH_READ", "NOTIFICATIONS_RETRY", "ADMIN_USERS_READ", "ADMIN_USERS_UPDATE_PROFILE", "ADMIN_USERS_UPDATE_STATUS");
+                "DASHBOARD_TECH_READ", "NOTIFICATIONS_RETRY", "ADMIN_USERS_READ", "ADMIN_USERS_CREATE",
+                "ADMIN_USERS_UPDATE_PROFILE", "ADMIN_USERS_UPDATE_STATUS", "CATALOG_MANAGE");
     }
 
     public boolean isPublic(String method, String path) {

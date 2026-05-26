@@ -24,8 +24,10 @@ Deny-by-default is enforced in `com.businessName.security.AuthMiddleware`: a rou
 | `TICKET_RESOLVE` | no | yes | yes |
 | `NOTIFICATIONS_RETRY` | no | no | yes |
 | `ADMIN_USERS_READ` | no | no | yes |
+| `ADMIN_USERS_CREATE` | no | no | yes |
 | `ADMIN_USERS_UPDATE_PROFILE` | no | no | yes |
 | `ADMIN_USERS_UPDATE_STATUS` | no | no | yes |
+| `CATALOG_MANAGE` | no | no | yes |
 
 ## Public Endpoints
 
@@ -37,6 +39,7 @@ Deny-by-default is enforced in `com.businessName.security.AuthMiddleware`: a rou
 
 - `GET /me`, `PATCH /me`: authenticated profile access.
 - `GET /sites`, `GET /sites/{siteId}/locations`: active metadata for forms.
+- `POST /sites`, `PATCH /sites/{siteId}`, `PATCH /sites/{siteId}/status`, `POST /sites/{siteId}/locations`, `PATCH /locations/{locationId}`, `PATCH /locations/{locationId}/status`: site/location catalog management for `ADMIN`.
 - `GET /dashboard/technician`: technician/admin metrics by REQUEST and INCIDENT with SLA percentages for a date range.
 - `POST /service-cases`, `GET /service-cases`, `GET /service-cases/{caseId}`: service case lifecycle scoped by role.
 - `GET /queues/service-cases`: technician/admin queues for cases without tickets.
@@ -44,6 +47,6 @@ Deny-by-default is enforced in `com.businessName.security.AuthMiddleware`: a rou
 - `POST /notifications/retry`: email retry pipeline processing for `ADMIN`.
 - `/user/requests`: user request lifecycle for `USER` and `ADMIN`.
 - `/technician/*`: technician workflow for `TECH` and `ADMIN`.
-- `/admin/users`: user administration for `ADMIN`.
+- `/admin/users`: user listing, creation and administration for `ADMIN`.
 
 Legacy `/client/requests` routes remain as aliases for `/user/requests` during migration.

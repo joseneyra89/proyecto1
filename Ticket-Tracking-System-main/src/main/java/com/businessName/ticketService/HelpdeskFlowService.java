@@ -72,6 +72,265 @@ public class HelpdeskFlowService {
         }
     }
 
+    public JSONObject createSite(AuthenticatedUser user, String body, Context ctx) {
+        JSONObject request = parseJson(body);
+        String code = requireText(request.optString("code", ""), "code", 2, 40).toUpperCase();
+        String name = requireText(request.optString("name", ""), "name", 3, 160);
+        String country = trimToNull(request.optString("country", "PE"));
+        if (country == null) {
+            country = "PE";
+        }
+        country = country.toUpperCase();
+        if (country.length() != 2) {
+            throw new AuthException(400, "country must have 2 characters");
+        }
+
+        try (Connection connection = requireConnection();
+             PreparedStatement ps = connection.prepareStatement(
+                     "INSERT INTO p2_sandbox.sites (code, name, address, city, province, country, is_active) " +
+                             "VALUES (?, ?, ?, COALESCE(?, 'Canete'), COALESCE(?, 'Canete'), ?, TRUE) " +
+                             "RETURNING site_id, code, name, address, city, province, country, is_active")) {
+            ps.setString(1, code);
+            ps.setString(2, name);
+            setNullableString(ps, 3, trimToNull(request.optString("address", "")));
+            setNullableString(ps, 4, trimToNull(request.optString("city", "")));
+            setNullableString(ps, 5, trimToNull(request.optString("province", "")));
+            ps.setString(6, country);
+            try (ResultSet rs = ps.executeQuery()) {
+                rs.next();
+                JSONObject created = siteJson(rs);
+                audit(connection, user.userId, "sites", String.valueOf(created.getInt("siteId")),
+                        "SITE_CREATED", null, created, ctx);
+                return created;
+            }
+        } catch (AuthException e) {
+            throw e;
+        } catch (java.sql.SQLException e) {
+            if ("23505".equals(e.getSQLState())) {
+                throw new AuthException(409, "Site code already exists");
+            }
+            throw new AuthException(500, "Unable to create site");
+        } catch (Exception e) {
+            throw new AuthException(500, "Unable to create site");
+        }
+    }
+
+    public JSONObject updateSite(AuthenticatedUser user, Integer siteId, String body, Context ctx) {
+        JSONObject request = parseJson(body);
+        String code = trimToNull(request.optString("code", ""));
+        if (code != null) {
+            code = requireText(code, "code", 2, 40).toUpperCase();
+        }
+        String name = trimToNull(request.optString("name", ""));
+        if (name != null) {
+            name = requireText(name, "name", 3, 160);
+        }
+        String country = trimToNull(request.optString("country", ""));
+        if (country != null) {
+            country = country.toUpperCase();
+            if (country.length() != 2) {
+                throw new AuthException(400, "country must have 2 characters");
+            }
+        }
+        try (Connection connection = requireConnection()) {
+            JSONObject before = getSiteById(connection, siteId);
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "UPDATE p2_sandbox.sites SET code = COALESCE(?, code), name = COALESCE(?, name), " +
+                            "address = COALESCE(?, address), city = COALESCE(?, city), province = COALESCE(?, province), " +
+                            "country = COALESCE(?, country), updated_at = NOW() " +
+                            "WHERE site_id = ? AND deleted_at IS NULL " +
+                            "RETURNING site_id, code, name, address, city, province, country, is_active")) {
+                setNullableString(ps, 1, code);
+                setNullableString(ps, 2, name);
+                setNullableString(ps, 3, trimToNull(request.optString("address", "")));
+                setNullableString(ps, 4, trimToNull(request.optString("city", "")));
+                setNullableString(ps, 5, trimToNull(request.optString("province", "")));
+                setNullableString(ps, 6, country);
+                ps.setInt(7, siteId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        throw new AuthException(404, "Site not found");
+                    }
+                    JSONObject updated = siteJson(rs);
+                    audit(connection, user.userId, "sites", String.valueOf(siteId),
+                            "SITE_UPDATED", before, updated, ctx);
+                    return updated;
+                }
+            }
+        } catch (AuthException e) {
+            throw e;
+        } catch (java.sql.SQLException e) {
+            if ("23505".equals(e.getSQLState())) {
+                throw new AuthException(409, "Site code already exists");
+            }
+            throw new AuthException(500, "Unable to update site");
+        } catch (Exception e) {
+            throw new AuthException(500, "Unable to update site");
+        }
+    }
+
+    public JSONObject updateSiteStatus(AuthenticatedUser user, Integer siteId, String body, Context ctx) {
+        JSONObject request = parseJson(body);
+        if (!request.has("isActive")) {
+            throw new AuthException(400, "isActive is required");
+        }
+        boolean isActive = request.getBoolean("isActive");
+        try (Connection connection = requireConnection()) {
+            JSONObject before = getSiteById(connection, siteId);
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "UPDATE p2_sandbox.sites SET is_active = ?, deleted_at = CASE WHEN ? THEN NULL ELSE NOW() END, " +
+                            "updated_at = NOW() WHERE site_id = ? " +
+                            "RETURNING site_id, code, name, address, city, province, country, is_active")) {
+                ps.setBoolean(1, isActive);
+                ps.setBoolean(2, isActive);
+                ps.setInt(3, siteId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        throw new AuthException(404, "Site not found");
+                    }
+                    JSONObject updated = siteJson(rs);
+                    audit(connection, user.userId, "sites", String.valueOf(siteId),
+                            isActive ? "SITE_ACTIVATED" : "SITE_INACTIVATED", before, updated, ctx);
+                    return updated;
+                }
+            }
+        } catch (AuthException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new AuthException(500, "Unable to update site status");
+        }
+    }
+
+    public JSONObject createLocation(AuthenticatedUser user, Integer siteId, String body, Context ctx) {
+        JSONObject request = parseJson(body);
+        String type = requireEnum(request.optString("type", ""), "type", "AULA", "LAB", "AREA");
+        String code = requireText(request.optString("code", ""), "code", 2, 60).toUpperCase();
+        String name = requireText(request.optString("name", ""), "name", 3, 160);
+        Long parentLocationId = request.has("parentLocationId") && !request.isNull("parentLocationId")
+                ? request.getLong("parentLocationId") : null;
+
+        try (Connection connection = requireConnection()) {
+            validateSiteAndLocation(connection, siteId, null);
+            if (parentLocationId != null) {
+                validateSiteAndLocation(connection, siteId, parentLocationId);
+            }
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "INSERT INTO p2_sandbox.locations " +
+                            "(site_id, parent_location_id, type, code, name, floor, description, is_active) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, TRUE) " +
+                            "RETURNING location_id, site_id, parent_location_id, type, code, name, floor, description, is_active")) {
+                ps.setInt(1, siteId);
+                if (parentLocationId == null) {
+                    ps.setNull(2, Types.BIGINT);
+                } else {
+                    ps.setLong(2, parentLocationId);
+                }
+                ps.setString(3, type);
+                ps.setString(4, code);
+                ps.setString(5, name);
+                setNullableString(ps, 6, trimToNull(request.optString("floor", "")));
+                setNullableString(ps, 7, trimToNull(request.optString("description", "")));
+                try (ResultSet rs = ps.executeQuery()) {
+                    rs.next();
+                    JSONObject created = locationJson(rs);
+                    audit(connection, user.userId, "locations", String.valueOf(created.getLong("locationId")),
+                            "LOCATION_CREATED", null, created, ctx);
+                    return created;
+                }
+            }
+        } catch (AuthException e) {
+            throw e;
+        } catch (java.sql.SQLException e) {
+            if ("23505".equals(e.getSQLState())) {
+                throw new AuthException(409, "Location code already exists for this site");
+            }
+            throw new AuthException(500, "Unable to create location");
+        } catch (Exception e) {
+            throw new AuthException(500, "Unable to create location");
+        }
+    }
+
+    public JSONObject updateLocation(AuthenticatedUser user, Long locationId, String body, Context ctx) {
+        JSONObject request = parseJson(body);
+        String type = trimToNull(request.optString("type", ""));
+        if (type != null) {
+            type = requireEnum(type, "type", "AULA", "LAB", "AREA");
+        }
+        String code = trimToNull(request.optString("code", ""));
+        if (code != null) {
+            code = requireText(code, "code", 2, 60).toUpperCase();
+        }
+        String name = trimToNull(request.optString("name", ""));
+        if (name != null) {
+            name = requireText(name, "name", 3, 160);
+        }
+        try (Connection connection = requireConnection()) {
+            JSONObject before = getLocationById(connection, locationId);
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "UPDATE p2_sandbox.locations SET type = COALESCE(?, type), code = COALESCE(?, code), " +
+                            "name = COALESCE(?, name), floor = COALESCE(?, floor), description = COALESCE(?, description), " +
+                            "updated_at = NOW() WHERE location_id = ? AND deleted_at IS NULL " +
+                            "RETURNING location_id, site_id, parent_location_id, type, code, name, floor, description, is_active")) {
+                setNullableString(ps, 1, type);
+                setNullableString(ps, 2, code);
+                setNullableString(ps, 3, name);
+                setNullableString(ps, 4, trimToNull(request.optString("floor", "")));
+                setNullableString(ps, 5, trimToNull(request.optString("description", "")));
+                ps.setLong(6, locationId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        throw new AuthException(404, "Location not found");
+                    }
+                    JSONObject updated = locationJson(rs);
+                    audit(connection, user.userId, "locations", String.valueOf(locationId),
+                            "LOCATION_UPDATED", before, updated, ctx);
+                    return updated;
+                }
+            }
+        } catch (AuthException e) {
+            throw e;
+        } catch (java.sql.SQLException e) {
+            if ("23505".equals(e.getSQLState())) {
+                throw new AuthException(409, "Location code already exists for this site");
+            }
+            throw new AuthException(500, "Unable to update location");
+        } catch (Exception e) {
+            throw new AuthException(500, "Unable to update location");
+        }
+    }
+
+    public JSONObject updateLocationStatus(AuthenticatedUser user, Long locationId, String body, Context ctx) {
+        JSONObject request = parseJson(body);
+        if (!request.has("isActive")) {
+            throw new AuthException(400, "isActive is required");
+        }
+        boolean isActive = request.getBoolean("isActive");
+        try (Connection connection = requireConnection()) {
+            JSONObject before = getLocationById(connection, locationId);
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "UPDATE p2_sandbox.locations SET is_active = ?, deleted_at = CASE WHEN ? THEN NULL ELSE NOW() END, " +
+                            "updated_at = NOW() WHERE location_id = ? " +
+                            "RETURNING location_id, site_id, parent_location_id, type, code, name, floor, description, is_active")) {
+                ps.setBoolean(1, isActive);
+                ps.setBoolean(2, isActive);
+                ps.setLong(3, locationId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        throw new AuthException(404, "Location not found");
+                    }
+                    JSONObject updated = locationJson(rs);
+                    audit(connection, user.userId, "locations", String.valueOf(locationId),
+                            isActive ? "LOCATION_ACTIVATED" : "LOCATION_INACTIVATED", before, updated, ctx);
+                    return updated;
+                }
+            }
+        } catch (AuthException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new AuthException(500, "Unable to update location status");
+        }
+    }
+
     public JSONArray listTechnicians() {
         try (Connection connection = requireConnection();
              PreparedStatement ps = connection.prepareStatement(
@@ -827,6 +1086,59 @@ public class HelpdeskFlowService {
                 .put("resolvedAt", timestampString(rs, "resolved_at"))
                 .put("dueAt", dueAt == null ? JSONObject.NULL : dueAt.toInstant().toString())
                 .put("sla", sla.toJson());
+    }
+
+    private JSONObject getSiteById(Connection connection, Integer siteId) throws Exception {
+        try (PreparedStatement ps = connection.prepareStatement(
+                "SELECT site_id, code, name, address, city, province, country, is_active " +
+                        "FROM p2_sandbox.sites WHERE site_id = ?")) {
+            ps.setInt(1, siteId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    throw new AuthException(404, "Site not found");
+                }
+                return siteJson(rs);
+            }
+        }
+    }
+
+    private JSONObject getLocationById(Connection connection, Long locationId) throws Exception {
+        try (PreparedStatement ps = connection.prepareStatement(
+                "SELECT location_id, site_id, parent_location_id, type, code, name, floor, description, is_active " +
+                        "FROM p2_sandbox.locations WHERE location_id = ?")) {
+            ps.setLong(1, locationId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    throw new AuthException(404, "Location not found");
+                }
+                return locationJson(rs);
+            }
+        }
+    }
+
+    private JSONObject siteJson(ResultSet rs) throws Exception {
+        return new JSONObject()
+                .put("siteId", rs.getInt("site_id"))
+                .put("code", rs.getString("code"))
+                .put("name", rs.getString("name"))
+                .put("address", nullToJson(rs.getString("address")))
+                .put("city", nullToJson(rs.getString("city")))
+                .put("province", nullToJson(rs.getString("province")))
+                .put("country", rs.getString("country"))
+                .put("isActive", rs.getBoolean("is_active"));
+    }
+
+    private JSONObject locationJson(ResultSet rs) throws Exception {
+        return new JSONObject()
+                .put("locationId", rs.getLong("location_id"))
+                .put("siteId", rs.getInt("site_id"))
+                .put("parentLocationId", longOrNull(rs, "parent_location_id"))
+                .put("type", rs.getString("type"))
+                .put("code", rs.getString("code"))
+                .put("name", rs.getString("name"))
+                .put("floor", nullToJson(rs.getString("floor")))
+                .put("description", nullToJson(rs.getString("description")))
+                .put("isActive", rs.getBoolean("is_active"));
     }
 
     private void validateSiteAndLocation(Connection connection, Integer siteId, Long locationId) throws Exception {

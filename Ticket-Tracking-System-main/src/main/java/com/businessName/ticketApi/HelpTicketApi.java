@@ -55,13 +55,27 @@ public class HelpTicketApi {
 
         app.get("/admin/users", authController.listUsers);
 
+        app.post("/admin/users", authController.createUser);
+
         app.patch("/admin/users/{userId}", authController.updateUser);
 
         app.patch("/admin/users/{userId}/status", authController.updateUserStatus);
 
         app.get("/sites", helpdeskFlowController.listSites);
 
+        app.post("/sites", helpdeskFlowController.createSite);
+
+        app.patch("/sites/{siteId}", helpdeskFlowController.updateSite);
+
+        app.patch("/sites/{siteId}/status", helpdeskFlowController.updateSiteStatus);
+
         app.get("/sites/{siteId}/locations", helpdeskFlowController.listLocations);
+
+        app.post("/sites/{siteId}/locations", helpdeskFlowController.createLocation);
+
+        app.patch("/locations/{locationId}", helpdeskFlowController.updateLocation);
+
+        app.patch("/locations/{locationId}/status", helpdeskFlowController.updateLocationStatus);
 
         app.get("/users/technicians", helpdeskFlowController.listTechnicians);
 
