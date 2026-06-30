@@ -16,7 +16,9 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public class HelpdeskFlowService {
     private final NotificationService notificationService = new NotificationService();
@@ -467,6 +469,9 @@ public class HelpdeskFlowService {
         if ("USER".equals(user.roleCode)) {
             sql.append(" AND sc.requester_user_id = ?");
             params.add(user.userId);
+        } else if ("TECH".equals(user.roleCode)) {
+            sql.append(" AND t.assigned_to_user_id = ?");
+            params.add(user.userId);
         }
         if (type != null && !type.trim().isEmpty()) {
             sql.append(" AND sc.type = ?");
@@ -676,46 +681,151 @@ public class HelpdeskFlowService {
         }
     }
 
+    public JSONArray listTicketAudit(AuthenticatedUser user, Long ticketId) {
+        try (Connection connection = requireConnection()) {
+            getTicket(connection, user, ticketId);
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "SELECT al.audit_log_id, al.actor_user_id, au.username AS actor_username, al.action, " +
+                            "al.before_data::text AS before_data, al.after_data::text AS after_data, al.created_at " +
+                            "FROM p2_sandbox.audit_logs al " +
+                            "LEFT JOIN p2_sandbox.app_users au ON au.user_id = al.actor_user_id " +
+                            "WHERE al.entity_type = 'ticket' AND al.entity_id = ? " +
+                            "ORDER BY al.created_at ASC")) {
+                ps.setString(1, String.valueOf(ticketId));
+                JSONArray entries = new JSONArray();
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        JSONObject before = parseJsonOrNull(rs.getString("before_data"));
+                        JSONObject after = parseJsonOrNull(rs.getString("after_data"));
+                        entries.put(new JSONObject()
+                                .put("auditLogId", rs.getLong("audit_log_id"))
+                                .put("actorUserId", longOrNull(rs, "actor_user_id"))
+                                .put("actorUsername", nullToJson(rs.getString("actor_username")))
+                                .put("action", rs.getString("action"))
+                                .put("createdAt", timestampString(rs, "created_at"))
+                                .put("changes", auditChanges(before, after)));
+                    }
+                }
+                return entries;
+            }
+        } catch (AuthException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new AuthException(500, "Unable to list ticket audit");
+        }
+    }
+
     public JSONObject updateTicket(AuthenticatedUser user, Long ticketId, String body, Context ctx) {
         JSONObject request = parseJson(body);
         String updateBody = trimToNull(request.optString("body", ""));
         String visibility = optionalEnum(request.optString("visibility", "INTERNAL"), "visibility", "PUBLIC", "INTERNAL");
         String status = request.has("status") && !request.isNull("status")
-                ? requireEnum(request.optString("status"), "status", "OPEN", "IN_PROGRESS")
+                ? requireEnum(request.optString("status"), "status", "OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED", "CANCELLED")
                 : null;
         String priority = request.has("priority") && !request.isNull("priority")
                 ? requireEnum(request.optString("priority"), "priority", "LOW", "MEDIUM", "HIGH", "CRITICAL")
                 : null;
         String summary = trimToNull(request.optString("summary", ""));
         String description = trimToNull(request.optString("description", ""));
-        if (updateBody == null && status == null && priority == null && summary == null && description == null) {
+        String categoryCode = trimToNull(request.optString("categoryCode", ""));
+        String caseTitle = trimToNull(request.optString("caseTitle", ""));
+        String caseDescription = trimToNull(request.optString("caseDescription", ""));
+        Long assignedToUserId = request.has("assignedToUserId") && !request.isNull("assignedToUserId")
+                ? request.getLong("assignedToUserId") : null;
+        Long requesterUserId = request.has("requesterUserId") && !request.isNull("requesterUserId")
+                ? request.getLong("requesterUserId") : null;
+        Integer siteId = request.has("siteId") && !request.isNull("siteId")
+                ? request.getInt("siteId") : null;
+        boolean locationTouched = request.has("locationId") || siteId != null;
+        Long locationId = request.has("locationId") && !request.isNull("locationId")
+                ? request.getLong("locationId") : null;
+
+        boolean admin = "ADMIN".equals(user.roleCode);
+        if (!admin) {
+            if (status != null && !("OPEN".equals(status) || "IN_PROGRESS".equals(status))) {
+                throw new AuthException(403, "Only ADMIN can close, cancel, resolve or reopen tickets from edit form");
+            }
+            if (summary != null || description != null || categoryCode != null || caseTitle != null
+                    || caseDescription != null || assignedToUserId != null || requesterUserId != null
+                    || siteId != null || locationId != null) {
+                throw new AuthException(403, "Only ADMIN can edit protected ticket fields");
+            }
+        }
+        if (updateBody == null && status == null && priority == null && summary == null && description == null
+                && categoryCode == null && caseTitle == null && caseDescription == null && assignedToUserId == null
+                && requesterUserId == null && siteId == null && locationId == null) {
             throw new AuthException(400, "At least one ticket field or update body is required");
         }
 
         try (Connection connection = requireConnection()) {
             JSONObject before = getTicket(connection, user, ticketId);
-            ensureTicketCanChange(before);
+            ensureTicketCanChange(before, user);
+            if (assignedToUserId != null) {
+                ensureTechnician(connection, assignedToUserId);
+            }
+            if (requesterUserId != null) {
+                ensureActiveUser(connection, requesterUserId);
+            }
+            if (siteId != null || locationTouched) {
+                Integer targetSiteId = siteId != null ? siteId : before.optInt("siteId", 0);
+                if (targetSiteId <= 0) {
+                    throw new AuthException(400, "siteId is required when locationId is changed");
+                }
+                validateSiteAndLocation(connection, targetSiteId, locationId);
+            }
             String previousStatus = before.optString("status", null);
             try (PreparedStatement ps = connection.prepareStatement(
                     "UPDATE p2_sandbox.ticket SET " +
                             "summary = COALESCE(?, summary), " +
                             "description = COALESCE(?, description), " +
+                            "category_code = COALESCE(?, category_code), " +
+                            "assigned_to_user_id = COALESCE(?, assigned_to_user_id), " +
                             "priority = COALESCE(?, priority), " +
                             "status = COALESCE(?, status), updated_at = NOW() " +
                             "WHERE ticket_id = ? AND deleted_at IS NULL")) {
                 setNullableString(ps, 1, summary);
                 setNullableString(ps, 2, description);
-                setNullableString(ps, 3, priority);
-                setNullableString(ps, 4, status);
-                ps.setLong(5, ticketId);
+                setNullableString(ps, 3, categoryCode);
+                setNullableLong(ps, 4, assignedToUserId);
+                setNullableString(ps, 5, priority);
+                setNullableString(ps, 6, status);
+                ps.setLong(7, ticketId);
                 ps.executeUpdate();
             }
-            if (status != null) {
-                updateCaseStatus(connection, before.getLong("serviceCaseId"), status, false);
+            if (admin && (caseTitle != null || caseDescription != null || requesterUserId != null || siteId != null || locationId != null)) {
+                try (PreparedStatement ps = connection.prepareStatement(
+                        "UPDATE p2_sandbox.service_case SET " +
+                                "title = COALESCE(?, title), " +
+                                "description = COALESCE(?, description), " +
+                                "requester_user_id = COALESCE(?, requester_user_id), " +
+                                "affected_user_id = COALESCE(?, affected_user_id), " +
+                                "site_id = COALESCE(?, site_id), " +
+                                "location_id = CASE WHEN ? THEN ? ELSE location_id END, " +
+                                "updated_at = NOW() WHERE case_id = ? AND deleted_at IS NULL")) {
+                    setNullableString(ps, 1, caseTitle);
+                    setNullableString(ps, 2, caseDescription);
+                    setNullableLong(ps, 3, requesterUserId);
+                    setNullableLong(ps, 4, requesterUserId);
+                    if (siteId == null) {
+                        ps.setNull(5, Types.INTEGER);
+                    } else {
+                        ps.setInt(5, siteId);
+                    }
+                    ps.setBoolean(6, locationTouched);
+                    setNullableLong(ps, 7, locationId);
+                    ps.setLong(8, before.getLong("serviceCaseId"));
+                    ps.executeUpdate();
+                }
             }
-            if (updateBody != null || status != null) {
-                addTicketUpdate(connection, ticketId, user.userId, visibility, status == null ? "COMMENT" : "STATUS_CHANGE",
-                        updateBody == null ? "Status changed to " + status : updateBody,
+            if (status != null) {
+                updateCaseStatus(connection, before.getLong("serviceCaseId"), status, "RESOLVED".equals(status));
+            }
+            if (updateBody != null || status != null || assignedToUserId != null) {
+                String updateType = assignedToUserId != null ? "ASSIGNMENT" : (status == null ? "COMMENT" : "STATUS_CHANGE");
+                String generatedBody = assignedToUserId != null ? "Ticket reassigned."
+                        : (status == null ? updateBody : "Status changed to " + status);
+                addTicketUpdate(connection, ticketId, user.userId, visibility, updateType,
+                        updateBody == null ? generatedBody : updateBody,
                         previousStatus, status);
             }
             JSONObject after = getTicket(connection, user, ticketId);
@@ -737,7 +847,7 @@ public class HelpdeskFlowService {
         try (Connection connection = requireConnection()) {
             ensureTechnician(connection, assignedToUserId);
             JSONObject before = getTicket(connection, user, ticketId);
-            ensureTicketCanChange(before);
+            ensureTicketCanChange(before, user);
             try (PreparedStatement ps = connection.prepareStatement(
                     "UPDATE p2_sandbox.ticket SET assigned_to_user_id = ?, status = 'IN_PROGRESS', updated_at = NOW() " +
                             "WHERE ticket_id = ? AND deleted_at IS NULL")) {
@@ -765,7 +875,7 @@ public class HelpdeskFlowService {
         String publicUpdate = trimToNull(request.optString("publicUpdate", resolution));
         try (Connection connection = requireConnection()) {
             JSONObject before = getTicket(connection, user, ticketId);
-            ensureTicketCanChange(before);
+            ensureTicketCanChange(before, user);
             try (PreparedStatement ps = connection.prepareStatement(
                     "UPDATE p2_sandbox.ticket SET status = 'RESOLVED', resolution = ?, resolved_at = NOW(), updated_at = NOW() " +
                             "WHERE ticket_id = ? AND deleted_at IS NULL")) {
@@ -999,6 +1109,7 @@ public class HelpdeskFlowService {
                 "t.status, t.priority, t.category_code, t.created_at, t.updated_at, t.resolved_at, t.due_at AS ticket_due_at, " +
                 "sc.case_number, sc.type AS case_type, sc.title AS case_title, sc.requester_user_id, " +
                 "sc.created_at AS case_created_at, sc.due_at AS service_case_due_at, sc.site_id, s.name AS site_name, " +
+                "l.location_id, l.name AS location_name, " +
                 "sp.warning_percent, sp.resolution_minutes, sp.calendar_code, sp.business_hours_only, " +
                 "req.first_name AS requester_first_name, req.last_name AS requester_last_name, " +
                 "req.email AS requester_email, req.notification_email AS requester_notification_email, " +
@@ -1011,6 +1122,7 @@ public class HelpdeskFlowService {
                 "JOIN p2_sandbox.app_users req ON req.user_id = sc.requester_user_id " +
                 "LEFT JOIN p2_sandbox.app_users assignee ON assignee.user_id = t.assigned_to_user_id " +
                 "LEFT JOIN p2_sandbox.sites s ON s.site_id = sc.site_id " +
+                "LEFT JOIN p2_sandbox.locations l ON l.location_id = sc.location_id " +
                 "LEFT JOIN p2_sandbox.sla_policies sp ON sp.sla_policy_id = COALESCE(t.sla_policy_id, sc.sla_policy_id)";
     }
 
@@ -1073,6 +1185,8 @@ public class HelpdeskFlowService {
                 .put("categoryCode", nullToJson(rs.getString("category_code")))
                 .put("siteId", longOrNull(rs, "site_id"))
                 .put("siteName", nullToJson(rs.getString("site_name")))
+                .put("locationId", longOrNull(rs, "location_id"))
+                .put("locationName", nullToJson(rs.getString("location_name")))
                 .put("requesterUserId", rs.getLong("requester_user_id"))
                 .put("requesterUsername", rs.getString("requester_username"))
                 .put("requesterName", fullName(rs.getString("requester_first_name"), rs.getString("requester_last_name")))
@@ -1207,7 +1321,22 @@ public class HelpdeskFlowService {
         }
     }
 
-    private void ensureTicketCanChange(JSONObject ticket) {
+    private void ensureActiveUser(Connection connection, Long userId) throws Exception {
+        try (PreparedStatement ps = connection.prepareStatement(
+                "SELECT 1 FROM p2_sandbox.app_users WHERE user_id = ? AND is_active = TRUE AND deleted_at IS NULL")) {
+            ps.setLong(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    throw new AuthException(400, "requesterUserId must reference an active user");
+                }
+            }
+        }
+    }
+
+    private void ensureTicketCanChange(JSONObject ticket, AuthenticatedUser user) {
+        if ("ADMIN".equals(user.roleCode)) {
+            return;
+        }
         String status = ticket.optString("status", "");
         if ("RESOLVED".equals(status) || "CLOSED".equals(status) || "CANCELLED".equals(status)) {
             throw new AuthException(400, "Resolved, closed or cancelled tickets cannot be changed");
@@ -1288,6 +1417,31 @@ public class HelpdeskFlowService {
         }
     }
 
+    private JSONArray auditChanges(JSONObject before, JSONObject after) {
+        JSONArray changes = new JSONArray();
+        if (before == null && after == null) {
+            return changes;
+        }
+        Set<String> keys = new LinkedHashSet<>();
+        if (before != null) {
+            keys.addAll(before.keySet());
+        }
+        if (after != null) {
+            keys.addAll(after.keySet());
+        }
+        for (String key : keys) {
+            Object previousValue = before == null || !before.has(key) ? JSONObject.NULL : before.opt(key);
+            Object newValue = after == null || !after.has(key) ? JSONObject.NULL : after.opt(key);
+            if (!jsonComparable(previousValue).equals(jsonComparable(newValue))) {
+                changes.put(new JSONObject()
+                        .put("field", key)
+                        .put("previousValue", jsonValue(previousValue))
+                        .put("newValue", jsonValue(newValue)));
+            }
+        }
+        return changes;
+    }
+
     private Connection requireConnection() {
         Connection connection = ConnectionObject.createConnection();
         if (connection == null) {
@@ -1301,6 +1455,17 @@ public class HelpdeskFlowService {
             return new JSONObject();
         }
         return new JSONObject(body);
+    }
+
+    private JSONObject parseJsonOrNull(String body) {
+        if (body == null || body.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return new JSONObject(body);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private String requireText(String value, String field, int minLength, int maxLength) {
@@ -1356,8 +1521,30 @@ public class HelpdeskFlowService {
         }
     }
 
+    private void setNullableLong(PreparedStatement ps, int index, Long value) throws Exception {
+        if (value == null) {
+            ps.setNull(index, Types.BIGINT);
+        } else {
+            ps.setLong(index, value);
+        }
+    }
+
     private Object nullToJson(String value) {
         return value == null ? JSONObject.NULL : value;
+    }
+
+    private Object jsonValue(Object value) {
+        return value == null ? JSONObject.NULL : value;
+    }
+
+    private String jsonComparable(Object value) {
+        if (value == null || value == JSONObject.NULL) {
+            return "";
+        }
+        if (value instanceof JSONObject || value instanceof JSONArray) {
+            return value.toString();
+        }
+        return String.valueOf(value);
     }
 
     private Object longOrNull(ResultSet rs, String column) throws Exception {

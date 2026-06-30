@@ -93,6 +93,8 @@ public class HelpTicketApi {
 
         app.get("/tickets/{ticketId}", helpdeskFlowController.getTicket);
 
+        app.get("/tickets/{ticketId}/audit", helpdeskFlowController.listTicketAudit);
+
         app.post("/service-cases/{caseId}/tickets", helpdeskFlowController.createTicket);
 
         app.patch("/tickets/{ticketId}", helpdeskFlowController.updateTicket);

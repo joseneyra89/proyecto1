@@ -61,6 +61,7 @@ public class AccessPolicy {
 
         add("GET", "/tickets", "TICKET_READ");
         add("GET", "/tickets/*", "TICKET_READ");
+        add("GET", "/tickets/*/audit", "TICKET_READ");
         add("POST", "/service-cases/*/tickets", "TICKET_CREATE");
         add("PATCH", "/tickets/*", "TICKET_UPDATE");
         add("POST", "/tickets/*/assign", "TICKET_ASSIGN");

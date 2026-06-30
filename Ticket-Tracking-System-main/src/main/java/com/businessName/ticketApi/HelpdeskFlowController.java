@@ -63,6 +63,9 @@ public class HelpdeskFlowController {
     public Handler getTicket = ctx -> handle(ctx, () ->
             service.getTicket(authUser(ctx), Long.parseLong(ctx.pathParam("ticketId"))).toString());
 
+    public Handler listTicketAudit = ctx -> handle(ctx, () ->
+            service.listTicketAudit(authUser(ctx), Long.parseLong(ctx.pathParam("ticketId"))).toString());
+
     public Handler updateTicket = ctx -> handle(ctx, () ->
             service.updateTicket(authUser(ctx), Long.parseLong(ctx.pathParam("ticketId")), ctx.body(), ctx).toString());
 

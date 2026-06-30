@@ -149,9 +149,9 @@
         .shell {
             display: grid;
             grid-template-columns: minmax(0, 1fr);
-            gap: 24px;
-            padding: 24px;
-            max-width: 1500px;
+            gap: 12px;
+            padding: 12px 14px;
+            max-width: none;
             margin: 0 auto;
         }
 
@@ -175,11 +175,11 @@
 
         .workspace {
             display: grid;
-            gap: 18px;
+            gap: 12px;
         }
 
         .workspace-section {
-            padding: 22px;
+            padding: 16px;
             min-width: 0;
         }
 
@@ -253,7 +253,9 @@
         }
 
         button:focus-visible,
-        .drawer:focus-visible {
+        .drawer:focus-visible,
+        .workspace-tab-select:focus-visible,
+        .workspace-tab-close:focus-visible {
             outline: 3px solid rgba(27, 95, 167, 0.35);
             outline-offset: 3px;
         }
@@ -430,24 +432,32 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 860px;
+            min-width: 1120px;
             background: #fff;
         }
 
         th, td {
             text-align: left;
-            padding: 11px 12px;
+            padding: 9px 10px;
             border-bottom: 1px solid var(--line);
             vertical-align: top;
             font-size: 14px;
         }
 
         th {
-            background: #f7faf8;
+            background: #f4f6f5;
             color: #31483b;
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 0;
+        }
+
+        tbody tr:nth-child(odd) {
+            background: #eef3f1;
+        }
+
+        tbody tr:hover {
+            background: #dde9e4;
         }
 
         tr:last-child td {
@@ -612,6 +622,339 @@
 
         .hidden {
             display: none !important;
+        }
+
+        .tab-pane-hidden {
+            display: none !important;
+        }
+
+        .tab-strip-shell {
+            min-width: 0;
+            overflow: hidden;
+            background: #ffffff;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            padding: 8px;
+        }
+
+        .workspace-tabs {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+            overflow-x: auto;
+            padding-bottom: 2px;
+        }
+
+        .workspace-tab {
+            display: inline-flex;
+            align-items: center;
+            max-width: min(280px, 70vw);
+            min-width: 150px;
+            min-height: 40px;
+            border: 1px solid #c7d8cf;
+            background: #f8fbf9;
+            border-radius: 6px;
+            color: var(--green-dark);
+            flex: 0 0 auto;
+            overflow: hidden;
+        }
+
+        .workspace-tab.active {
+            background: #ffffff;
+            border-color: var(--green);
+            box-shadow: inset 0 -3px 0 var(--green);
+        }
+
+        .workspace-tab-select {
+            min-width: 0;
+            flex: 1 1 auto;
+            min-height: 38px;
+            padding: 8px 8px 8px 12px;
+            background: transparent;
+            color: inherit;
+            text-align: left;
+            font-weight: 800;
+        }
+
+        .workspace-tab-label {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .workspace-tab-close {
+            width: 30px;
+            height: 30px;
+            margin-right: 4px;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            background: transparent;
+            color: #486052;
+            font-weight: 900;
+            flex: 0 0 auto;
+        }
+
+        .workspace-tab-close:hover {
+            background: #e6f0eb;
+            color: var(--green-dark);
+        }
+
+        .case-detail-section {
+            border-top: 4px solid var(--blue);
+            padding: 10px 14px 12px;
+        }
+
+        .case-detail-section .drawer-body {
+            padding: 0;
+        }
+
+        .case-detail-header {
+            display: flex;
+            align-items: start;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .case-detail-title {
+            display: grid;
+            gap: 4px;
+            min-width: 0;
+        }
+
+        .case-detail-title h1 {
+            font-size: 21px;
+        }
+
+        .case-detail-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .ticket-command-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            padding: 0 0 7px;
+            border-bottom: 1px solid var(--line);
+            margin-bottom: 8px;
+        }
+
+        .ticket-command-bar .btn {
+            min-height: 30px;
+            padding: 5px 9px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .ticket-form {
+            display: grid;
+            gap: 8px;
+        }
+
+        .ticket-form-section {
+            display: grid;
+            gap: 8px;
+            border-bottom: 1px solid var(--line);
+            padding-bottom: 8px;
+        }
+
+        .ticket-form-section h2 {
+            font-size: 14px;
+            margin-bottom: 0;
+            text-transform: uppercase;
+        }
+
+        .ticket-form-section:last-child {
+            border-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .ticket-form-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(190px, 1fr));
+            gap: 7px 18px;
+            align-items: start;
+        }
+
+        .compact-ticket-layout {
+            grid-template-areas:
+                "final reporter service status"
+                "org location category schedule"
+                "business business filter filter"
+                "summary summary summary side"
+                "description description description side"
+                "comment comment resolution side";
+        }
+
+        .ticket-form-grid .span-2 {
+            grid-column: span 2;
+        }
+
+        .ticket-form-grid .span-4 {
+            grid-column: 1 / -1;
+        }
+
+        .ticket-field {
+            display: grid;
+            grid-template-columns: 128px minmax(0, 1fr);
+            gap: 4px 8px;
+            align-items: start;
+        }
+
+        .ticket-field label {
+            display: block;
+            font-size: 12px;
+            color: #24382f;
+            font-weight: 800;
+            line-height: 1.25;
+            padding-top: 6px;
+            text-align: right;
+        }
+
+        .ticket-control {
+            min-width: 0;
+            display: grid;
+        }
+
+        .ticket-field .required {
+            color: var(--red);
+        }
+
+        .ticket-help {
+            color: var(--muted);
+            font-size: 12px;
+            min-height: 14px;
+            line-height: 1.2;
+            grid-column: 2;
+        }
+
+        .ticket-field input,
+        .ticket-field textarea,
+        .ticket-field select {
+            min-height: 30px;
+            padding: 5px 8px;
+            border-radius: 2px;
+            font-size: 13px;
+        }
+
+        .ticket-field input:disabled,
+        .ticket-field textarea:disabled,
+        .ticket-field select:disabled {
+            background: #f3f6f5;
+            color: #596960;
+            cursor: not-allowed;
+        }
+
+        .rich-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            border: 1px solid #c8d6cf;
+            border-bottom: 0;
+            background: #f7faf8;
+            padding: 2px 4px;
+            min-height: 28px;
+        }
+
+        .rich-tool {
+            width: 24px;
+            height: 22px;
+            display: grid;
+            place-items: center;
+            border-radius: 4px;
+            background: transparent;
+            color: #20352b;
+            font-weight: 900;
+        }
+
+        .ticket-description {
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+            min-height: 74px;
+        }
+
+        .ticket-final-user { grid-area: final; }
+        .ticket-reporter { grid-area: reporter; }
+        .ticket-service { grid-area: service; }
+        .ticket-status { grid-area: status; }
+        .ticket-org { grid-area: org; }
+        .ticket-location { grid-area: location; }
+        .ticket-category { grid-area: category; }
+        .ticket-schedule { grid-area: schedule; }
+        .ticket-business { grid-area: business; }
+        .ticket-filter { grid-area: filter; }
+        .ticket-summary { grid-area: summary; }
+        .ticket-description-field { grid-area: description; }
+        .ticket-comment { grid-area: comment; }
+        .ticket-resolution { grid-area: resolution; }
+        .ticket-side {
+            grid-area: side;
+            align-self: start;
+            display: grid;
+            gap: 7px;
+        }
+
+        .ticket-side .ticket-field {
+            grid-template-columns: 92px minmax(0, 1fr);
+        }
+
+        .ticket-collapsible {
+            border: 1px solid var(--line);
+            background: #fbfdfc;
+            border-radius: 6px;
+            padding: 8px 10px;
+        }
+
+        .ticket-collapsible summary {
+            cursor: pointer;
+            font-weight: 800;
+            color: var(--green-dark);
+        }
+
+        .ticket-collapsible[open] summary {
+            margin-bottom: 8px;
+        }
+
+        .audit-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .audit-item {
+            border: 1px solid var(--line);
+            background: #fbfdfc;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .audit-item header {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .audit-change {
+            display: grid;
+            grid-template-columns: 150px 1fr 1fr;
+            gap: 8px;
+            padding: 6px 0;
+            border-top: 1px solid #edf2ef;
+            font-size: 13px;
         }
 
         .drawer-backdrop {
@@ -800,8 +1143,65 @@
                 grid-template-columns: 1fr;
             }
 
+            .tab-strip-shell {
+                padding: 6px;
+            }
+
+            .workspace-tab {
+                min-width: 132px;
+                max-width: 78vw;
+            }
+
+            .case-detail-header {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
             .form-grid,
-            .filters {
+            .filters,
+            .ticket-form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ticket-form-grid .span-2,
+            .ticket-form-grid .span-4 {
+                grid-column: 1 / -1;
+            }
+
+            .compact-ticket-layout {
+                grid-template-areas:
+                    "final"
+                    "reporter"
+                    "org"
+                    "location"
+                    "service"
+                    "category"
+                    "business"
+                    "status"
+                    "schedule"
+                    "filter"
+                    "summary"
+                    "description"
+                    "side"
+                    "comment"
+                    "resolution";
+            }
+
+            .ticket-field,
+            .ticket-side .ticket-field {
+                grid-template-columns: 1fr;
+            }
+
+            .ticket-field label {
+                text-align: left;
+                padding-top: 0;
+            }
+
+            .ticket-help {
+                grid-column: 1;
+            }
+
+            .audit-change {
                 grid-template-columns: 1fr;
             }
 
@@ -832,7 +1232,10 @@
     </header>
 
     <div class="shell">
-        <main class="workspace">
+        <div class="tab-strip-shell">
+            <div class="workspace-tabs" id="workspaceTabs" role="tablist" aria-label="Pestanas abiertas"></div>
+        </div>
+        <main class="workspace" id="workspace">
             <section class="workspace-section hidden" id="adminManagementSection">
                 <div class="toolbar">
                     <div>
@@ -1104,8 +1507,8 @@
                         <label>Estado
                             <select id="ticketStatusFilter">
                                 <option value="">Todos</option>
-                                <option value="OPEN">Abierto</option>
-                                <option value="IN_PROGRESS">En progreso</option>
+                                <option value="OPEN">Nuevo</option>
+                                <option value="IN_PROGRESS">En proceso</option>
                                 <option value="RESOLVED">Resuelto</option>
                                 <option value="CLOSED">Cerrado</option>
                                 <option value="CANCELLED">Cancelado</option>
@@ -1218,6 +1621,9 @@
             users: [],
             cases: [],
             tickets: [],
+            navItems: [],
+            tabs: [],
+            activeTabId: null,
             activeCaseId: null,
             editingUserId: null,
             previousFocus: null,
@@ -1232,8 +1638,8 @@
             INACTIVE: "Dado de baja",
             REQUEST: "Solicitud",
             INCIDENT: "Incidente",
-            OPEN: "Abierto",
-            IN_PROGRESS: "En progreso",
+            OPEN: "Nuevo",
+            IN_PROGRESS: "En proceso",
             RESOLVED: "Resuelto",
             CLOSED: "Cerrado",
             CANCELLED: "Cancelado",
@@ -1248,6 +1654,10 @@
             ASSIGNMENT: "Asignacion",
             SLA: "SLA",
             SYSTEM: "Sistema",
+            TICKET_CREATED: "Ticket creado",
+            TICKET_UPDATED: "Ticket actualizado",
+            TICKET_ASSIGNED: "Ticket reasignado",
+            TICKET_RESOLVED: "Ticket resuelto",
             AULA: "Aula",
             LAB: "Laboratorio",
             AREA: "Area"
@@ -1273,6 +1683,7 @@
 
         async function init() {
             bindEvents();
+            markStaticWorkspacePanes();
             if (!token()) {
                 redirectToLogin();
                 return;
@@ -1383,6 +1794,14 @@
             renderSiteOptions();
             renderTicketSiteOptions();
             renderAdminSiteOptions();
+            syncTabsWithNavigation();
+        }
+
+        function markStaticWorkspacePanes() {
+            document.querySelectorAll("#workspace > .workspace-section[id]").forEach(section => {
+                section.dataset.sectionPane = "true";
+                section.classList.add("tab-pane-hidden");
+            });
         }
 
         function renderNavigation() {
@@ -1414,27 +1833,179 @@
                     { sectionId: "ticketsSection", label: "Tickets" }
                 );
             }
+            state.navItems = items;
             nav.innerHTML = items.map((item, index) =>
                 `<button class="nav-button ${index === 0 ? "active" : ""}" type="button" data-section="${escapeAttr(item.sectionId)}">${escapeHtml(item.label)}</button>`
             ).join("");
             nav.querySelectorAll(".nav-button").forEach(button => {
-                button.addEventListener("click", () => scrollToSection(button.dataset.section));
+                button.addEventListener("click", () => openSectionTab(button.dataset.section));
             });
         }
 
-        function scrollToSection(sectionId) {
+        function syncTabsWithNavigation() {
+            const availableSections = new Set(state.navItems.map(item => item.sectionId));
+            state.tabs = state.tabs.filter(tab => tab.type !== "section" || availableSections.has(tab.sectionId));
+            if (!state.tabs.length && state.navItems.length) {
+                openSectionTab(state.navItems[0].sectionId);
+                return;
+            }
+            if (!state.tabs.some(tab => tab.id === state.activeTabId)) {
+                activateTab(state.tabs.length ? state.tabs[0].id : null);
+                return;
+            }
+            renderTabs();
+            updateWorkspacePanes();
+            setActiveNav(activeSectionId());
+        }
+
+        function openSectionTab(sectionId) {
             const section = document.getElementById(sectionId);
             if (!section) {
                 return;
             }
             closeProfileDrawer();
-            setActiveNav(sectionId);
-            section.scrollIntoView({ behavior: "smooth", block: "start" });
+            const existing = state.tabs.find(tab => tab.type === "section" && tab.sectionId === sectionId);
+            if (existing) {
+                activateTab(existing.id);
+                return;
+            }
+            const navItem = state.navItems.find(item => item.sectionId === sectionId);
+            const tab = {
+                id: sectionTabId(sectionId),
+                type: "section",
+                sectionId,
+                paneId: sectionId,
+                label: navItem ? navItem.label : sectionLabel(section)
+            };
+            state.tabs.push(tab);
+            activateTab(tab.id);
+        }
+
+        function renderTabs() {
+            const tabs = document.getElementById("workspaceTabs");
+            tabs.innerHTML = state.tabs.map(tab => `
+                <div class="workspace-tab ${tab.id === state.activeTabId ? "active" : ""}" role="presentation">
+                    <button class="workspace-tab-select" type="button" role="tab"
+                        aria-selected="${tab.id === state.activeTabId ? "true" : "false"}"
+                        aria-controls="${escapeAttr(tab.paneId)}"
+                        title="${escapeAttr(tab.title || tab.label)}"
+                        data-tab-id="${escapeAttr(tab.id)}">
+                        <span class="workspace-tab-label">${escapeHtml(tab.label)}</span>
+                    </button>
+                    <button class="workspace-tab-close" type="button" aria-label="Cerrar ${escapeAttr(tab.label)}" data-tab-id="${escapeAttr(tab.id)}">&times;</button>
+                </div>
+            `).join("");
+            tabs.querySelectorAll(".workspace-tab-select").forEach(button => {
+                button.addEventListener("click", () => activateTab(button.dataset.tabId));
+            });
+            tabs.querySelectorAll(".workspace-tab-close").forEach(button => {
+                button.addEventListener("click", event => {
+                    event.stopPropagation();
+                    closeTab(button.dataset.tabId);
+                });
+            });
+        }
+
+        function activateTab(tabId) {
+            if (!tabId) {
+                state.activeTabId = null;
+                state.activeCaseId = null;
+                renderTabs();
+                updateWorkspacePanes();
+                setActiveNav(null);
+                return;
+            }
+            const tab = state.tabs.find(item => item.id === tabId);
+            if (!tab) {
+                return;
+            }
+            state.activeTabId = tab.id;
+            state.activeCaseId = tab.type === "case" ? tab.caseId : (tab.type === "ticket" ? tab.caseId : null);
+            renderTabs();
+            updateWorkspacePanes();
+            setActiveNav(tab.type === "section" ? tab.sectionId : null);
+            const pane = document.getElementById(tab.paneId);
+            if (pane) {
+                pane.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        }
+
+        function closeTab(tabId) {
+            const index = state.tabs.findIndex(tab => tab.id === tabId);
+            if (index < 0) {
+                return;
+            }
+            const wasActive = state.tabs[index].id === state.activeTabId;
+            const closed = state.tabs.splice(index, 1)[0];
+            if (closed.type === "case" || closed.type === "ticket") {
+                const pane = document.getElementById(closed.paneId);
+                if (pane) {
+                    pane.remove();
+                }
+            }
+            if (!state.tabs.length) {
+                state.activeTabId = null;
+                state.activeCaseId = null;
+                if (state.navItems.length) {
+                    openSectionTab(state.navItems[0].sectionId);
+                    return;
+                }
+            }
+            if (wasActive) {
+                const next = state.tabs[Math.max(0, index - 1)] || state.tabs[0];
+                activateTab(next ? next.id : null);
+                return;
+            }
+            renderTabs();
+            updateWorkspacePanes();
+        }
+
+        function updateWorkspacePanes() {
+            const activeTab = state.tabs.find(tab => tab.id === state.activeTabId);
+            document.querySelectorAll("#workspace > .workspace-section[data-section-pane='true']").forEach(section => {
+                section.classList.toggle("tab-pane-hidden", !activeTab || activeTab.type !== "section" || activeTab.sectionId !== section.id);
+            });
+            document.querySelectorAll("#workspace > .workspace-section[data-case-pane='true']").forEach(section => {
+                section.classList.toggle("tab-pane-hidden", !activeTab || activeTab.type !== "case" || activeTab.paneId !== section.id);
+            });
+            document.querySelectorAll("#workspace > .workspace-section[data-ticket-pane='true']").forEach(section => {
+                section.classList.toggle("tab-pane-hidden", !activeTab || activeTab.type !== "ticket" || activeTab.paneId !== section.id);
+            });
+        }
+
+        function activeSectionId() {
+            const tab = state.tabs.find(item => item.id === state.activeTabId);
+            return tab && tab.type === "section" ? tab.sectionId : null;
+        }
+
+        function sectionTabId(sectionId) {
+            return "section-" + sectionId;
+        }
+
+        function caseTabId(caseId) {
+            return "case-" + caseId;
+        }
+
+        function casePaneId(caseId) {
+            return "casePane-" + caseId;
+        }
+
+        function ticketTabId(ticketId) {
+            return "ticket-" + ticketId;
+        }
+
+        function ticketPaneId(ticketId) {
+            return "ticketPane-" + ticketId;
+        }
+
+        function sectionLabel(section) {
+            const heading = section.querySelector("h1, h2, h3");
+            return heading ? heading.textContent.trim() : "Vista";
         }
 
         function setActiveNav(sectionId) {
             document.querySelectorAll("#roleNav .nav-button").forEach(button => {
-                button.classList.toggle("active", button.dataset.section === sectionId);
+                button.classList.toggle("active", Boolean(sectionId) && button.dataset.section === sectionId);
             });
         }
 
@@ -1498,7 +2069,8 @@
                 locations.map(location => `<option value="${location.locationId}">${escapeHtml(labelFor(location.type))} - ${escapeHtml(location.name)}</option>`).join("");
         }
 
-        async function refreshAll() {
+        async function refreshAll(options) {
+            const refreshTabs = !options || options.refreshTabs !== false;
             const work = [refreshCases(), refreshTickets()];
             if (canOperateTickets()) {
                 work.push(refreshQueues());
@@ -1509,6 +2081,19 @@
             }
             await Promise.all(work);
             renderUserOverview();
+            if (refreshTabs) {
+                await refreshOpenOperationalTabs();
+            }
+        }
+
+        async function refreshOpenOperationalTabs() {
+            const operationalTabs = state.tabs.filter(tab => tab.type === "case" || tab.type === "ticket");
+            await Promise.all(operationalTabs.map(tab => {
+                if (tab.type === "ticket") {
+                    return refreshTicketTab(tab.ticketId, false);
+                }
+                return refreshCaseTab(tab.caseId, false);
+            }));
         }
 
         async function refreshDashboard() {
@@ -1746,26 +2331,34 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Ticket</th>
-                            <th>Caso</th>
-                            <th>Tipo</th>
-                            <th>Solicitante</th>
-                            <th>Asignado</th>
-                            <th>SLA</th>
+                            <th>ID incidencia</th>
+                            <th>VIP</th>
+                            <th>Nivel</th>
+                            <th>Cliente</th>
+                            <th>Organizacion</th>
+                            <th>Sede de atencion</th>
+                            <th>Resumen</th>
                             <th>Prioridad</th>
+                            <th>Estado</th>
+                            <th>Equipo resolutor</th>
+                            <th>Asignatario</th>
                             <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         ${tickets.map(ticket => `<tr>
                             <td>${escapeHtml(ticket.ticketNumber)}</td>
-                            <td>${escapeHtml(ticket.caseNumber)}<br>${escapeHtml(ticket.caseTitle)}</td>
-                            <td>${badge(ticket.caseType)}</td>
-                            <td>${escapeHtml(ticket.requesterUsername || "-")}<br>${escapeHtml(ticket.requesterEmail || "")}</td>
-                            <td>${escapeHtml(ticket.assignedToUsername || "Sin asignar")}</td>
-                            <td>${slaBadge(ticket.sla)}<br>${escapeHtml(formatDate(ticket.dueAt))}</td>
+                            <td>${escapeHtml(vipLabel(ticket))}</td>
+                            <td>${escapeHtml(levelLabel(ticket))}</td>
+                            <td>${escapeHtml(ticket.requesterName || ticket.requesterUsername || "-")}<br>${escapeHtml(ticket.requesterEmail || "")}</td>
+                            <td>${escapeHtml(ticket.siteName || "-")}</td>
+                            <td>${escapeHtml(joinLocation(ticket.siteName, ticket.locationName))}</td>
+                            <td>${escapeHtml(ticket.caseTitle || ticket.summary)}</td>
                             <td>${badge(ticket.priority)}</td>
-                            <td><button class="btn secondary" type="button" onclick="openCase(${ticket.serviceCaseId})">Ver</button></td>
+                            <td>${badge(ticket.status)}</td>
+                            <td>${escapeHtml(resolverTeam(ticket))}</td>
+                            <td>${escapeHtml(ticket.assignedToName || ticket.assignedToUsername || "Sin asignar")}</td>
+                            <td><button class="btn secondary" type="button" onclick="openTicket(${ticket.ticketId})">Abrir</button></td>
                         </tr>`).join("")}
                     </tbody>
                 </table>
@@ -1793,7 +2386,7 @@
                         <span>Vence: ${escapeHtml(formatDate(ticket.dueAt))}</span>
                     </div>
                     <div class="card-actions">
-                        <button class="btn secondary" type="button" onclick="openCase(${ticket.serviceCaseId})">Ver detalle</button>
+                        <button class="btn secondary" type="button" onclick="openTicket(${ticket.ticketId})">Ver detalle</button>
                     </div>
                 </article>
             `).join("")}</div>`;
@@ -2134,22 +2727,207 @@
         async function openCase(caseId) {
             try {
                 const detail = await api("/service-cases/" + caseId);
-                state.activeCaseId = caseId;
-                state.previousFocus = document.activeElement;
-                renderDrawer(detail);
-                document.getElementById("drawerBackdrop").classList.add("open");
-                document.getElementById("detailDrawer").classList.add("open");
-                document.getElementById("detailDrawer").setAttribute("aria-hidden", "false");
-                document.getElementById("detailDrawer").focus();
+                if (detail.ticket && detail.ticket.ticketId) {
+                    detail.ticket.audit = await loadTicketAudit(detail.ticket.ticketId);
+                    upsertTicketTab(detail.ticket, detail);
+                    renderTicketTab(detail.ticket, detail);
+                    activateTab(ticketTabId(detail.ticket.ticketId));
+                    return;
+                }
+                upsertCaseTab(detail);
+                renderCaseTab(detail);
+                activateTab(caseTabId(caseId));
             } catch (error) {
                 notifyError(error.message);
             }
+        }
+
+        async function openTicket(ticketId) {
+            try {
+                const ticket = await api("/tickets/" + ticketId);
+                ticket.audit = await loadTicketAudit(ticketId);
+                upsertTicketTab(ticket, null);
+                renderTicketTab(ticket, null);
+                activateTab(ticketTabId(ticketId));
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function refreshCaseTab(caseId, activateAfter) {
+            try {
+                const detail = await api("/service-cases/" + caseId);
+                if (detail.ticket && detail.ticket.ticketId) {
+                    detail.ticket.audit = await loadTicketAudit(detail.ticket.ticketId);
+                    upsertTicketTab(detail.ticket, detail);
+                    renderTicketTab(detail.ticket, detail);
+                    if (activateAfter) {
+                        activateTab(ticketTabId(detail.ticket.ticketId));
+                    }
+                    return;
+                }
+                upsertCaseTab(detail);
+                renderCaseTab(detail);
+                if (activateAfter) {
+                    activateTab(caseTabId(caseId));
+                } else {
+                    renderTabs();
+                    updateWorkspacePanes();
+                }
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function refreshTicketTab(ticketId, activateAfter) {
+            try {
+                const ticket = await api("/tickets/" + ticketId);
+                ticket.audit = await loadTicketAudit(ticketId);
+                upsertTicketTab(ticket, null);
+                renderTicketTab(ticket, null);
+                if (activateAfter) {
+                    activateTab(ticketTabId(ticketId));
+                } else {
+                    renderTabs();
+                    updateWorkspacePanes();
+                }
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function loadTicketAudit(ticketId) {
+            try {
+                return await api("/tickets/" + ticketId + "/audit");
+            } catch (error) {
+                return [];
+            }
+        }
+
+        function upsertCaseTab(serviceCase) {
+            const tabId = caseTabId(serviceCase.caseId);
+            const ticket = serviceCase.ticket;
+            const label = ticket && ticket.ticketNumber ? ticket.ticketNumber : serviceCase.caseNumber;
+            const title = label + " | " + serviceCase.title;
+            let tab = state.tabs.find(item => item.id === tabId);
+            if (!tab) {
+                tab = {
+                    id: tabId,
+                    type: "case",
+                    caseId: serviceCase.caseId,
+                    paneId: casePaneId(serviceCase.caseId),
+                    label,
+                    title
+                };
+                state.tabs.push(tab);
+            } else {
+                tab.label = label;
+                tab.title = title;
+            }
+            return tab;
+        }
+
+        function upsertTicketTab(ticket, serviceCase) {
+            const tabId = ticketTabId(ticket.ticketId);
+            const label = ticket.ticketNumber || ("Ticket " + ticket.ticketId);
+            const title = label + " | " + (ticket.caseTitle || ticket.summary || (serviceCase && serviceCase.title) || "Detalle");
+            let tab = state.tabs.find(item => item.id === tabId);
+            if (!tab) {
+                tab = {
+                    id: tabId,
+                    type: "ticket",
+                    ticketId: ticket.ticketId,
+                    caseId: ticket.serviceCaseId || (serviceCase && serviceCase.caseId),
+                    paneId: ticketPaneId(ticket.ticketId),
+                    label,
+                    title
+                };
+                state.tabs.push(tab);
+            } else {
+                tab.label = label;
+                tab.title = title;
+                tab.caseId = ticket.serviceCaseId || tab.caseId;
+            }
+            return tab;
+        }
+
+        function ensureCasePane(caseId) {
+            let pane = document.getElementById(casePaneId(caseId));
+            if (!pane) {
+                pane = document.createElement("section");
+                pane.id = casePaneId(caseId);
+                pane.className = "workspace-section case-detail-section tab-pane-hidden";
+                pane.dataset.casePane = "true";
+                pane.dataset.caseId = String(caseId);
+                document.getElementById("workspace").appendChild(pane);
+            }
+            return pane;
+        }
+
+        function ensureTicketPane(ticketId) {
+            let pane = document.getElementById(ticketPaneId(ticketId));
+            if (!pane) {
+                pane = document.createElement("section");
+                pane.id = ticketPaneId(ticketId);
+                pane.className = "workspace-section case-detail-section tab-pane-hidden";
+                pane.dataset.ticketPane = "true";
+                pane.dataset.ticketId = String(ticketId);
+                document.getElementById("workspace").appendChild(pane);
+            }
+            return pane;
+        }
+
+        function renderCaseTab(serviceCase) {
+            const pane = ensureCasePane(serviceCase.caseId);
+            const label = serviceCase.caseNumber;
+            pane.innerHTML = `
+                <div class="case-detail-header">
+                    <div class="case-detail-title">
+                        <h1>${escapeHtml(label)} | ${escapeHtml(serviceCase.title)}</h1>
+                        <div class="case-detail-badges">
+                            ${badge(serviceCase.type)}
+                            ${badge(serviceCase.status)}
+                            ${badge(serviceCase.priority)}
+                            ${slaBadge(serviceCase.sla)}
+                        </div>
+                    </div>
+                    <button class="btn secondary" type="button" onclick="refreshCaseTab(${serviceCase.caseId}, true)">Actualizar</button>
+                </div>
+                <div class="drawer-body">${renderCaseDetailContent(serviceCase)}</div>
+            `;
+        }
+
+        function renderTicketTab(ticket, serviceCase) {
+            const pane = ensureTicketPane(ticket.ticketId);
+            pane.innerHTML = `
+                <div class="case-detail-header">
+                    <div class="case-detail-title">
+                        <h1>Peticion de servicio: ${escapeHtml(ticket.ticketNumber)} (${escapeHtml(labelFor(ticket.status))})</h1>
+                        <p>Creado por ${escapeHtml(ticket.requesterName || ticket.requesterUsername || "-")} ${escapeHtml(formatDate(ticket.createdAt))}</p>
+                        <div class="case-detail-badges">
+                            ${badge(ticket.caseType)}
+                            ${badge(ticket.status)}
+                            ${badge(ticket.priority)}
+                            ${slaBadge(ticket.sla)}
+                        </div>
+                    </div>
+                    <div>
+                        <strong>Objetivo de respuesta</strong>
+                        <p>${escapeHtml(formatDate(ticket.dueAt))}</p>
+                    </div>
+                </div>
+                ${renderEnterpriseTicketForm(ticket, serviceCase)}
+            `;
         }
 
         function renderDrawer(serviceCase) {
             document.getElementById("drawerTitle").textContent = serviceCase.caseNumber + " | " + serviceCase.title;
             document.getElementById("drawerSubtitle").innerHTML =
                 badge(serviceCase.type) + " " + badge(serviceCase.status) + " " + badge(serviceCase.priority) + " " + slaBadge(serviceCase.sla);
+            document.getElementById("drawerBody").innerHTML = renderCaseDetailContent(serviceCase);
+        }
+
+        function renderCaseDetailContent(serviceCase) {
             const ticket = serviceCase.ticket;
             let html = `
                 <section>
@@ -2165,27 +2943,24 @@
             if (!ticket) {
                 html += canOperateTickets() ? renderCreateTicketForm(serviceCase) : "<div class='empty'>El caso aun no tiene ticket.</div>";
             } else {
-                html += renderTicketDetail(ticket);
-                if (canOperateTickets()) {
-                    html += renderTicketActions(ticket);
-                }
+                html += renderEnterpriseTicketForm(ticket, serviceCase);
             }
-            document.getElementById("drawerBody").innerHTML = html;
+            return html;
         }
 
         function renderCreateTicketForm(serviceCase) {
             return `
                 <section>
                     <h2>Crear ticket</h2>
-                    <form id="createTicketForm" class="form-grid" onsubmit="createTicket(event, ${serviceCase.caseId})">
+                    <form class="form-grid" onsubmit="createTicket(event, ${serviceCase.caseId})">
                         <label class="span-2">Resumen
-                            <input id="ticketSummary" type="text" minlength="8" maxlength="180" value="${escapeAttr(serviceCase.title)}" required>
+                            <input data-field="summary" type="text" minlength="8" maxlength="180" value="${escapeAttr(serviceCase.title)}" required>
                         </label>
                         <label>Asignar a
-                            <select id="ticketAssignee" required>${technicianOptions()}</select>
+                            <select data-field="assignee" required>${technicianOptions()}</select>
                         </label>
                         <label>Prioridad
-                            <select id="ticketPriority" required>
+                            <select data-field="priority" required>
                                 <option value="LOW">${labelFor("LOW")}</option>
                                 <option value="MEDIUM" ${serviceCase.priority === "MEDIUM" ? "selected" : ""}>${labelFor("MEDIUM")}</option>
                                 <option value="HIGH" ${serviceCase.priority === "HIGH" ? "selected" : ""}>${labelFor("HIGH")}</option>
@@ -2193,13 +2968,72 @@
                             </select>
                         </label>
                         <label class="span-2">Descripcion tecnica
-                            <textarea id="ticketDescription">${escapeHtml(serviceCase.description || "")}</textarea>
+                            <textarea data-field="description">${escapeHtml(serviceCase.description || "")}</textarea>
                         </label>
                         <div class="span-2 btn-row">
                             <button class="btn blue" type="submit">Crear y asignar</button>
                         </div>
                     </form>
                 </section>
+            `;
+        }
+
+        function renderEnterpriseTicketForm(ticket, serviceCase) {
+            const service = serviceCase || {};
+            const editable = canEditAnyTicket(ticket);
+            const terminalForTech = isTerminalTicket(ticket) && !isAdmin();
+            return `
+                <form class="ticket-form" onsubmit="saveTicketForm(event, ${ticket.ticketId}, ${ticket.serviceCaseId || service.caseId})"
+                    data-current-assignee="${escapeAttr(ticket.assignedToUserId || "")}"
+                    data-current-status="${escapeAttr(ticket.status || "")}"
+                    data-current-priority="${escapeAttr(ticket.priority || "")}"
+                    data-current-summary="${escapeAttr(ticket.summary || ticket.caseTitle || "")}"
+                    data-current-description="${escapeAttr(ticket.description || service.description || "")}"
+                    data-current-category="${escapeAttr(ticket.categoryCode || "GENERAL")}"
+                    data-current-requester="${escapeAttr(ticket.requesterUserId || "")}"
+                    data-current-site="${escapeAttr(ticket.siteId || "")}">
+                    <div class="ticket-command-bar">
+                        <button class="btn" type="submit" ${editable ? "" : "disabled"}>Guardar</button>
+                        <button class="btn secondary" type="button" onclick="refreshTicketTab(${ticket.ticketId}, true)">Cancelar</button>
+                        <button class="btn secondary" type="button" onclick="assignTicketToMe(${ticket.ticketId}, ${ticket.serviceCaseId || service.caseId})" ${canAssignToSelf(ticket) ? "" : "disabled"}>Asignarme</button>
+                        <button class="btn blue" type="submit" ${editable ? "" : "disabled"}>Transferir a equipo</button>
+                        <button class="btn red" type="button" onclick="resolveTicketFromForm(this, ${ticket.ticketId}, ${ticket.serviceCaseId || service.caseId})" ${canResolveTicket(ticket) ? "" : "disabled"}>Resolver solicitud</button>
+                    </div>
+
+                    <section class="ticket-form-section">
+                        <h2>Cliente y propietario</h2>
+                        <div class="ticket-form-grid compact-ticket-layout">
+                            ${ticketField("Usuario final", userSelect("requesterUserId", ticket.requesterUserId, ticket.requesterName || ticket.requesterUsername, ticketFieldDisabled(ticket, "requesterUserId")), ticket.requesterEmail || "", "ticket-final-user", true)}
+                            ${ticketField("Informado por", `<input value="${escapeAttr(ticket.requesterUsername || "")}" disabled>`, "", "ticket-reporter")}
+                            ${ticketField("Servicio", `<input data-field="categoryCode" value="${escapeAttr(ticket.categoryCode || "GENERAL")}" ${ticketFieldDisabled(ticket, "categoryCode")}>`, "", "ticket-service")}
+                            ${ticketField("Estado", statusSelect(ticket.status, ticketFieldDisabled(ticket, "status")), "", "ticket-status", true)}
+                            ${ticketField("Organizacion Cliente", siteSelect(ticket.siteId, ticketFieldDisabled(ticket, "siteId")), "", "ticket-org")}
+                            ${ticketField("Ubicacion", `<input value="${escapeAttr(ticket.locationName || service.locationName || "")}" disabled>`, "", "ticket-location")}
+                            ${ticketField("Categoria", `<input value="${escapeAttr(ticket.categoryCode || "GENERAL")}" disabled>`, "", "ticket-category")}
+                            ${ticketField("Fecha de programacion", `<input type="datetime-local" value="${escapeAttr(dateTimeLocalValue(ticket.dueAt))}" disabled>`, "", "ticket-schedule")}
+                            ${ticketField("Servicio Negocio", `<input value="${escapeAttr(labelFor(ticket.caseType))}" disabled>`, "", "ticket-business")}
+                            ${ticketField("Filtrar por analista", `<input type="checkbox" disabled>`, "", "ticket-filter")}
+                            ${ticketField("Nombre/resumen", `<input data-field="summary" value="${escapeAttr(ticket.summary || ticket.caseTitle || "")}" minlength="8" maxlength="180" ${ticketFieldDisabled(ticket, "summary")}>`, "", "ticket-summary", true)}
+                            ${ticketField("Descripcion", richTextArea("description", ticket.description || service.description || "", ticketFieldDisabled(ticket, "description")), "", "ticket-description-field")}
+                            <div class="ticket-side">
+                                ${ticketField("Equipo", `<input value="${escapeAttr(resolverTeam(ticket))}" disabled>`, "", "")}
+                                ${ticketField("Asignatario", technicianSelect("assignedToUserId", ticket.assignedToUserId, ticketFieldDisabled(ticket, "assignedToUserId")), "", "")}
+                                ${ticketField("Prioridad", prioritySelect(ticket.priority, ticketFieldDisabled(ticket, "priority")), "", "")}
+                                ${ticketField("# Caso Externo", `<input data-field="externalCase" value="" ${ticketFieldDisabled(ticket, "externalCase")}>`, "", "")}
+                            </div>
+                            ${ticketField("Comentario tecnico", `<textarea data-field="body" placeholder="Agregar observacion interna" ${terminalForTech ? "disabled" : ""}></textarea>`, "", "ticket-comment")}
+                            ${ticketField("Resolucion publica", `<textarea data-field="resolution" minlength="12" placeholder="Solucion para cerrar" ${canResolveTicket(ticket) ? "" : "disabled"}>${escapeHtml(ticket.resolution || "")}</textarea>`, "", "ticket-resolution")}
+                        </div>
+                    </section>
+                </form>
+                <details class="ticket-collapsible">
+                    <summary>Actualizaciones</summary>
+                    ${renderUpdates(ticket.updates || [])}
+                </details>
+                <details class="ticket-collapsible">
+                    <summary>Auditoria</summary>
+                    ${renderAuditTrail(ticket.audit || [])}
+                </details>
             `;
         }
 
@@ -2222,26 +3056,26 @@
             `;
         }
 
-        function renderTicketActions(ticket) {
+        function renderTicketActions(ticket, caseId) {
             return `
                 <section>
                     <h2>Actualizar ticket</h2>
-                    <form class="form-grid" onsubmit="updateTicket(event, ${ticket.ticketId})">
+                    <form class="form-grid" onsubmit="updateTicket(event, ${ticket.ticketId}, ${caseId})">
                         <label>Visibilidad
-                            <select id="updateVisibility">
+                            <select data-field="visibility">
                                 <option value="PUBLIC">${labelFor("PUBLIC")}</option>
                                 <option value="INTERNAL" selected>${labelFor("INTERNAL")}</option>
                             </select>
                         </label>
                         <label>Estado
-                            <select id="updateStatus">
+                            <select data-field="status">
                                 <option value="">Sin cambio</option>
                                 <option value="OPEN">${labelFor("OPEN")}</option>
                                 <option value="IN_PROGRESS">${labelFor("IN_PROGRESS")}</option>
                             </select>
                         </label>
                         <label>Prioridad
-                            <select id="updatePriority">
+                            <select data-field="priority">
                                 <option value="">Sin cambio</option>
                                 <option value="LOW">${labelFor("LOW")}</option>
                                 <option value="MEDIUM">${labelFor("MEDIUM")}</option>
@@ -2250,7 +3084,7 @@
                             </select>
                         </label>
                         <label class="span-2">Nota
-                            <textarea id="updateBody" placeholder="Detalle de la actualizacion"></textarea>
+                            <textarea data-field="body" placeholder="Detalle de la actualizacion"></textarea>
                         </label>
                         <div class="span-2 btn-row">
                             <button class="btn" type="submit">Guardar actualizacion</button>
@@ -2259,9 +3093,9 @@
                 </section>
                 <section>
                     <h2>Derivar</h2>
-                    <form class="form-grid" onsubmit="assignTicket(event, ${ticket.ticketId})">
+                    <form class="form-grid" onsubmit="assignTicket(event, ${ticket.ticketId}, ${caseId})">
                         <label class="span-2">Tecnico
-                            <select id="assignAssignee" required>${technicianOptions(ticket.assignedToUserId)}</select>
+                            <select data-field="assignee" required>${technicianOptions(ticket.assignedToUserId)}</select>
                         </label>
                         <div class="span-2 btn-row">
                             <button class="btn blue" type="submit">Derivar ticket</button>
@@ -2270,9 +3104,9 @@
                 </section>
                 <section>
                     <h2>Resolver</h2>
-                    <form class="form-grid" onsubmit="resolveTicket(event, ${ticket.ticketId})">
+                    <form class="form-grid" onsubmit="resolveTicket(event, ${ticket.ticketId}, ${caseId})">
                         <label class="span-2">Resolucion publica
-                            <textarea id="resolutionBody" minlength="12" required></textarea>
+                            <textarea data-field="resolution" minlength="12" required></textarea>
                         </label>
                         <div class="span-2 btn-row">
                             <button class="btn red" type="submit">Resolver ticket</button>
@@ -2280,6 +3114,247 @@
                     </form>
                 </section>
             `;
+        }
+
+        function ticketField(label, control, help, spanClass, required) {
+            return `
+                <div class="ticket-field ${spanClass || ""}">
+                    <label>${escapeHtml(label)}${required ? " <span class='required'>*</span>" : ""}</label>
+                    <div class="ticket-control">${control}</div>
+                    <div class="ticket-help">${escapeHtml(help || "")}</div>
+                </div>
+            `;
+        }
+
+        function richTextArea(field, value, disabledAttr) {
+            return `
+                <div class="rich-toolbar" aria-hidden="true">
+                    <button class="rich-tool" type="button" tabindex="-1">B</button>
+                    <button class="rich-tool" type="button" tabindex="-1"><i>I</i></button>
+                    <button class="rich-tool" type="button" tabindex="-1"><u>U</u></button>
+                    <button class="rich-tool" type="button" tabindex="-1">A</button>
+                    <button class="rich-tool" type="button" tabindex="-1">=</button>
+                </div>
+                <textarea class="ticket-description" data-field="${escapeAttr(field)}" ${disabledAttr}>${escapeHtml(value || "")}</textarea>
+            `;
+        }
+
+        function statusSelect(current, disabledAttr) {
+            const statuses = isAdmin()
+                ? ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED", "CANCELLED"]
+                : ["OPEN", "IN_PROGRESS"];
+            return `<select data-field="status" ${disabledAttr}>${statuses.map(status => option(status, labelFor(status), status === current)).join("")}</select>`;
+        }
+
+        function prioritySelect(current, disabledAttr) {
+            return `<select data-field="priority" ${disabledAttr}>
+                ${["LOW", "MEDIUM", "HIGH", "CRITICAL"].map(priority => option(priority, labelFor(priority), priority === current)).join("")}
+            </select>`;
+        }
+
+        function technicianSelect(field, selectedId, disabledAttr) {
+            return `<select data-field="${escapeAttr(field)}" ${disabledAttr}>${technicianSelectOptions(selectedId)}</select>`;
+        }
+
+        function technicianSelectOptions(selectedId) {
+            if (!state.technicians.length) {
+                return "<option value=''>Sin tecnicos activos</option>";
+            }
+            return "<option value=''>Sin asignar</option>" + state.technicians.map(tech =>
+                option(tech.userId, `${tech.name} (${tech.username})`, String(tech.userId) === String(selectedId || ""))
+            ).join("");
+        }
+
+        function userSelect(field, selectedId, fallbackName, disabledAttr) {
+            let options = "";
+            if (state.users && state.users.length) {
+                options = state.users.map(user => option(user.userId, `${fullName(user)} (${user.username})`, String(user.userId) === String(selectedId || ""))).join("");
+            } else {
+                options = option(selectedId || "", fallbackName || "-", true);
+            }
+            return `<select data-field="${escapeAttr(field)}" ${disabledAttr}>${options}</select>`;
+        }
+
+        function siteSelect(selectedId, disabledAttr) {
+            const options = option("", "Sin sede", !selectedId) +
+                state.sites.map(site => option(site.siteId, site.name, String(site.siteId) === String(selectedId || ""))).join("");
+            return `<select data-field="siteId" ${disabledAttr}>${options}</select>`;
+        }
+
+        function option(value, label, selected) {
+            return `<option value="${escapeAttr(value)}" ${selected ? "selected" : ""}>${escapeHtml(label)}</option>`;
+        }
+
+        function ticketFieldDisabled(ticket, field) {
+            if (field === "externalCase") {
+                return "disabled";
+            }
+            if (!canOperateTickets()) {
+                return "disabled";
+            }
+            if (isTerminalTicket(ticket) && !isAdmin()) {
+                return "disabled";
+            }
+            if (isAdmin()) {
+                return "";
+            }
+            return ["status", "priority", "assignedToUserId"].indexOf(field) >= 0 ? "" : "disabled";
+        }
+
+        function canOperateTicket(ticket) {
+            return canOperateTickets() && (!isTerminalTicket(ticket) || isAdmin());
+        }
+
+        function canAssignToSelf(ticket) {
+            return state.user && state.user.role === "TECH" && canOperateTicket(ticket);
+        }
+
+        function canEditAnyTicket(ticket) {
+            return canOperateTicket(ticket);
+        }
+
+        function canResolveTicket(ticket) {
+            return canOperateTickets() && !isTerminalTicket(ticket);
+        }
+
+        function isTerminalTicket(ticket) {
+            return ticket && (ticket.status === "RESOLVED" || ticket.status === "CLOSED" || ticket.status === "CANCELLED");
+        }
+
+        async function saveTicketForm(event, ticketId, caseId) {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const payload = { visibility: "INTERNAL" };
+            const body = formValue(form, "body").trim();
+            const status = formValue(form, "status");
+            const priority = formValue(form, "priority");
+            const assignedToUserId = formValue(form, "assignedToUserId");
+            const assignmentChanged = assignedToUserId && assignedToUserId !== form.dataset.currentAssignee;
+            if (body) payload.body = body;
+            if (status && status !== form.dataset.currentStatus) payload.status = status;
+            if (priority && priority !== form.dataset.currentPriority) payload.priority = priority;
+            if (isAdmin()) {
+                const summary = formValue(form, "summary").trim();
+                const description = formValue(form, "description").trim();
+                const categoryCode = formValue(form, "categoryCode").trim();
+                const requesterUserId = formValue(form, "requesterUserId");
+                const siteId = formValue(form, "siteId");
+                if (summary && summary !== form.dataset.currentSummary) payload.summary = summary;
+                if (description && description !== form.dataset.currentDescription) payload.description = description;
+                if (categoryCode && categoryCode !== form.dataset.currentCategory) payload.categoryCode = categoryCode;
+                if (requesterUserId && requesterUserId !== form.dataset.currentRequester) payload.requesterUserId = Number(requesterUserId);
+                if (siteId && siteId !== form.dataset.currentSite) payload.siteId = Number(siteId);
+                if (assignmentChanged) payload.assignedToUserId = Number(assignedToUserId);
+            }
+            const hasPatch = Object.keys(payload).some(key => key !== "visibility");
+            if (!hasPatch && !assignmentChanged) {
+                notifyError("No hay cambios para guardar.");
+                return;
+            }
+            try {
+                if (hasPatch) {
+                    await api("/tickets/" + ticketId, { method: "PATCH", body: JSON.stringify(payload) });
+                }
+                if (assignmentChanged && !isAdmin()) {
+                    await api("/tickets/" + ticketId + "/assign", {
+                        method: "POST",
+                        body: JSON.stringify({ assignedToUserId: Number(assignedToUserId) })
+                    });
+                }
+                await refreshAll({ refreshTabs: false });
+                await openTicket(ticketId);
+                notifyOk("Ticket actualizado.");
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function assignTicketToMe(ticketId, caseId) {
+            if (!state.user || state.user.role !== "TECH") {
+                notifyError("Solo un tecnico puede autoasignarse.");
+                return;
+            }
+            try {
+                await api("/tickets/" + ticketId + "/assign", {
+                    method: "POST",
+                    body: JSON.stringify({ assignedToUserId: Number(state.user.userId) })
+                });
+                await refreshAll({ refreshTabs: false });
+                await openTicket(ticketId);
+                notifyOk("Ticket asignado a tu usuario.");
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function resolveTicketFromForm(button, ticketId, caseId) {
+            const form = button.closest("form");
+            const resolution = formValue(form, "resolution").trim();
+            if (resolution.length < 12) {
+                notifyError("La resolucion debe tener al menos 12 caracteres.");
+                return;
+            }
+            try {
+                await api("/tickets/" + ticketId + "/resolve", {
+                    method: "POST",
+                    body: JSON.stringify({ resolution, publicUpdate: resolution })
+                });
+                await refreshAll({ refreshTabs: false });
+                await openTicket(ticketId);
+                notifyOk("Ticket resuelto.");
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        function renderAuditTrail(audit) {
+            if (!audit || !audit.length) {
+                return "<div class='empty'>Sin eventos de auditoria para este ticket.</div>";
+            }
+            return `<div class="audit-list">${audit.map(entry => `
+                <article class="audit-item">
+                    <header>
+                        <span>${escapeHtml(entry.actorUsername || "Sistema")} | ${escapeHtml(labelFor(entry.action || ""))}</span>
+                        <span>${escapeHtml(formatDate(entry.createdAt))}</span>
+                    </header>
+                    ${(entry.changes || []).map(change => `
+                        <div class="audit-change">
+                            <strong>${escapeHtml(auditFieldLabel(change.field))}</strong>
+                            <span>Antes: ${escapeHtml(formatAuditValue(change.previousValue))}</span>
+                            <span>Despues: ${escapeHtml(formatAuditValue(change.newValue))}</span>
+                        </div>
+                    `).join("") || "<div class='empty'>Evento registrado sin cambios de campo.</div>"}
+                </article>
+            `).join("")}</div>`;
+        }
+
+        function auditFieldLabel(field) {
+            const labels = {
+                summary: "Resumen",
+                description: "Descripcion",
+                status: "Estado",
+                priority: "Prioridad",
+                categoryCode: "Categoria",
+                assignedToUserId: "Asignatario",
+                assignedToName: "Asignatario",
+                requesterUserId: "Usuario final",
+                requesterName: "Usuario final",
+                siteId: "Organizacion",
+                siteName: "Organizacion",
+                locationName: "Ubicacion",
+                resolution: "Resolucion"
+            };
+            return labels[field] || field || "-";
+        }
+
+        function formatAuditValue(value) {
+            if (value === null || value === undefined || value === "") {
+                return "-";
+            }
+            if (typeof value === "object") {
+                return JSON.stringify(value);
+            }
+            return labelFor(String(value));
         }
 
         function renderUpdates(updates) {
@@ -2301,8 +3376,9 @@
 
         async function createTicket(event, caseId) {
             event.preventDefault();
-            const assignedToUserId = document.getElementById("ticketAssignee").value;
-            const summary = document.getElementById("ticketSummary").value.trim();
+            const form = event.currentTarget;
+            const assignedToUserId = formValue(form, "assignee");
+            const summary = formValue(form, "summary").trim();
             if (!assignedToUserId) {
                 notifyError("Seleccione un tecnico.");
                 return;
@@ -2314,13 +3390,13 @@
             const payload = {
                 assignedToUserId: Number(assignedToUserId),
                 summary,
-                description: document.getElementById("ticketDescription").value.trim(),
-                priority: document.getElementById("ticketPriority").value,
+                description: formValue(form, "description").trim(),
+                priority: formValue(form, "priority"),
                 categoryCode: "GENERAL"
             };
             try {
                 await api("/service-cases/" + caseId + "/tickets", { method: "POST", body: JSON.stringify(payload) });
-                await refreshAll();
+                await refreshAll({ refreshTabs: false });
                 await openCase(caseId);
                 notifyOk("Ticket creado y asignado.");
             } catch (error) {
@@ -2328,14 +3404,15 @@
             }
         }
 
-        async function updateTicket(event, ticketId) {
+        async function updateTicket(event, ticketId, caseId) {
             event.preventDefault();
+            const form = event.currentTarget;
             const payload = {
-                visibility: document.getElementById("updateVisibility").value
+                visibility: formValue(form, "visibility")
             };
-            const body = document.getElementById("updateBody").value.trim();
-            const status = document.getElementById("updateStatus").value;
-            const priority = document.getElementById("updatePriority").value;
+            const body = formValue(form, "body").trim();
+            const status = formValue(form, "status");
+            const priority = formValue(form, "priority");
             if (body) payload.body = body;
             if (status) payload.status = status;
             if (priority) payload.priority = priority;
@@ -2345,17 +3422,17 @@
             }
             try {
                 await api("/tickets/" + ticketId, { method: "PATCH", body: JSON.stringify(payload) });
-                await refreshAll();
-                await openCase(state.activeCaseId);
+                await refreshAll({ refreshTabs: false });
+                await openCase(caseId);
                 notifyOk("Ticket actualizado.");
             } catch (error) {
                 notifyError(error.message);
             }
         }
 
-        async function assignTicket(event, ticketId) {
+        async function assignTicket(event, ticketId, caseId) {
             event.preventDefault();
-            const assignedToUserId = document.getElementById("assignAssignee").value;
+            const assignedToUserId = formValue(event.currentTarget, "assignee");
             if (!assignedToUserId) {
                 notifyError("Seleccione un tecnico.");
                 return;
@@ -2365,17 +3442,17 @@
                     method: "POST",
                     body: JSON.stringify({ assignedToUserId: Number(assignedToUserId) })
                 });
-                await refreshAll();
-                await openCase(state.activeCaseId);
+                await refreshAll({ refreshTabs: false });
+                await openCase(caseId);
                 notifyOk("Ticket derivado.");
             } catch (error) {
                 notifyError(error.message);
             }
         }
 
-        async function resolveTicket(event, ticketId) {
+        async function resolveTicket(event, ticketId, caseId) {
             event.preventDefault();
-            const resolution = document.getElementById("resolutionBody").value.trim();
+            const resolution = formValue(event.currentTarget, "resolution").trim();
             if (resolution.length < 12) {
                 notifyError("La resolucion debe tener al menos 12 caracteres.");
                 return;
@@ -2385,8 +3462,8 @@
                     method: "POST",
                     body: JSON.stringify({ resolution, publicUpdate: resolution })
                 });
-                await refreshAll();
-                await openCase(state.activeCaseId);
+                await refreshAll({ refreshTabs: false });
+                await openCase(caseId);
                 notifyOk("Ticket resuelto.");
             } catch (error) {
                 notifyError(error.message);
@@ -2420,6 +3497,11 @@
 
         function detailLineHtml(label, html) {
             return `<div class="detail-line"><strong>${escapeHtml(label)}</strong><span>${html}</span></div>`;
+        }
+
+        function formValue(form, field) {
+            const input = form.querySelector(`[data-field="${field}"]`);
+            return input ? input.value : "";
         }
 
         function badge(value) {
@@ -2461,6 +3543,18 @@
 
         function joinLocation(site, location) {
             return [site, location].filter(Boolean).join(" / ") || "-";
+        }
+
+        function vipLabel(ticket) {
+            return ticket && ticket.priority === "CRITICAL" ? "Si" : "No";
+        }
+
+        function levelLabel(ticket) {
+            return ticket && ticket.priority ? labelFor(ticket.priority) : "-";
+        }
+
+        function resolverTeam(ticket) {
+            return ticket && ticket.resolverTeam ? ticket.resolverTeam : "Mesa de Ayuda";
         }
 
         function openProfileDrawer() {
@@ -2537,6 +3631,22 @@
             const month = String(date.getMonth() + 1).padStart(2, "0");
             const day = String(date.getDate()).padStart(2, "0");
             return year + "-" + month + "-" + day;
+        }
+
+        function dateTimeLocalValue(value) {
+            if (!value) {
+                return "";
+            }
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return "";
+            }
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            const hour = String(date.getHours()).padStart(2, "0");
+            const minute = String(date.getMinutes()).padStart(2, "0");
+            return `${year}-${month}-${day}T${hour}:${minute}`;
         }
 
         function escapeHtml(value) {
