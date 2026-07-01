@@ -3,12 +3,14 @@ package com.businessName.ticketApi;
 import com.businessName.CustomerExceptions.LoginFailedException;
 import com.businessName.CustomerExceptions.MalformedObjectException;
 import com.businessName.CustomerExceptions.RecordNotFound;
+import com.businessName.security.AuthenticatedUser;
 import com.businessName.ticketDao.DataAccessImp;
 import com.businessName.ticketDao.DataAccessInterface;
-import com.businessName.ticketService.ClientInteractions;
 import com.businessName.ticketService.EmployeeInteractions;
 import com.businessName.ticketService.TechnicianInteractions;
+import com.businessName.ticketService.UserInteractions;
 import io.javalin.http.Handler;
+import io.javalin.http.ForbiddenResponse;
 import org.json.JSONObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,7 +19,7 @@ public class HelpTicketController {
 
     public DataAccessInterface daoObject = new DataAccessImp();
     public EmployeeInteractions eiObject = new EmployeeInteractions(daoObject);
-    public ClientInteractions ciObject = new ClientInteractions(daoObject);
+    public UserInteractions uiObject = new UserInteractions(daoObject);
     public TechnicianInteractions tiObject = new TechnicianInteractions(daoObject);
 
     public static Logger logger = LogManager.getLogger(HelpTicketController.class);
@@ -42,18 +44,18 @@ public class HelpTicketController {
 
     };
 
-    public Handler clientCreateHelpRequest = ctx -> {
+    public Handler userCreateHelpRequest = ctx -> {
         String body = ctx.body();
-        logger.info("client create request attempt with: "+body);
+        logger.info("user create request attempt with: "+body);
         try {
-            String response = ciObject.createHelpRequest(body);
+            String response = uiObject.createHelpRequest(body);
             ctx.result(response);
             ctx.status(201);
-            logger.info("client create request success!");
+            logger.info("user create request success!");
         } catch (MalformedObjectException | RecordNotFound e) {
             ctx.result("{\"message\":\"" + e.getMessage() + "\"}");
             ctx.status(400);
-            logger.info("client create request fail: "+e.getMessage());
+            logger.info("user create request fail: "+e.getMessage());
         }
     };
 
@@ -122,9 +124,9 @@ public class HelpTicketController {
 
     public Handler viewRequestStatus = ctx -> {
         String body = ctx.body();
-        logger.info("client create request attempt with: "+body);
+        logger.info("user view request attempt with: "+body);
         try {
-            String response = ciObject.viewHelpRequest(body);
+            String response = uiObject.viewHelpRequest(body);
             ctx.result(response);
             ctx.status(201);
         } catch (MalformedObjectException | RecordNotFound e) {
@@ -134,38 +136,47 @@ public class HelpTicketController {
 
     };
 
-    public Handler clientUpdateHelpRequest = ctx -> {
+    public Handler userUpdateHelpRequest = ctx -> {
         String body = ctx.body();
-        logger.info("client update request attempt with: "+body);
+        logger.info("user update request attempt with: "+body);
         try {
-            String response = ciObject.updateHelpRequest(body);
+            String response = uiObject.updateHelpRequest(body);
             ctx.result(response);
             ctx.status(201);
-            logger.info("client update request success!");
+            logger.info("user update request success!");
         } catch (MalformedObjectException | RecordNotFound e) {
             ctx.result("{\"message\":\"" + e.getMessage() + "\"}");
             ctx.status(400);
-            logger.info("client update request fail: "+e.getMessage());
+            logger.info("user update request fail: "+e.getMessage());
         }
 
 
     };
 
-    public Handler clientCancelHelpRequest = ctx -> {
+    public Handler userCancelHelpRequest = ctx -> {
         String body = ctx.body();
-        logger.info("client cancel request attempt with: "+body);
+        logger.info("user cancel request attempt with: "+body);
         try {
-            String response = ciObject.cancelHelpRequest(body);
+            String response = uiObject.cancelHelpRequest(body);
             ctx.result("{\"message\":\"" + response + "\"}");
             ctx.status(201);
-            logger.info("client cancel request success!");
+            logger.info("user cancel request success!");
         } catch (MalformedObjectException | RecordNotFound e) {
             ctx.result("{\"message\":\"" + e.getMessage() + "\"}");
             ctx.status(400);
-            logger.info("client cancel request fail: "+e.getMessage());
+            logger.info("user cancel request fail: "+e.getMessage());
         }
 
     };
+
+    @Deprecated
+    public Handler clientCreateHelpRequest = userCreateHelpRequest;
+
+    @Deprecated
+    public Handler clientUpdateHelpRequest = userUpdateHelpRequest;
+
+    @Deprecated
+    public Handler clientCancelHelpRequest = userCancelHelpRequest;
 
         public Handler updateTicketTech = ctx -> {
             String body = ctx.body();
@@ -220,6 +231,15 @@ public class HelpTicketController {
     public Handler updatePersonalInfo = ctx -> {
         String body = ctx.body();
         try {
+            AuthenticatedUser authUser = ctx.attribute("authUser");
+            JSONObject request = new JSONObject(body);
+            int targetEmployeeId = request.optInt("employees_id", -1);
+            if (authUser == null || authUser.legacyEmployeeId == null) {
+                throw new ForbiddenResponse("Forbidden");
+            }
+            if (!"ADMIN".equals(authUser.roleCode) && targetEmployeeId != authUser.legacyEmployeeId) {
+                throw new ForbiddenResponse("Forbidden");
+            }
             String response = eiObject.updatePersonalInfo(body);
             ctx.result(response);
             ctx.status(201);

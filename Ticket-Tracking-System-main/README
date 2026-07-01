@@ -23,7 +23,7 @@ Nota: el frontend actual llama a la API en `localhost:8081`. Si ese puerto esta 
 
 Usuarios de prueba:
 
-- Cliente: `mb1` / `pass`
+- Usuario: `mb1` / `pass`
 - Tecnico: `tech1` / `pass`
 - Admin: `admin` / `pass`
 

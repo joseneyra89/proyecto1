@@ -65,7 +65,7 @@ public class TechnicianInteractions extends EmployeeInteractions {
 
 
     public String viewOpenRequests(String jsonFromApi) {
-        //for viewing all open client help requests
+        //for viewing all open user help requests
         HashMap<String, String> viewMap = new Gson().fromJson(
                 String.valueOf(jsonFromApi),
                 new TypeToken<HashMap<String, String>>() {

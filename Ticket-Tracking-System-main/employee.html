@@ -1,19 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/sweetalert2@7.12.15/dist/sweetalert2.min.css'></link>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@7.12.15/dist/sweetalert2.min.css">
+    <title>Mesa de Ayuda</title>
     <style>
         :root {
-            --verde-900: #06451f;
-            --verde-800: #07582a;
-            --verde-700: #087a38;
-            --verde-600: #0b9446;
-            --verde-100: #e7f6ec;
-            --verde-50: #f4fbf6;
-            --texto: #173526;
-            --gris: #64736a;
-            --blanco: rgba(255,255,255,0.92);
+            --bg: #f3f6f5;
+            --ink: #14221b;
+            --muted: #5d6a63;
+            --line: #d7e1dc;
+            --panel: #ffffff;
+            --green: #0b6b3a;
+            --green-dark: #06451f;
+            --blue: #1b5fa7;
+            --amber: #a56300;
+            --red: #a42b2b;
+            --ok: #0b6b3a;
+            --shadow: 0 10px 26px rgba(20, 34, 27, 0.10);
         }
 
         * { box-sizing: border-box; }
@@ -22,1038 +30,3646 @@
             margin: 0;
             min-height: 100vh;
             font-family: "Segoe UI", Arial, sans-serif;
-            color: var(--texto);
-            background:
-                linear-gradient(rgba(2, 61, 29, .45), rgba(5, 82, 39, .50)),
-                url("universidad.jpg");
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
+            color: var(--ink);
+            background: var(--bg);
+        }
+
+        button, input, textarea, select {
+            font: inherit;
+        }
+
+        button {
+            border: 0;
+            cursor: pointer;
         }
 
         .topbar {
-            height: 86px;
-            display: flex;
+            min-height: 72px;
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr) auto;
             align-items: center;
-            justify-content: space-between;
-            padding: 0 34px;
-            background: linear-gradient(135deg, rgba(3, 70, 31, .96), rgba(5, 104, 47, .94));
-            box-shadow: 0 10px 28px rgba(0,0,0,.25);
+            gap: 16px;
+            padding: 12px 28px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--line);
+            box-shadow: 0 4px 18px rgba(20, 34, 27, .06);
+            position: sticky;
+            top: 0;
+            z-index: 20;
         }
 
-        .brand { display: flex; align-items: center; gap: 16px; color: #fff; }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-width: 0;
+        }
+
         .brand img {
-            width: 58px; height: 58px; object-fit: contain;
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,.25));
+            width: 46px;
+            height: 46px;
+            object-fit: contain;
         }
 
         .brand-title {
-            font-size: 23px; font-weight: 800; letter-spacing: .3px; text-transform: uppercase;
-        }
-
-        .brand-subtitle { font-size: 14px; color: #d7f5df; margin-top: 3px; }
-
-        .logout-btn {
-            background: rgba(255,255,255,.14);
-            color: #fff;
-            border: 1px solid rgba(255,255,255,.35);
-            border-radius: 999px;
-            padding: 11px 18px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: .2s;
-        }
-
-        .logout-btn:hover { background: rgba(255,255,255,.24); transform: translateY(-1px); }
-
-        .page-shell {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 28px;
-            padding: 34px;
-        }
-
-        .sidebar {
-            min-height: calc(100vh - 154px);
-            background: rgba(255,255,255,.88);
-            border: 1px solid rgba(255,255,255,.65);
-            border-radius: 22px;
-            padding: 24px;
-            box-shadow: 0 16px 40px rgba(0,0,0,.18);
-            backdrop-filter: blur(8px);
-        }
-
-        .sidebar-logo {
-            width: 98px;
-            display: block;
-            margin: 0 auto 14px;
-            opacity: .92;
-        }
-
-        .sidebar h2 {
-            text-align: center;
-            color: var(--verde-900);
-            font-size: 20px;
-            line-height: 1.2;
-            margin: 0 0 8px;
-        }
-
-        .sidebar p {
-            text-align: center;
-            color: var(--gris);
-            font-size: 14px;
-            line-height: 1.5;
-            margin: 0 0 22px;
-        }
-
-        .role-card {
-            background: linear-gradient(135deg, #ecfff1, #d9f4df);
-            border: 1px solid #c9eccc;
-            border-radius: 16px;
-            padding: 16px;
-            margin-top: 18px;
-        }
-
-        .role-card strong {
-            display: block;
-            color: var(--verde-900);
-            margin-bottom: 6px;
-        }
-
-        .dashboard-panel {
-            position: relative;
-            min-height: calc(100vh - 154px);
-            background: rgba(255,255,255,.86);
-            border: 1px solid rgba(255,255,255,.65);
-            border-radius: 24px;
-            padding: 34px 38px;
-            box-shadow: 0 16px 42px rgba(0,0,0,.18);
-            backdrop-filter: blur(9px);
-            overflow: hidden;
-        }
-
-        .dashboard-panel::after {
-            content: "";
-            position: absolute;
-            right: 28px;
-            top: 38px;
-            width: 300px;
-            height: 300px;
-            background: url("logo.png") center/contain no-repeat;
-            opacity: .08;
-            pointer-events: none;
-        }
-
-        .welcome {
-            position: relative;
-            z-index: 1;
-            margin-bottom: 24px;
-        }
-
-        .welcome h1 {
-            margin: 0;
-            color: var(--verde-900);
-            font-size: 36px;
-            line-height: 1.15;
-        }
-
-        .welcome p {
-            margin: 10px 0 0;
-            color: var(--gris);
-            font-size: 17px;
-        }
-
-        .collapsible {
-            position: relative;
-            z-index: 1;
-            display: block;
-            width: min(720px, 100%);
-            margin: 16px 0 0;
-            padding: 18px 22px;
-            border: 1px solid #d8eadc;
-            border-radius: 16px;
-            background: rgba(255,255,255,.93);
-            color: var(--verde-900);
-            cursor: pointer;
-            text-align: left;
-            font-size: 17px;
             font-weight: 800;
-            box-shadow: 0 10px 24px rgba(0,0,0,.10);
-            transition: .2s;
+            color: var(--green-dark);
+            line-height: 1.1;
         }
 
-        .collapsible::before {
-            content: "▸";
-            display: inline-block;
-            margin-right: 10px;
-            color: var(--verde-700);
-            transition: .2s;
+        .brand-subtitle {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 3px;
         }
 
-        .collapsible.active::before { transform: rotate(90deg); }
-
-        .active, .collapsible:hover {
-            background: linear-gradient(135deg, #f8fff9, #e7f6ec);
-            transform: translateY(-1px);
-            box-shadow: 0 14px 28px rgba(0,0,0,.14);
+        .primary-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-width: 0;
+            flex-wrap: wrap;
         }
 
-        .client, .technician { display: hidden; }
-
-        .content {
-            position: relative;
-            z-index: 1;
-            display: none;
-            width: min(920px, 100%);
-            overflow: hidden;
-            margin: 10px 0 8px;
-            padding: 22px;
-            color: var(--texto);
-            background: rgba(255,255,255,.78);
-            border: 1px solid rgba(215,235,220,.9);
-            border-radius: 18px;
-            box-shadow: 0 12px 26px rgba(0,0,0,.10);
+        .nav-button {
+            min-height: 38px;
+            border: 1px solid #c7d8cf;
+            background: #f8fbf9;
+            color: var(--green-dark);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-weight: 800;
+            white-space: nowrap;
         }
 
-        table {
-            width: 100%;
+        .nav-button:hover,
+        .nav-button.active {
+            background: var(--green);
+            color: #fff;
+            border-color: var(--green);
+        }
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .role-pill {
+            border: 1px solid #c4d8ce;
+            background: #f6faf8;
+            color: var(--green-dark);
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .profile-button {
+            width: 46px;
+            height: 46px;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            border: 2px solid #d8e8df;
+            background: var(--green);
+            color: #fff;
+            font-weight: 900;
+            letter-spacing: 0;
+            flex: 0 0 auto;
+        }
+
+        .profile-button:hover {
+            background: var(--green-dark);
+        }
+
+        .shell {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 12px;
+            padding: 12px 14px;
+            max-width: none;
+            margin: 0 auto;
+        }
+
+        aside, main {
+            min-width: 0;
+        }
+
+        .profile-panel,
+        .workspace-section {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow);
+            border-radius: 8px;
+        }
+
+        .profile-panel {
+            padding: 20px;
+            position: sticky;
+            top: 96px;
+        }
+
+        .workspace {
+            display: grid;
+            gap: 12px;
+        }
+
+        .workspace-section {
+            padding: 16px;
+            min-width: 0;
+        }
+
+        .workspace-section.primary-case {
+            border-top: 4px solid var(--green);
+        }
+
+        h1, h2, h3 {
             margin: 0;
-            border-collapse: separate;
-            border-spacing: 0 10px;
+            line-height: 1.2;
         }
 
-        td { vertical-align: middle; padding: 4px 8px; }
+        h1 {
+            font-size: 24px;
+            color: var(--green-dark);
+        }
+
+        h2 {
+            font-size: 18px;
+            margin-bottom: 14px;
+        }
 
         h3 {
+            font-size: 15px;
             margin: 0 0 8px;
-            color: var(--verde-900);
-            font-size: 16px;
+        }
+
+        p {
+            color: var(--muted);
+            line-height: 1.5;
+            margin: 6px 0 0;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .form-grid .span-2 {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: grid;
+            gap: 6px;
+            color: #26382f;
+            font-size: 13px;
+            font-weight: 700;
         }
 
         input, textarea, select {
             width: 100%;
-            min-width: 220px;
-            padding: 12px 14px;
-            border: 1px solid #c9dccf;
-            border-radius: 12px;
-            background: rgba(255,255,255,.96);
-            color: var(--texto);
-            font-size: 15px;
-            outline: none;
+            border: 1px solid #c8d6cf;
+            background: #fff;
+            color: var(--ink);
+            padding: 11px 12px;
+            min-height: 44px;
+            outline: 0;
+            border-radius: 6px;
         }
 
-        textarea { resize: vertical; }
+        textarea {
+            resize: vertical;
+            min-height: 112px;
+        }
 
         input:focus, textarea:focus, select:focus {
-            border-color: var(--verde-700);
-            box-shadow: 0 0 0 3px rgba(8,122,56,.14);
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(27, 95, 167, 0.14);
         }
 
-        button:not(.collapsible):not(.logout-btn) {
-            background: linear-gradient(135deg, var(--verde-800), var(--verde-600));
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 12px 18px;
-            cursor: pointer;
+        button:focus-visible,
+        .drawer:focus-visible,
+        .workspace-tab-select:focus-visible,
+        .workspace-tab-close:focus-visible {
+            outline: 3px solid rgba(27, 95, 167, 0.35);
+            outline-offset: 3px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            align-items: end;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(140px, 1fr));
+            gap: 10px;
+            align-items: end;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            align-items: start;
+        }
+
+        .admin-users-panel {
+            display: grid;
+            gap: 16px;
+            margin-top: 18px;
+            border-top: 1px solid var(--line);
+            padding-top: 18px;
+        }
+
+        .admin-edit-form {
+            border: 1px solid var(--line);
+            background: #fbfdfc;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .status-active {
+            color: var(--ok);
             font-weight: 800;
-            font-size: 14px;
-            transition: .2s;
         }
 
-        button:not(.collapsible):not(.logout-btn):hover {
-            transform: translateY(-1px);
-            box-shadow: 0 10px 22px rgba(8,122,56,.25);
+        .status-inactive {
+            color: var(--red);
+            font-weight: 800;
         }
 
-        .app-footer {
-            padding: 18px 34px;
-            color: #e9fff0;
-            background: rgba(2, 61, 29, .92);
+        .metric-panel {
+            border: 1px solid var(--line);
+            background: #fbfdfc;
+            padding: 16px;
+            min-width: 0;
+        }
+
+        .metric-panel header {
             display: flex;
             justify-content: space-between;
+            gap: 10px;
             align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .metric-total {
+            font-size: 30px;
+            font-weight: 800;
+            color: var(--green-dark);
+            line-height: 1;
+        }
+
+        .metric-list {
+            display: grid;
+            gap: 8px;
+            margin: 14px 0;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            border-bottom: 1px solid #edf2ef;
+            padding-bottom: 8px;
+            color: var(--muted);
+        }
+
+        .metric-row strong {
+            color: var(--ink);
+        }
+
+        .sla-bars {
+            display: grid;
+            gap: 8px;
+        }
+
+        .sla-bar-label {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .sla-bar-track {
+            height: 12px;
+            background: #edf2ef;
+            border: 1px solid #d7e1dc;
+            overflow: hidden;
+        }
+
+        .sla-bar-fill {
+            height: 100%;
+            min-width: 2px;
+            background: var(--green);
+        }
+
+        .sla-bar-fill.out {
+            background: var(--red);
+        }
+
+        .btn {
+            min-height: 40px;
+            padding: 9px 14px;
+            font-weight: 800;
+            color: #fff;
+            background: var(--green);
+            border-radius: 6px;
+        }
+
+        .btn.secondary {
+            background: #eef4f1;
+            color: var(--green-dark);
+            border: 1px solid #c7d8cf;
+        }
+
+        .btn.blue {
+            background: var(--blue);
+        }
+
+        .btn.red {
+            background: var(--red);
+        }
+
+        .btn:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+        }
+
+        .table-wrap {
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            overflow-x: auto;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1120px;
+            background: #fff;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 9px 10px;
+            border-bottom: 1px solid var(--line);
+            vertical-align: top;
             font-size: 14px;
         }
 
-        @media (max-width: 900px) {
-            .topbar { height: auto; padding: 18px; gap: 12px; flex-direction: column; align-items: flex-start; }
-            .page-shell { grid-template-columns: 1fr; padding: 18px; }
-            .sidebar, .dashboard-panel { min-height: auto; }
-            .welcome h1 { font-size: 28px; }
-            .app-footer { flex-direction: column; gap: 8px; }
+        th {
+            background: #f4f6f5;
+            color: #31483b;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0;
+        }
+
+        tbody tr:nth-child(odd) {
+            background: #eef3f1;
+        }
+
+        tbody tr:hover {
+            background: #dde9e4;
+        }
+
+        tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .status-grid,
+        .queue-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .status-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .queue-block,
+        .status-block {
+            min-width: 0;
+        }
+
+        .user-overview-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .summary-card {
+            border: 1px solid var(--line);
+            background: #fbfdfc;
+            border-radius: 8px;
+            padding: 14px;
+            min-width: 0;
+        }
+
+        .summary-card span {
+            display: block;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0;
+        }
+
+        .summary-card strong {
+            display: block;
+            margin-top: 8px;
+            font-size: 28px;
+            line-height: 1;
+            color: var(--green-dark);
+        }
+
+        .card-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .case-card {
+            display: grid;
+            gap: 12px;
+            border: 1px solid var(--line);
+            background: #fff;
+            border-radius: 8px;
+            padding: 14px;
+        }
+
+        .case-card header {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .case-card-title {
+            display: grid;
+            gap: 4px;
+            min-width: 0;
+        }
+
+        .case-card-title strong {
+            font-size: 16px;
+            color: var(--green-dark);
+        }
+
+        .case-card-title span,
+        .card-meta {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .card-badges,
+        .card-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .card-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            min-height: 24px;
+            padding: 3px 8px;
+            font-weight: 800;
+            font-size: 12px;
+            border-radius: 999px;
+            background: #edf3ef;
+            color: #2d4a39;
+            white-space: nowrap;
+        }
+
+        .badge.REQUEST, .badge.OPEN { background: #eef6ff; color: #124f8f; }
+        .badge.INCIDENT, .badge.HIGH, .badge.CRITICAL { background: #fff3e0; color: #8a4b00; }
+        .badge.IN_PROGRESS { background: #eefaf1; color: #06612e; }
+        .badge.RESOLVED, .badge.CLOSED { background: #f0f1f3; color: #41464d; }
+        .badge.PUBLIC { background: #e9f6ee; color: #07582a; }
+        .badge.INTERNAL { background: #f4edf9; color: #67328c; }
+
+        .sla-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 26px;
+            padding: 4px 9px;
+            border: 1px solid transparent;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .sla-ok { background: #e9f6ee; color: var(--ok); border-color: #b9dfc8; }
+        .sla-warning { background: #fff7e8; color: var(--amber); border-color: #ffd891; }
+        .sla-breached { background: #fdeeee; color: var(--red); border-color: #f3b8b8; }
+        .sla-neutral { background: #f0f1f3; color: #41464d; border-color: #d6d8dc; }
+
+        .empty {
+            padding: 18px;
+            color: var(--muted);
+            background: #f9fbfa;
+            border: 1px dashed #cbd8d2;
+            border-radius: 8px;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .tab-pane-hidden {
+            display: none !important;
+        }
+
+        .tab-strip-shell {
+            min-width: 0;
+            overflow: hidden;
+            background: #ffffff;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            padding: 8px;
+        }
+
+        .workspace-tabs {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+            overflow-x: auto;
+            padding-bottom: 2px;
+        }
+
+        .workspace-tab {
+            display: inline-flex;
+            align-items: center;
+            max-width: min(280px, 70vw);
+            min-width: 150px;
+            min-height: 40px;
+            border: 1px solid #c7d8cf;
+            background: #f8fbf9;
+            border-radius: 6px;
+            color: var(--green-dark);
+            flex: 0 0 auto;
+            overflow: hidden;
+        }
+
+        .workspace-tab.active {
+            background: #ffffff;
+            border-color: var(--green);
+            box-shadow: inset 0 -3px 0 var(--green);
+        }
+
+        .workspace-tab-select {
+            min-width: 0;
+            flex: 1 1 auto;
+            min-height: 38px;
+            padding: 8px 8px 8px 12px;
+            background: transparent;
+            color: inherit;
+            text-align: left;
+            font-weight: 800;
+        }
+
+        .workspace-tab-label {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .workspace-tab-close {
+            width: 30px;
+            height: 30px;
+            margin-right: 4px;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            background: transparent;
+            color: #486052;
+            font-weight: 900;
+            flex: 0 0 auto;
+        }
+
+        .workspace-tab-close:hover {
+            background: #e6f0eb;
+            color: var(--green-dark);
+        }
+
+        .case-detail-section {
+            border-top: 4px solid var(--blue);
+            padding: 10px 14px 12px;
+        }
+
+        .case-detail-section .drawer-body {
+            padding: 0;
+        }
+
+        .case-detail-header {
+            display: flex;
+            align-items: start;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .case-detail-title {
+            display: grid;
+            gap: 4px;
+            min-width: 0;
+        }
+
+        .case-detail-title h1 {
+            font-size: 21px;
+        }
+
+        .case-detail-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .ticket-command-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            padding: 0 0 7px;
+            border-bottom: 1px solid var(--line);
+            margin-bottom: 8px;
+        }
+
+        .ticket-command-bar .btn {
+            min-height: 30px;
+            padding: 5px 9px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .ticket-form {
+            display: grid;
+            gap: 8px;
+        }
+
+        .ticket-form-section {
+            display: grid;
+            gap: 8px;
+            border-bottom: 1px solid var(--line);
+            padding-bottom: 8px;
+        }
+
+        .ticket-form-section h2 {
+            font-size: 14px;
+            margin-bottom: 0;
+            text-transform: uppercase;
+        }
+
+        .ticket-form-section:last-child {
+            border-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .ticket-form-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(190px, 1fr));
+            gap: 7px 18px;
+            align-items: start;
+        }
+
+        .compact-ticket-layout {
+            grid-template-areas:
+                "final reporter service status"
+                "org location category schedule"
+                "business business filter filter"
+                "summary summary summary side"
+                "description description description side"
+                "comment comment resolution side";
+        }
+
+        .ticket-form-grid .span-2 {
+            grid-column: span 2;
+        }
+
+        .ticket-form-grid .span-4 {
+            grid-column: 1 / -1;
+        }
+
+        .ticket-field {
+            display: grid;
+            grid-template-columns: 128px minmax(0, 1fr);
+            gap: 4px 8px;
+            align-items: start;
+        }
+
+        .ticket-field label {
+            display: block;
+            font-size: 12px;
+            color: #24382f;
+            font-weight: 800;
+            line-height: 1.25;
+            padding-top: 6px;
+            text-align: right;
+        }
+
+        .ticket-control {
+            min-width: 0;
+            display: grid;
+        }
+
+        .ticket-field .required {
+            color: var(--red);
+        }
+
+        .ticket-help {
+            color: var(--muted);
+            font-size: 12px;
+            min-height: 14px;
+            line-height: 1.2;
+            grid-column: 2;
+        }
+
+        .ticket-field input,
+        .ticket-field textarea,
+        .ticket-field select {
+            min-height: 30px;
+            padding: 5px 8px;
+            border-radius: 2px;
+            font-size: 13px;
+        }
+
+        .ticket-field input:disabled,
+        .ticket-field textarea:disabled,
+        .ticket-field select:disabled {
+            background: #f3f6f5;
+            color: #596960;
+            cursor: not-allowed;
+        }
+
+        .rich-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            border: 1px solid #c8d6cf;
+            border-bottom: 0;
+            background: #f7faf8;
+            padding: 2px 4px;
+            min-height: 28px;
+        }
+
+        .rich-tool {
+            width: 24px;
+            height: 22px;
+            display: grid;
+            place-items: center;
+            border-radius: 4px;
+            background: transparent;
+            color: #20352b;
+            font-weight: 900;
+        }
+
+        .ticket-description {
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+            min-height: 74px;
+        }
+
+        .ticket-final-user { grid-area: final; }
+        .ticket-reporter { grid-area: reporter; }
+        .ticket-service { grid-area: service; }
+        .ticket-status { grid-area: status; }
+        .ticket-org { grid-area: org; }
+        .ticket-location { grid-area: location; }
+        .ticket-category { grid-area: category; }
+        .ticket-schedule { grid-area: schedule; }
+        .ticket-business { grid-area: business; }
+        .ticket-filter { grid-area: filter; }
+        .ticket-summary { grid-area: summary; }
+        .ticket-description-field { grid-area: description; }
+        .ticket-comment { grid-area: comment; }
+        .ticket-resolution { grid-area: resolution; }
+        .ticket-side {
+            grid-area: side;
+            align-self: start;
+            display: grid;
+            gap: 7px;
+        }
+
+        .ticket-side .ticket-field {
+            grid-template-columns: 92px minmax(0, 1fr);
+        }
+
+        .ticket-collapsible {
+            border: 1px solid var(--line);
+            background: #fbfdfc;
+            border-radius: 6px;
+            padding: 8px 10px;
+        }
+
+        .ticket-collapsible summary {
+            cursor: pointer;
+            font-weight: 800;
+            color: var(--green-dark);
+        }
+
+        .ticket-collapsible[open] summary {
+            margin-bottom: 8px;
+        }
+
+        .audit-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .audit-item {
+            border: 1px solid var(--line);
+            background: #fbfdfc;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .audit-item header {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .audit-change {
+            display: grid;
+            grid-template-columns: 150px 1fr 1fr;
+            gap: 8px;
+            padding: 6px 0;
+            border-top: 1px solid #edf2ef;
+            font-size: 13px;
+        }
+
+        .drawer-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(7, 19, 12, .38);
+            z-index: 50;
+            display: none;
+        }
+
+        .drawer-backdrop.open {
+            display: block;
+        }
+
+        .drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 100vh;
+            width: min(760px, 100vw);
+            background: #fff;
+            border-left: 1px solid var(--line);
+            box-shadow: -18px 0 38px rgba(20, 34, 27, .24);
+            transform: translateX(100%);
+            transition: transform .2s ease;
+            z-index: 60;
+            display: grid;
+            grid-template-rows: auto 1fr;
+        }
+
+        .drawer.open {
+            transform: translateX(0);
+        }
+
+        .profile-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(7, 19, 12, .28);
+            z-index: 70;
+            display: none;
+        }
+
+        .profile-backdrop.open {
+            display: block;
+        }
+
+        .profile-drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 100vh;
+            width: min(430px, 100vw);
+            background: #fff;
+            border-left: 1px solid var(--line);
+            box-shadow: -18px 0 38px rgba(20, 34, 27, .22);
+            transform: translateX(100%);
+            transition: transform .2s ease;
+            z-index: 80;
+            display: grid;
+            grid-template-rows: auto 1fr;
+        }
+
+        .profile-drawer.open {
+            transform: translateX(0);
+        }
+
+        .profile-drawer-header {
+            display: flex;
+            align-items: start;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .profile-drawer-body {
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .profile-drawer .profile-panel {
+            position: static;
+            top: auto;
+            border: 0;
+            box-shadow: none;
+            padding: 0;
+        }
+
+        .drawer-header {
+            display: flex;
+            align-items: start;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .drawer-body {
+            padding: 20px;
+            overflow-y: auto;
+            display: grid;
+            gap: 18px;
+        }
+
+        .detail-line {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid #edf2ef;
+        }
+
+        .detail-line strong {
+            color: #44574c;
+        }
+
+        .updates {
+            display: grid;
+            gap: 10px;
+        }
+
+        .update-item {
+            border-left: 4px solid #b7cfc1;
+            background: #f8fbf9;
+            padding: 12px;
+        }
+
+        .update-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 8px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        @media (max-width: 1060px) {
+            .shell {
+                grid-template-columns: 1fr;
+            }
+
+            .workspace {
+                order: 1;
+            }
+
+            aside {
+                order: 2;
+            }
+
+            .profile-panel {
+                position: static;
+            }
+
+            .status-grid,
+            .queue-grid,
+            .dashboard-grid,
+            .admin-grid,
+            .user-overview-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .topbar {
+                align-items: flex-start;
+                grid-template-columns: 1fr;
+                padding: 14px;
+            }
+
+            .primary-nav {
+                justify-content: flex-start;
+                width: 100%;
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: 4px;
+            }
+
+            .top-actions {
+                justify-content: flex-start;
+                width: 100%;
+            }
+
+            .shell {
+                padding: 14px;
+                grid-template-columns: 1fr;
+            }
+
+            .tab-strip-shell {
+                padding: 6px;
+            }
+
+            .workspace-tab {
+                min-width: 132px;
+                max-width: 78vw;
+            }
+
+            .case-detail-header {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .form-grid,
+            .filters,
+            .ticket-form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ticket-form-grid .span-2,
+            .ticket-form-grid .span-4 {
+                grid-column: 1 / -1;
+            }
+
+            .compact-ticket-layout {
+                grid-template-areas:
+                    "final"
+                    "reporter"
+                    "org"
+                    "location"
+                    "service"
+                    "category"
+                    "business"
+                    "status"
+                    "schedule"
+                    "filter"
+                    "summary"
+                    "description"
+                    "side"
+                    "comment"
+                    "resolution";
+            }
+
+            .ticket-field,
+            .ticket-side .ticket-field {
+                grid-template-columns: 1fr;
+            }
+
+            .ticket-field label {
+                text-align: left;
+                padding-top: 0;
+            }
+
+            .ticket-help {
+                grid-column: 1;
+            }
+
+            .audit-change {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-line {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
-    <title></title>
 </head>
-<body onload="pickEmployeeType()">
+<body>
     <header class="topbar">
         <div class="brand">
-            <img src="logo.png" alt="Logo Universidad Nacional de Cañete">
+            <img src="logo.png" alt="Logo UNDC">
             <div>
-                <div class="brand-title">Universidad Nacional de Cañete</div>
-                <div class="brand-subtitle">Sistema de Mesa de Ayuda</div>
+                <div class="brand-title">Universidad Nacional de Canete</div>
+                <div class="brand-subtitle">Mesa de Ayuda</div>
             </div>
         </div>
-        <button type="button" class="logout-btn" onclick="doLogout()">Cerrar sesión</button>
+        <nav class="primary-nav" id="roleNav" aria-label="Navegacion principal"></nav>
+        <div class="top-actions">
+            <span class="role-pill" id="roleLabel">Cargando sesion...</span>
+            <button class="btn secondary" type="button" id="refreshButton">Actualizar</button>
+            <button class="profile-button" type="button" id="profileButton" title="Perfil" aria-label="Abrir perfil">
+                <span id="profileInitials">US</span>
+            </button>
+            <button class="btn red" type="button" id="logoutButton">Salir</button>
+        </div>
     </header>
 
-    <div class="page-shell">
-        <aside class="sidebar">
-            <img src="logo.png" alt="Logo UNDC" class="sidebar-logo">
-            <h2>Mesa de Ayuda</h2>
-            <p>Gestiona solicitudes y tickets de soporte técnico institucional.</p>
-            <div class="role-card">
-                <strong>Sesión activa</strong>
-                <span id="roleLabel">Cargando perfil...</span>
-            </div>
-        </aside>
+    <div class="shell">
+        <div class="tab-strip-shell">
+            <div class="workspace-tabs" id="workspaceTabs" role="tablist" aria-label="Pestanas abiertas"></div>
+        </div>
+        <main class="workspace" id="workspace">
+            <section class="workspace-section hidden" id="adminManagementSection">
+                <div class="toolbar">
+                    <div>
+                        <h2>Administracion</h2>
+                        <p>Alta de usuarios, sedes y ambientes activos para el flujo de mesa de ayuda.</p>
+                    </div>
+                </div>
+                <div class="admin-grid">
+                    <form id="adminUserForm" class="form-grid">
+                        <h3 class="span-2">Crear usuario</h3>
+                        <label>Rol
+                            <select id="adminUserRole" required>
+                                <option value="USER">Usuario</option>
+                                <option value="TECH">Tecnico</option>
+                                <option value="ADMIN">Administrador</option>
+                            </select>
+                        </label>
+                        <label>Username
+                            <input id="adminUsername" type="text" minlength="3" maxlength="80" required>
+                        </label>
+                        <label>Nombres
+                            <input id="adminFirstName" type="text" maxlength="80" required>
+                        </label>
+                        <label>Apellidos
+                            <input id="adminLastName" type="text" maxlength="80" required>
+                        </label>
+                        <label class="span-2">Email
+                            <input id="adminEmail" type="email" maxlength="160">
+                        </label>
+                        <label class="span-2">Email de notificaciones
+                            <input id="adminNotificationEmail" type="email" maxlength="160">
+                        </label>
+                        <label>Cargo
+                            <input id="adminJobTitle" type="text" maxlength="120">
+                        </label>
+                        <label>Telefono
+                            <input id="adminPhone" type="tel" maxlength="40">
+                        </label>
+                        <label class="span-2">Contrasena temporal
+                            <input id="adminPassword" type="password" minlength="8" maxlength="120" autocomplete="new-password" required>
+                        </label>
+                        <div class="span-2 btn-row">
+                            <button class="btn" type="submit">Crear usuario</button>
+                        </div>
+                    </form>
 
-        <main class="dashboard-panel">
-            <section class="welcome">
-                <h1>Panel de Gestión de Soporte</h1>
-                <p>Selecciona una opción para continuar con el flujo de soporte.</p>
+                    <form id="adminSiteForm" class="form-grid">
+                        <h3 class="span-2">Crear sede</h3>
+                        <label>Codigo
+                            <input id="adminSiteCode" type="text" minlength="2" maxlength="40" required>
+                        </label>
+                        <label>Nombre
+                            <input id="adminSiteName" type="text" minlength="3" maxlength="160" required>
+                        </label>
+                        <label class="span-2">Direccion
+                            <input id="adminSiteAddress" type="text" maxlength="250">
+                        </label>
+                        <label>Ciudad
+                            <input id="adminSiteCity" type="text" maxlength="80" value="Canete">
+                        </label>
+                        <label>Provincia
+                            <input id="adminSiteProvince" type="text" maxlength="80" value="Canete">
+                        </label>
+                        <label>Pais
+                            <input id="adminSiteCountry" type="text" minlength="2" maxlength="2" value="PE">
+                        </label>
+                        <div class="span-2 btn-row">
+                            <button class="btn" type="submit">Crear sede</button>
+                        </div>
+                    </form>
+
+                    <form id="adminLocationForm" class="form-grid">
+                        <h3 class="span-2">Crear ambiente</h3>
+                        <label class="span-2">Sede
+                            <select id="adminLocationSite" required></select>
+                        </label>
+                        <label>Tipo
+                            <select id="adminLocationType" required>
+                                <option value="AULA">Aula</option>
+                                <option value="LAB">Laboratorio</option>
+                                <option value="AREA">Area</option>
+                            </select>
+                        </label>
+                        <label>Codigo
+                            <input id="adminLocationCode" type="text" minlength="2" maxlength="60" required>
+                        </label>
+                        <label class="span-2">Nombre
+                            <input id="adminLocationName" type="text" minlength="3" maxlength="160" required>
+                        </label>
+                        <label>Piso
+                            <input id="adminLocationFloor" type="text" maxlength="20">
+                        </label>
+                        <label class="span-2">Descripcion
+                            <input id="adminLocationDescription" type="text" maxlength="250">
+                        </label>
+                        <div class="span-2 btn-row">
+                            <button class="btn" type="submit">Crear ambiente</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="admin-users-panel">
+                    <div class="toolbar">
+                        <div>
+                            <h3>Gestionar usuarios</h3>
+                            <p>Edita el perfil del usuario, sus datos principales o su estado de acceso.</p>
+                        </div>
+                        <button class="btn secondary" type="button" id="adminRefreshUsersButton">Actualizar usuarios</button>
+                    </div>
+                    <form id="adminEditUserForm" class="form-grid admin-edit-form hidden">
+                        <h3 class="span-2" id="adminEditUserTitle">Editar usuario</h3>
+                        <label>Perfil
+                            <select id="editUserRole" required>
+                                <option value="USER">Usuario</option>
+                                <option value="TECH">Tecnico</option>
+                                <option value="ADMIN">Administrador</option>
+                            </select>
+                        </label>
+                        <label>Estado
+                            <select id="editUserIsActive" required>
+                                <option value="true">Activo</option>
+                                <option value="false">Dado de baja</option>
+                            </select>
+                        </label>
+                        <label class="span-2">Username
+                            <input id="editUsername" type="text" minlength="3" maxlength="80" required>
+                        </label>
+                        <label>Nombres
+                            <input id="editFirstName" type="text" maxlength="80" required>
+                        </label>
+                        <label>Apellidos
+                            <input id="editLastName" type="text" maxlength="80" required>
+                        </label>
+                        <label class="span-2">Email
+                            <input id="editEmail" type="email" maxlength="160">
+                        </label>
+                        <label class="span-2">Email de notificaciones
+                            <input id="editNotificationEmail" type="email" maxlength="160">
+                        </label>
+                        <label>Cargo
+                            <input id="editJobTitle" type="text" maxlength="120">
+                        </label>
+                        <label>Telefono
+                            <input id="editPhone" type="tel" maxlength="40">
+                        </label>
+                        <div class="span-2 btn-row">
+                            <button class="btn" type="submit">Guardar cambios</button>
+                            <button class="btn red" type="button" id="adminToggleUserStatusButton">Dar de baja</button>
+                            <button class="btn secondary" type="button" id="adminCancelEditUserButton">Cancelar</button>
+                        </div>
+                    </form>
+                    <div id="adminUsersTable" aria-live="polite"></div>
+                </div>
             </section>
 
-    <button type="button" class="collapsible">Actualizar información personal</button>
-    <div class="content">
-        <table id="updatePersonalInfo">
-            <tr><td><h3>Ingrese nombres:</h3><input type="text" id="firstName"></td></tr>
-            <tr><td><h3>Ingrese apellidos:</h3><input type="text" id="lastName"></td></tr>
-            <tr><td><button id="updateInfo" onclick="updatePersonalInfo()">Actualizar información</button></td></tr>
-        </table>
-    </div>
-    <button type="button" class="collapsible" id="createCollapseButton"></button>
-    <div class="content">
-        <table id="employeeCreate">            
-        </table>
-    </div>
-    <button type="button" class="collapsible" id="viewCollapseButton"></button>
-    <div class="content">
-        <table id="employeeView">
-        </table>
-    </div> 
-    <button type="button" class="collapsible" id="updateCollapseButton"></button>
-    <div class="content">
-        <table id="employeeUpdate">
-        </table>
-    </div> 
-    <button type="button" class="collapsible" id="cancelCollapseButton"></button>
-    <div class="content">
-        <table id="employeeCancelResolve">
-        </table>
-    </div>
+            <section class="workspace-section hidden" id="userOverviewSection">
+                <div class="toolbar">
+                    <div>
+                        <h1>Mi mesa de ayuda</h1>
+                        <p>Resumen de tus solicitudes e incidencias.</p>
+                    </div>
+                </div>
+                <div id="userOverviewCards" class="user-overview-grid" aria-live="polite"></div>
+            </section>
 
+            <section class="workspace-section primary-case" id="newCaseSection">
+                <div class="toolbar">
+                    <div>
+                        <h1>Nuevo caso de servicio</h1>
+                        <p>Registra una solicitud o incidencia con la sede, ubicacion y detalle necesario.</p>
+                    </div>
+                </div>
+                <form id="caseForm" class="form-grid">
+                    <label>Tipo
+                        <select id="caseType" required>
+                            <option value="REQUEST">Solicitud</option>
+                            <option value="INCIDENT">Incidente</option>
+                        </select>
+                    </label>
+                    <label>Prioridad
+                        <select id="casePriority" required>
+                            <option value="LOW">Baja</option>
+                            <option value="MEDIUM" selected>Media</option>
+                            <option value="HIGH">Alta</option>
+                            <option value="CRITICAL">Critica</option>
+                        </select>
+                    </label>
+                    <label>Sede
+                        <select id="caseSite" required></select>
+                    </label>
+                    <label>Ubicacion
+                        <select id="caseLocation"></select>
+                    </label>
+                    <label class="span-2">Titulo
+                        <input id="caseTitle" type="text" minlength="8" maxlength="160" required>
+                    </label>
+                    <label class="span-2">Descripcion
+                        <textarea id="caseDescription" minlength="20" maxlength="4000" required></textarea>
+                    </label>
+                    <div class="span-2 btn-row">
+                        <button class="btn" type="submit">Crear caso</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="workspace-section" id="dashboardSection">
+                <div class="toolbar">
+                    <div>
+                        <h2>Dashboard tecnico</h2>
+                        <p id="dashboardScope">Metricas del rango seleccionado.</p>
+                    </div>
+                    <div class="filters">
+                        <label>Desde
+                            <input id="dashboardDateFrom" type="date">
+                        </label>
+                        <label>Hasta
+                            <input id="dashboardDateTo" type="date">
+                        </label>
+                        <div class="btn-row">
+                            <button class="btn secondary" type="button" id="dashboardRefreshButton">Aplicar</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="dashboardMetrics" class="dashboard-grid" aria-live="polite"></div>
+            </section>
+
+            <section class="workspace-section" id="queuesSection">
+                <div class="toolbar">
+                    <div>
+                        <h2>Colas sin ticket</h2>
+                        <p>Casos abiertos separados por tipo y listos para ser convertidos en ticket.</p>
+                    </div>
+                </div>
+                <div class="queue-grid">
+                    <div class="queue-block">
+                        <h3>Solicitudes</h3>
+                        <div id="requestQueue"></div>
+                    </div>
+                    <div class="queue-block">
+                        <h3>Incidentes</h3>
+                        <div id="incidentQueue"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="workspace-section" id="casesSection">
+                <div class="toolbar">
+                    <div>
+                        <h2 id="casesTitle">Casos</h2>
+                        <p id="casesSubtitle">Casos disponibles segun tu rol.</p>
+                    </div>
+                </div>
+                <div id="casesTable"></div>
+            </section>
+
+            <section class="workspace-section" id="ticketsSection">
+                <div class="toolbar">
+                    <div>
+                        <h2 id="ticketsTitle">Bandejas de tickets</h2>
+                        <p id="ticketsSubtitle">Tickets agrupados por estado. ADMIN puede buscar sobre todo el universo.</p>
+                    </div>
+                    <div class="filters">
+                        <label>Tipo
+                            <select id="ticketTypeFilter">
+                                <option value="">Todos</option>
+                                <option value="REQUEST">Solicitud</option>
+                                <option value="INCIDENT">Incidente</option>
+                            </select>
+                        </label>
+                        <label>Estado
+                            <select id="ticketStatusFilter">
+                                <option value="">Todos</option>
+                                <option value="OPEN">Nuevo</option>
+                                <option value="IN_PROGRESS">En proceso</option>
+                                <option value="RESOLVED">Resuelto</option>
+                                <option value="CLOSED">Cerrado</option>
+                                <option value="CANCELLED">Cancelado</option>
+                            </select>
+                        </label>
+                        <label>Sede
+                            <select id="ticketSiteFilter">
+                                <option value="">Todas</option>
+                            </select>
+                        </label>
+                        <label>Vencimiento
+                            <select id="ticketDueFilter">
+                                <option value="">Todos</option>
+                                <option value="ON_TRACK">En plazo</option>
+                                <option value="WARNING">En advertencia</option>
+                                <option value="BREACHED">Vencido</option>
+                                <option value="MET">Cumplido</option>
+                                <option value="MET_LATE">Cumplido tarde</option>
+                            </select>
+                        </label>
+                        <label>Desde
+                            <input id="ticketDateFrom" type="date">
+                        </label>
+                        <label>Hasta
+                            <input id="ticketDateTo" type="date">
+                        </label>
+                        <label>Buscar
+                            <input id="ticketSearch" type="search" placeholder="Ticket, usuario, tecnico, correo o titulo">
+                        </label>
+                    </div>
+                </div>
+                <div class="status-grid">
+                    <div class="status-block">
+                        <h3>Abiertos</h3>
+                        <div id="ticketsOpen"></div>
+                    </div>
+                    <div class="status-block">
+                        <h3>En progreso</h3>
+                        <div id="ticketsProgress"></div>
+                    </div>
+                    <div class="status-block">
+                        <h3>Resueltos</h3>
+                        <div id="ticketsResolved"></div>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
-    <footer class="app-footer">
-        <span>Universidad Nacional de Cañete</span>
-        <span>© 2026 Sistema de Mesa de Ayuda</span>
-    </footer>
-</body>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.10.1/dist/sweetalert2.all.min.js"></script>
-<script>
-    //for testing creating token to observe edits on page
+    <div class="profile-backdrop" id="profileBackdrop" aria-hidden="true"></div>
+    <aside class="profile-drawer" id="profileDrawer" role="dialog" aria-modal="true" aria-labelledby="profileDrawerTitle" aria-hidden="true" tabindex="-1">
+        <div class="profile-drawer-header">
+            <div>
+                <h2 id="profileDrawerTitle">Perfil</h2>
+                <p id="profileSummary">Validando usuario autenticado.</p>
+            </div>
+            <button class="btn secondary" type="button" id="closeProfileButton">Cerrar</button>
+        </div>
+        <div class="profile-drawer-body">
+            <section class="profile-panel">
+                <form id="profileForm" class="form-grid">
+                    <label class="span-2">Username
+                        <input id="profileUsername" type="text" disabled>
+                    </label>
+                    <label>Nombres
+                        <input id="profileFirstName" type="text" maxlength="80" required>
+                    </label>
+                    <label>Apellidos
+                        <input id="profileLastName" type="text" maxlength="80" required>
+                    </label>
+                    <label class="span-2">Email
+                        <input id="profileEmail" type="email" maxlength="160">
+                    </label>
+                    <label class="span-2">Email de notificaciones
+                        <input id="profileNotificationEmail" type="email" maxlength="160">
+                    </label>
+                    <label>Cargo
+                        <input id="profileJobTitle" type="text" maxlength="120">
+                    </label>
+                    <label>Telefono
+                        <input id="profilePhone" type="tel" maxlength="40">
+                    </label>
+                    <div class="span-2 btn-row">
+                        <button class="btn" type="submit">Guardar perfil</button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </aside>
 
+    <div class="drawer-backdrop" id="drawerBackdrop" aria-hidden="true"></div>
+    <aside class="drawer" id="detailDrawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle" aria-describedby="drawerSubtitle" aria-hidden="true" tabindex="-1">
+        <div class="drawer-header">
+            <div>
+                <h2 id="drawerTitle">Detalle</h2>
+                <p id="drawerSubtitle"></p>
+            </div>
+            <button class="btn secondary" type="button" id="closeDrawerButton">Cerrar</button>
+        </div>
+        <div class="drawer-body" id="drawerBody"></div>
+    </aside>
 
-    //window.sessionStorage.setItem("token", "mb1_2_5");
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.10.1/dist/sweetalert2.all.min.js"></script>
+    <script>
+        const API_BASE_URL = "http://localhost:8081";
+        const state = {
+            user: null,
+            sites: [],
+            technicians: [],
+            users: [],
+            cases: [],
+            tickets: [],
+            navItems: [],
+            tabs: [],
+            activeTabId: null,
+            activeCaseId: null,
+            editingUserId: null,
+            previousFocus: null,
+            profilePreviousFocus: null,
+            ticketRefreshTimer: null
+        };
+        const DISPLAY_LABELS = {
+            USER: "Usuario",
+            TECH: "Tecnico",
+            ADMIN: "Administrador",
+            ACTIVE: "Activo",
+            INACTIVE: "Dado de baja",
+            REQUEST: "Solicitud",
+            INCIDENT: "Incidente",
+            OPEN: "Nuevo",
+            IN_PROGRESS: "En proceso",
+            RESOLVED: "Resuelto",
+            CLOSED: "Cerrado",
+            CANCELLED: "Cancelado",
+            LOW: "Baja",
+            MEDIUM: "Media",
+            HIGH: "Alta",
+            CRITICAL: "Critica",
+            PUBLIC: "Publica",
+            INTERNAL: "Interna",
+            COMMENT: "Comentario",
+            STATUS_CHANGE: "Cambio de estado",
+            ASSIGNMENT: "Asignacion",
+            SLA: "SLA",
+            SYSTEM: "Sistema",
+            TICKET_CREATED: "Ticket creado",
+            TICKET_UPDATED: "Ticket actualizado",
+            TICKET_ASSIGNED: "Ticket reasignado",
+            TICKET_RESOLVED: "Ticket resuelto",
+            AULA: "Aula",
+            LAB: "Laboratorio",
+            AREA: "Area"
+        };
 
+        document.addEventListener("DOMContentLoaded", init);
 
-        if(!window.sessionStorage.getItem("token")) {
-            swal.fire({
-                title: 'No tienes acceso a esta página',
-                confirmButtonText: 'Ir al inicio de sesión'
-                }).then(function (result) {
-                /* Read more about isConfirmed, isDenied below */
-                if (result.isConfirmed) {
-                    window.location.href="login.html"
-                } 
+        function token() {
+            return window.sessionStorage.getItem("token");
+        }
+
+        function canOperateTickets() {
+            return state.user && (state.user.role === "TECH" || state.user.role === "ADMIN");
+        }
+
+        function canCreateCases() {
+            return state.user && (state.user.role === "USER" || state.user.role === "ADMIN");
+        }
+
+        function isAdmin() {
+            return state.user && state.user.role === "ADMIN";
+        }
+
+        async function init() {
+            bindEvents();
+            markStaticWorkspacePanes();
+            if (!token()) {
+                redirectToLogin();
+                return;
+            }
+            try {
+                state.user = await api("/me");
+                renderUser();
+                const startupWork = [loadSites()];
+                if (canOperateTickets()) {
+                    startupWork.push(loadTechnicians());
+                }
+                if (isAdmin()) {
+                    startupWork.push(loadAdminUsers());
+                }
+                await Promise.all(startupWork);
+                applyRoleVisibility();
+                await refreshAll();
+            } catch (error) {
+                notifyError(error.message || "No se pudo iniciar el panel.");
+            }
+        }
+
+        function bindEvents() {
+            document.getElementById("logoutButton").addEventListener("click", logout);
+            document.getElementById("refreshButton").addEventListener("click", refreshAll);
+            document.getElementById("profileButton").addEventListener("click", openProfileDrawer);
+            document.getElementById("closeProfileButton").addEventListener("click", closeProfileDrawer);
+            document.getElementById("profileBackdrop").addEventListener("click", closeProfileDrawer);
+            document.getElementById("profileForm").addEventListener("submit", updateProfile);
+            document.getElementById("caseForm").addEventListener("submit", createServiceCase);
+            document.getElementById("adminUserForm").addEventListener("submit", createAdminUser);
+            document.getElementById("adminRefreshUsersButton").addEventListener("click", loadAdminUsers);
+            document.getElementById("adminEditUserForm").addEventListener("submit", updateAdminUser);
+            document.getElementById("adminToggleUserStatusButton").addEventListener("click", toggleEditingUserStatus);
+            document.getElementById("adminCancelEditUserButton").addEventListener("click", clearAdminUserEditor);
+            document.getElementById("adminSiteForm").addEventListener("submit", createAdminSite);
+            document.getElementById("adminLocationForm").addEventListener("submit", createAdminLocation);
+            document.getElementById("caseSite").addEventListener("change", onSiteChanged);
+            document.getElementById("dashboardRefreshButton").addEventListener("click", refreshDashboard);
+            document.getElementById("dashboardDateFrom").addEventListener("change", refreshDashboard);
+            document.getElementById("dashboardDateTo").addEventListener("change", refreshDashboard);
+            document.getElementById("ticketTypeFilter").addEventListener("change", refreshTickets);
+            document.getElementById("ticketStatusFilter").addEventListener("change", refreshTickets);
+            document.getElementById("ticketSiteFilter").addEventListener("change", refreshTickets);
+            document.getElementById("ticketDueFilter").addEventListener("change", refreshTickets);
+            document.getElementById("ticketDateFrom").addEventListener("change", refreshTickets);
+            document.getElementById("ticketDateTo").addEventListener("change", refreshTickets);
+            document.getElementById("ticketSearch").addEventListener("input", debounce(refreshTickets, 250));
+            document.getElementById("closeDrawerButton").addEventListener("click", closeDrawer);
+            document.getElementById("drawerBackdrop").addEventListener("click", closeDrawer);
+            document.addEventListener("keydown", onGlobalKeydown);
+        }
+
+        async function api(path, options) {
+            const request = options || {};
+            const headers = Object.assign({}, request.headers || {});
+            if (!(request.body instanceof FormData)) {
+                headers["Content-Type"] = headers["Content-Type"] || "application/json";
+            }
+            headers.Authorization = "Bearer " + token();
+            const response = await fetch(API_BASE_URL + path, Object.assign({}, request, { headers }));
+            let payload = null;
+            const contentType = response.headers.get("content-type") || "";
+            if (contentType.indexOf("application/json") >= 0 || contentType.indexOf("text/plain") >= 0) {
+                const text = await response.text();
+                payload = text ? JSON.parse(text) : null;
+            }
+            if (response.status === 401) {
+                redirectToLogin();
+                throw new Error("Sesion expirada.");
+            }
+            if (!response.ok) {
+                throw new Error(payload && payload.message ? payload.message : "Solicitud rechazada.");
+            }
+            return payload;
+        }
+
+        function renderUser() {
+            document.getElementById("roleLabel").textContent = labelFor(state.user.role) + " | " + state.user.username;
+            document.getElementById("profileInitials").textContent = initialsFor(state.user);
+            document.getElementById("profileSummary").textContent =
+                (state.user.firstName || "") + " " + (state.user.lastName || "") + " - " + labelFor(state.user.role);
+            document.getElementById("profileUsername").value = state.user.username || "";
+            document.getElementById("profileFirstName").value = state.user.firstName || "";
+            document.getElementById("profileLastName").value = state.user.lastName || "";
+            document.getElementById("profileEmail").value = state.user.email || "";
+            document.getElementById("profileNotificationEmail").value = state.user.notificationEmail || "";
+            document.getElementById("profileJobTitle").value = state.user.jobTitle || "";
+            document.getElementById("profilePhone").value = state.user.phone || "";
+            document.getElementById("casesTitle").textContent = state.user.role === "USER" ? "Mis solicitudes e incidencias" : "Casos";
+            document.getElementById("casesSubtitle").textContent =
+                state.user.role === "USER" ? "Estado, sede y SLA de los casos que registraste." : "Vista operativa segun permisos del rol.";
+            document.getElementById("ticketsTitle").textContent =
+                state.user.role === "USER" ? "Seguimiento de tickets" : "Bandejas de tickets";
+            document.getElementById("ticketsSubtitle").textContent =
+                state.user.role === "USER" ? "Tickets vinculados a tus casos, agrupados por estado." : "Tickets agrupados por estado. ADMIN puede buscar sobre todo el universo.";
+        }
+
+        function applyRoleVisibility() {
+            document.getElementById("adminManagementSection").classList.toggle("hidden", !isAdmin());
+            document.getElementById("userOverviewSection").classList.toggle("hidden", state.user.role !== "USER");
+            document.getElementById("newCaseSection").classList.toggle("hidden", !canCreateCases());
+            document.getElementById("dashboardSection").classList.toggle("hidden", !canOperateTickets());
+            document.getElementById("queuesSection").classList.toggle("hidden", !canOperateTickets());
+            document.getElementById("ticketSearch").disabled = false;
+            renderNavigation();
+            setDefaultDashboardDates();
+            renderSiteOptions();
+            renderTicketSiteOptions();
+            renderAdminSiteOptions();
+            syncTabsWithNavigation();
+        }
+
+        function markStaticWorkspacePanes() {
+            document.querySelectorAll("#workspace > .workspace-section[id]").forEach(section => {
+                section.dataset.sectionPane = "true";
+                section.classList.add("tab-pane-hidden");
             });
         }
 
-
-        function resetInputs() {
-            document.getElementById("first_name").value="";
-            document.getElementById("last_name").value="";
-            document.getElementById("help_request_comment").value="";
-            document.getElementById("help_ticket_comment").value="";
-            document.getElementById("update_request_id").value="";
-            document.getElementById("update_ticket").value="";
-            document.getElementById("resolution").value="";
-        }
-
-        const employeeId = window.sessionStorage.getItem("token").split("_")[2];
-        const employeeType = window.sessionStorage.getItem("token").split("_")[1];
-        //alert(employeeId);
-        const tableName =  "reimbursement_requests";
-        
-        const fillURL = "http://localhost:8081/";
-        function pickEmployeeType() {
-            if(employeeType==1) {
-                const apiURL = "";
-                document.title="Panel del Cliente"
-                document.getElementById("roleLabel").innerText = "Cliente"
-                document.getElementById("createCollapseButton").innerText = "Crear solicitud de ayuda";
-                document.getElementById("employeeCreate").innerHTML = 
-                "<tr><td><h3>Ingrese la descripción de la solicitud:</h3></td><td><textarea id='help_request_comment' rows='5' cols='50'></textarea></td></tr>"+
-                "<tr><td><button id='create_request'onclick='createHelpRequest()'>Crear solicitud</button></td></tr>";
-                document.getElementById("viewCollapseButton").innerText = "Ver mi solicitud de ayuda";
-                document.getElementById("employeeView").innerHTML = "<tr><td><button id='view_request' onclick='viewHelpRequestStatus()'>Ver solicitud</button></td></tr><tr></tr>";
-                document.getElementById("updateCollapseButton").innerText = "Actualizar mi solicitud";
-                document.getElementById("employeeUpdate").innerHTML = "<tr><td><h3>Ingrese el ID de la solicitud:</h3></td> <td><input type = 'number' id= 'update_request_id'></td></tr> <tr><td><h3>Ingrese la descripción de la solicitud:</h3></td>"+
-                "<td><textarea id='update_request_comment' rows='5' cols='50'></textarea></td></tr><tr><td><button id='update_request' onclick='update_request()'>Actualizar solicitud</button></td></tr>";
-                document.getElementById("cancelCollapseButton").innerText = "Cancelar mi solicitud";
-                document.getElementById("employeeCancelResolve").innerHTML="<tr><td><h3>Ingrese el número ID de la solicitud:</h3></td><td><input type='number' id='ticket_requests_id'>"+
-                "</td></tr><tr><td><button id='cancel_request' onclick='cancelHelpRequest()'>Cancelar solicitud</button></td></tr>";
-            } else {
-                const apiURL = "http://localhost:8081/technician";
-                document.title="Panel del Técnico"
-                document.getElementById("roleLabel").innerText = "Técnico / Administrador"
-                document.getElementById("createCollapseButton").innerText = "Crear ticket";
-                document.getElementById("employeeCreate").innerHTML = "<tr><td><button id='view_request' onclick='viewOpenRequestsTech()'>Ver solicitudes pendientes</button></td></tr><tr></tr>";
-                document.getElementById("viewCollapseButton").innerText = "Ver mi ticket abierto";
-                document.getElementById("employeeView").innerHTML = "<tr><td><button id='view_ticket' onclick='viewOpenTicket()'>Ver mi ticket</button></td></tr><tr></tr>";
-                document.getElementById("updateCollapseButton").innerText = "Actualizar ticket";
-                document.getElementById("employeeUpdate").innerHTML = "<tr><td><h3>Ingrese el ID del ticket:</h3></td> <td><input type = 'number' id= 'update_ticket'></td></tr> <tr><td><h3>Ingrese la descripción del problema del cliente:</h3></td>"+
-                "<td><textarea id='update_ticket_comment' rows='5' cols='50'></textarea></td></tr><tr><td><button id='update_request' onclick='updateTicket()'>Actualizar ticket</button></td></tr>";
-                document.getElementById("cancelCollapseButton").innerText = "Resolver ticket";
-                document.getElementById("employeeCancelResolve").innerHTML = "<tr><td><button id='view_open_resolve' onclick='viewOpenTicketsFill()'>Ver tickets pendientes</button></td></tr><tr></tr>";
-                //document.getElementById("employeeCancelResolve").innerHTML = "<tr><td><h3>Ingrese el ID del ticket:</h3></td> <td><input type = 'number' id= 'cancel_ticket_id'></td></tr><tr><td><h3>Enter ticket request ID:</h3></td> <td><input type = 'number' id= 'cancel_ticket_request_id'></td></tr> <tr><td><h3>Enter description of how the issue was resolved:</h3></td>"+
-                //"<td><textarea id='resolution' rows='5' cols='50'></textarea></td></tr><tr><td><button id='update_request' onclick='resolveTicket()'>Resolver ticket</button></td></tr>";
-
-            }
-        }
-
-        async function updatePersonalInfo() {
-            updateJSON = {
-                'token': window.sessionStorage.getItem("token"),
-                'tableName': 'employees',
-                'employees_id': employeeId,
-                'first_name': document.getElementById("firstName").value,
-                'last_name': document.getElementById("lastName").value
-            }
-            let sendUpdate = {
-                method:"POST",
-                headers:{'Content-Type':"application/json"},
-                body: JSON.stringify(updateJSON)
-            }
-            let response = await fetch("http://localhost:8081/", sendUpdate);
-            //jsonResponse = await response.json();
-            if (response.status === 201) {
-                const apiResponse = await response.json();
-                swal.fire({
-                title: 'Información personal actualizada correctamente',
-                confirmButtonText: 'Continue'
-                }).then(function (result) {
-                /* Read more about isConfirmed, isDenied below */
-                document.location.reload();
-                if (result.isConfirmed) {
-                    document.location.reload();
-                } 
-                });
-            } else if (response.status === 400 || response.status === 404) { 
-                const apiResponse = await response.json();
-                // alert(apiResponse);
-                swal.fire(
-                    "No se pudo completar la solicitud",
-                    apiResponse.message,
-                    "error"
-                );
-                resetInputs();
-            } else {
-                let errorMessage = "Inténtalo nuevamente.";
-                try {
-                    const apiResponse = await response.json();
-                    if (apiResponse.message) {
-                        errorMessage = apiResponse.message;
-                    }
-                } catch (error) {
-                    console.error(error);
-                }
-                swal.fire(
-                    "Ocurrió un error inesperado",
-                    errorMessage,
-                    "error"
-                );
-
-            }
-        }
-
-        async function viewOpenRequestsTech() {
-            fillReasonJSON = {
-                'token': window.sessionStorage.getItem("token"),
-                'tableName': 'ticket_requests'
-            }
-            let sendFillReason = {
-                method:"POST",
-                headers:{'Content-Type':"application/json"},
-                body: JSON.stringify(fillReasonJSON)
-            }
-            let response = await fetch("http://localhost:8081/technician/", sendFillReason);
-            
-            if (response.status === 201) {
-                jsonResponse = await response.json();
-                document.getElementById("employeeCreate").innerHTML = "";
-                let fillFormString = "";
-                for(let ticket in jsonResponse) {
-                    for(let key in jsonResponse[ticket]) {
-                        fillFormString += "<tr>";
-                        if(key=="description") {
-                            fillFormString += "<td>"+jsonResponse[ticket].description+"</td>";
-                        }
-                        if(key=="ticket_requests_id") {
-                            fillFormString += "<td><button id='firstCreateTicketButton' onclick='fillTicketCreateForm("+jsonResponse[ticket].ticket_requests_id+")'>Crear ticket</button></td>";
-                        }
-                        fillFormString += "</tr>";
-                    }
-                }
-                document.getElementById("employeeCreate").innerHTML=fillFormString;
-            } else if (response.status === 400 || response.status === 404) { 
-                jsonResponse = await response.json();
-                // alert(apiResponse);
-                swal.fire({
-                title: 'Unable to complete request!'+jsonResponse.message,
-                confirmButtonText: 'Continue'
-                }).then(function (result) {
-                /* Read more about isConfirmed, isDenied below */
-               // document.location.reload();
-                if (result.isConfirmed) {
-                    document.location.reload();
-                } 
-                });
-            } else {
-                swal.fire(
-                    "Ocurrió un error inesperado",
-                    "Inténtalo nuevamente.",
-                    "error"
+        function renderNavigation() {
+            const nav = document.getElementById("roleNav");
+            const items = [];
+            if (state.user.role === "USER") {
+                items.push(
+                    { sectionId: "userOverviewSection", label: "Resumen" },
+                    { sectionId: "newCaseSection", label: "Crear solicitud" },
+                    { sectionId: "casesSection", label: "Mis casos" },
+                    { sectionId: "ticketsSection", label: "Mis tickets" }
                 );
             }
-        }
-
-        async function viewOpenTicketsFill() {
-            fillReasonJSON = {
-                'token': window.sessionStorage.getItem("token"),
-                'tableName': 'tickets'
-            }
-            let sendFillReason = {
-                method:"PUT",
-                headers:{'Content-Type':"application/json"},
-                body: JSON.stringify(fillReasonJSON)
-            }
-            let response = await fetch("http://localhost:8081/technician/", sendFillReason);
-            if (response.status === 201) {
-                jsonResponse = await response.json();
-                document.getElementById("employeeCancelResolve").innerHTML = "";
-                let fillFormString = "";
-                for(let ticket in jsonResponse) {
-                    for(let key in jsonResponse[ticket]) {
-                        fillFormString += "<tr>";
-                        if(key=="ticket_comments") {
-                            fillFormString += "<td>"+jsonResponse[ticket].ticket_comments+"</td>";
-                        }
-                        if(key=="ticket_requests_id") {
-                            fillFormString += "<td><button id='firstResolveButton' onclick='fillTicketResolveForm("+jsonResponse[ticket].tickets_id+","+jsonResponse[ticket].ticket_requests_id+")'>Resolver ticket</button></td>";
-                        }
-                        fillFormString += "</tr>";
-                    }
-                }
-                document.getElementById("employeeCancelResolve").innerHTML=fillFormString;
-            } else if (response.status === 400 || response.status === 404) { 
-                jsonResponse = await response.json();
-                // alert(apiResponse);
-                swal.fire({
-                title: 'Unable to complete request!'+jsonResponse.message,
-                confirmButtonText: 'Continue'
-                }).then(function (result) {
-                /* Read more about isConfirmed, isDenied below */
-               // document.location.reload();
-                if (result.isConfirmed) {
-                    document.location.reload();
-                } 
-                });
-            } else {
-                swal.fire(
-                    "Ocurrió un error inesperado",
-                    "Inténtalo nuevamente.",
-                    "error"
-                );
-
-            }
-        }
-
-
-        async function fillTicketResolveForm(ticketsId,ticketRequestsId) {
-            document.getElementById("employeeCancelResolve").innerHTML="";
-            document.getElementById("employeeCancelResolve").innerHTML="<tr><td><h3>Ingrese la descripción de la solución:</h3></td>"+
-                "<td><textarea id='resolution' rows='5' cols='50'></textarea>";
-            document.getElementById("employeeCancelResolve").innerHTML += 
-                "</td></tr><tr><td><button id='resolve_button' onclick='resolveTicket("+ticketsId+","+ticketRequestsId+")'>Resolver ticket</button></td></tr>";
-        }
-
-
-        async function fillTicketCreateForm(ticketRequestsId) {          
-
-            fillReasonJSON = {
-                'token': window.sessionStorage.getItem("token"),
-                'tableName': 'ticket_category'
-            }
-            let sendFillReason = {
-                method:"PATCH",
-                headers:{'Content-Type':"application/json"},
-                body: JSON.stringify(fillReasonJSON)
-            }
-            let response = await fetch("http://localhost:8081/technician/", sendFillReason);
-            if (response.status === 201) {
-                jsonResponse = await response.json();
-                document.getElementById("employeeCreate").innerHTML="<tr><td><h3>Ingrese la descripción del problema del cliente:</h3></td>"+
-                "<td><textarea id='help_ticket_comment' rows='5' cols='50'></textarea></td></tr><tr><td><select id='categoryList' name='categories'>";
-                const selectToPop = document.getElementById("categoryList");
-                let defOption = document.createElement("option");
-                defOption.value="0";
-                defOption.text="Please select category...";
-                selectToPop.append(defOption);
-                for(let category in jsonResponse) {
-                    let nextOption = document.createElement("option");
-                    for(let key in jsonResponse[category]) {
-                        nextOption.value=jsonResponse[category].type_id;
-                        nextOption.index=jsonResponse[category].type_id;
-                        nextOption.text=jsonResponse[category].description;      
-                    }
-                    selectToPop.append(nextOption);
-                    }
-                document.getElementById("employeeCreate").innerHTML += 
-                "</select></td></tr><tr><td><button id='create_request' onclick='createTicket("+ticketRequestsId+")'>Crear ticket</button></td></tr>";
-            } else if (response.status === 400 || response.status === 404) { 
-                const apiResponse = await response.json();
-                // alert(apiResponse);
-                swal.fire(
-                    "No se pudo completar la solicitud",
-                    apiResponse.message,
-                    "error"
-                );
-                resetInputs();
-            } else {
-                swal.fire(
-                    "Ocurrió un error inesperado",
-                    "Inténtalo nuevamente.",
-                    "error"
-                );
-
-            }
-
-            
-        }
-
-
-
-        async function createTicket(ticketRequestsId) {
-            const description = document.getElementById("help_ticket_comment").value;
-            helpRequestJSON = {
-                'token': window.sessionStorage.getItem("token"),
-                'tableName': 'tickets',
-                'employee_id': employeeId,
-                'ticket_requests_id': ticketRequestsId,
-                'category': document.getElementById("categoryList").value,
-                'ticket_comments': description
-            }
-            let sendRequest = {
-                method:"POST",
-                headers:{'Content-Type':"application/json"},
-                body: JSON.stringify(helpRequestJSON)
-            }
-            const response = await fetch("http://localhost:8081/technician/requests", sendRequest);
-            if (response.status === 201) {
-                const apiResponse = await response.json();
-                swal.fire({
-                title: 'Solicitud generada correctamente con ID número '+String(apiResponse.tickets_id),
-                confirmButtonText: 'Continue'
-                }).then(function (result) {
-                /* Read more about isConfirmed, isDenied below */
-                document.location.reload();
-                if (result.isConfirmed) {
-                    document.location.reload();
-                } 
-                });
-            } else if (response.status === 400 || response.status === 404) { 
-                const apiResponse = await response.json();
-                // alert(apiResponse);
-                swal.fire(
-                    "No se pudo completar la solicitud",
-                    apiResponse.message,
-                    "error"
-                );
-                resetInputs();
-            } else {
-                let errorMessage = "Inténtalo nuevamente.";
-                try {
-                    const apiResponse = await response.json();
-                    if (apiResponse.message) {
-                        errorMessage = apiResponse.message;
-                    }
-                } catch (error) {
-                    console.error(error);
-                }
-                swal.fire(
-                    "Ocurrió un error inesperado",
-                    errorMessage,
-                    "error"
-                );
-
-            }
-        }
-
-        async function updateTicket(ticketRequestsId){
-            const description = document.getElementById("update_ticket_comment").value;
-            helpRequestJSON = {
-                'token': window.sessionStorage.getItem("token"),
-                'tableName': 'tickets',
-                'employee_id': employeeId,
-                'ticket_requests_id': ticketRequestsId,
-                'category': 1,
-                'ticket_comments': description,
-                'tickets_id': document.getElementById('update_ticket').value
-            }
-            let sendRequest = {
-                method:"PATCH",
-                headers:{'Content-Type':"application/json"},
-                body: JSON.stringify(helpRequestJSON)
-            }
-            const response = await fetch("http://localhost:8081/technician/requests", sendRequest);
-            if (response.status === 201) {
-                const apiResponse = await response.json();
-                swal.fire({
-                title: 'Solicitud actualizada correctamente con ID número '+String(apiResponse.tickets_id),
-                confirmButtonText: 'Continue'
-                }).then(function (result) {
-                /* Read more about isConfirmed, isDenied below */
-                document.location.reload();
-                if (result.isConfirmed) {
-                    document.location.reload();
-                } 
-                });
-            } else if (response.status === 400 || response.status === 404) { 
-                const apiResponse = await response.json();
-                // alert(apiResponse);
-                swal.fire(
-                    "No se pudo completar la solicitud",
-                    apiResponse.message,
-                    "error"
-                );
-                // resetInputs();
-            } else {
-                swal.fire(
-                    "Ocurrió un error inesperado",
-                    "Inténtalo nuevamente.",
-                    "error"
-                );
-
-            }
-        }
-
-        async function viewOpenTicket(){
-            helpRequestJSON = {
-                'token': window.sessionStorage.getItem("token"),
-                'tableName': 'tickets',
-                'employee_id': employeeId
-            }
-            let sendRequest = {
-                method:"PUT",
-                headers:{'Content-Type':"application/json"},
-                body: JSON.stringify(helpRequestJSON)
-            }
-            const response = await fetch("http://localhost:8081/client/requests", sendRequest);
-            if (response.status === 201) {
-                const apiResponse = await response.json();
-                swal.fire({
-                title: 'Tu ticket abierto ID #' +String(apiResponse.tickets_id),
-                confirmButtonText: 'Continue'
-                }).then(function (result) {
-                /* Read more about isConfirmed, isDenied below */
-                if (result.isConfirmed) {
-                   document.location.reload();
-                } 
-                });
-                } else if (response.status === 400) { 
-                const apiResponse = await response.json();
-                swal.fire(
-                    "No se pudo completar la solicitud",
-                    apiResponse.message,
-                    "error"
-                );
-                resetInputs();
-            } else {
-                swal(
-                    "Ocurrió un error inesperado",
-                    "Inténtalo nuevamente.",
-                    "error"
+            if (state.user.role === "TECH") {
+                items.push(
+                    { sectionId: "dashboardSection", label: "Dashboard" },
+                    { sectionId: "queuesSection", label: "Crear ticket" },
+                    { sectionId: "casesSection", label: "Casos" },
+                    { sectionId: "ticketsSection", label: "Tickets" }
                 );
             }
-        }
-
-
-
-        function doLogout() {
-            window.sessionStorage.removeItem("token");
-            swal.fire({
-                title: 'Sesión cerrada correctamente',
-                confirmButtonText: 'return to log in page.',
-                }).then(function (result) {
-                /* Read more about isConfirmed, isDenied below */
-                if (result.isConfirmed) {
-                    window.location.href="login.html"
-                } 
+            if (state.user.role === "ADMIN") {
+                items.push(
+                    { sectionId: "adminManagementSection", label: "Usuarios" },
+                    { sectionId: "newCaseSection", label: "Crear solicitud" },
+                    { sectionId: "dashboardSection", label: "Dashboard" },
+                    { sectionId: "queuesSection", label: "Crear ticket" },
+                    { sectionId: "casesSection", label: "Casos" },
+                    { sectionId: "ticketsSection", label: "Tickets" }
+                );
+            }
+            state.navItems = items;
+            nav.innerHTML = items.map((item, index) =>
+                `<button class="nav-button ${index === 0 ? "active" : ""}" type="button" data-section="${escapeAttr(item.sectionId)}">${escapeHtml(item.label)}</button>`
+            ).join("");
+            nav.querySelectorAll(".nav-button").forEach(button => {
+                button.addEventListener("click", () => openSectionTab(button.dataset.section));
             });
         }
 
-        async function createHelpRequest() {
-            const description = document.getElementById("help_request_comment").value;
-            helpRequestJSON = {
-                'token': window.sessionStorage.getItem("token"),
-                'tableName': 'ticket_requests',
-                'employee_id': employeeId,
-                'description': description
+        function syncTabsWithNavigation() {
+            const availableSections = new Set(state.navItems.map(item => item.sectionId));
+            state.tabs = state.tabs.filter(tab => tab.type !== "section" || availableSections.has(tab.sectionId));
+            if (!state.tabs.length && state.navItems.length) {
+                openSectionTab(state.navItems[0].sectionId);
+                return;
             }
-            let sendRequest = {
-                method:"POST",
-                headers:{'Content-Type':"application/json"},
-                body: JSON.stringify(helpRequestJSON)
+            if (!state.tabs.some(tab => tab.id === state.activeTabId)) {
+                activateTab(state.tabs.length ? state.tabs[0].id : null);
+                return;
             }
-            const response = await fetch("http://localhost:8081/client/requests", sendRequest);
-            if (response.status === 201) {
-                const apiResponse = await response.json();
-                swal.fire({
-                title: 'Solicitud actualizada correctamente con ID número '+String(apiResponse.ticket_requests_id),
-                confirmButtonText: 'Continue'
-                }).then(function (result) {
-                /* Read more about isConfirmed, isDenied below */
-                if (result.isConfirmed) {
-                    document.location.reload();
-                } 
-                });
-            } else if (response.status === 400 || response.status === 404) { 
-                const apiResponse = await response.json();
-                // alert(apiResponse);
-                swal.fire(
-                    "No se pudo completar la solicitud",
-                    apiResponse.message,
-                    "error"
-                );
-                resetInputs();
-            } else {
-                swal.fire(
-                    "Ocurrió un error inesperado",
-                    "Inténtalo nuevamente.",
-                    "error"
-                );
+            renderTabs();
+            updateWorkspacePanes();
+            setActiveNav(activeSectionId());
+        }
 
+        function openSectionTab(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (!section) {
+                return;
+            }
+            closeProfileDrawer();
+            const existing = state.tabs.find(tab => tab.type === "section" && tab.sectionId === sectionId);
+            if (existing) {
+                activateTab(existing.id);
+                return;
+            }
+            const navItem = state.navItems.find(item => item.sectionId === sectionId);
+            const tab = {
+                id: sectionTabId(sectionId),
+                type: "section",
+                sectionId,
+                paneId: sectionId,
+                label: navItem ? navItem.label : sectionLabel(section)
+            };
+            state.tabs.push(tab);
+            activateTab(tab.id);
+        }
+
+        function renderTabs() {
+            const tabs = document.getElementById("workspaceTabs");
+            tabs.innerHTML = state.tabs.map(tab => `
+                <div class="workspace-tab ${tab.id === state.activeTabId ? "active" : ""}" role="presentation">
+                    <button class="workspace-tab-select" type="button" role="tab"
+                        aria-selected="${tab.id === state.activeTabId ? "true" : "false"}"
+                        aria-controls="${escapeAttr(tab.paneId)}"
+                        title="${escapeAttr(tab.title || tab.label)}"
+                        data-tab-id="${escapeAttr(tab.id)}">
+                        <span class="workspace-tab-label">${escapeHtml(tab.label)}</span>
+                    </button>
+                    <button class="workspace-tab-close" type="button" aria-label="Cerrar ${escapeAttr(tab.label)}" data-tab-id="${escapeAttr(tab.id)}">&times;</button>
+                </div>
+            `).join("");
+            tabs.querySelectorAll(".workspace-tab-select").forEach(button => {
+                button.addEventListener("click", () => activateTab(button.dataset.tabId));
+            });
+            tabs.querySelectorAll(".workspace-tab-close").forEach(button => {
+                button.addEventListener("click", event => {
+                    event.stopPropagation();
+                    closeTab(button.dataset.tabId);
+                });
+            });
+        }
+
+        function activateTab(tabId) {
+            if (!tabId) {
+                state.activeTabId = null;
+                state.activeCaseId = null;
+                renderTabs();
+                updateWorkspacePanes();
+                setActiveNav(null);
+                return;
+            }
+            const tab = state.tabs.find(item => item.id === tabId);
+            if (!tab) {
+                return;
+            }
+            state.activeTabId = tab.id;
+            state.activeCaseId = tab.type === "case" ? tab.caseId : (tab.type === "ticket" ? tab.caseId : null);
+            renderTabs();
+            updateWorkspacePanes();
+            setActiveNav(tab.type === "section" ? tab.sectionId : null);
+            const pane = document.getElementById(tab.paneId);
+            if (pane) {
+                pane.scrollIntoView({ behavior: "smooth", block: "start" });
             }
         }
 
-
-        
-
-        async function update_request(){
-            const description = document.getElementById("update_request_comment").value;
-            helpRequestJSON = {
-                'token': window.sessionStorage.getItem("token"),
-                'tableName': 'ticket_requests',
-                'employee_id': employeeId,
-                'description': description,
-                'ticket_requests_id': document.getElementById('update_request_id').value
+        function closeTab(tabId) {
+            const index = state.tabs.findIndex(tab => tab.id === tabId);
+            if (index < 0) {
+                return;
             }
-            // alert (helpRequestJSON);
-            let sendRequest = {
-                method: "PATCH",
-                headers:{'Content-Type':"application/json"},
-                body: JSON.stringify(helpRequestJSON)
-            }
-            const response = await fetch("http://localhost:8081/client/requests", sendRequest);
-            if (response.status === 201) {
-                const apiResponse = await response.json();
-                swal.fire({
-                title: 'Solicitud actualizada correctamente con ID número '+String(apiResponse.ticket_requests_id),
-                confirmButtonText: 'Continue'
-                }).then(function (result) {
-                /* Read more about isConfirmed, isDenied below */
-                document.location.reload();
-                if (result.isConfirmed) {
-                    document.location.reload();
-                } 
-                });
-            } else if (response.status === 400 || response.status === 404) { 
-                const apiResponse = await response.json();
-                // alert(apiResponse);
-                swal.fire(
-                    "No se pudo completar la solicitud",
-                    apiResponse.message,
-                    "error"
-                );
-                // document.location.reload();
-            } else {
-                swal.fire({
-                    title: "Ocurrió un error inesperado",
-                    body: "Inténtalo nuevamente. error",
-                    confirmButtonText: 'Okay'
-                });
-                
-            }
-        }
-
-
-        async function viewHelpRequestStatus() {
-            viewHelpRequestStatusJSON = {
-
-                'token': window.sessionStorage.getItem("token"),
-                'tableName': 'ticket_requests',
-                'employee_id': employeeId,
-            }
-            let sendRequest = {
-                method:"PUT",
-                headers:{'Content-Type':"application/json"},
-                body: JSON.stringify(viewHelpRequestStatusJSON)
-            }
-            const response = await fetch("http://localhost:8081/client/requests", sendRequest);
-            if (response.status === 201) {
-                const apiResponse = await response.json();
-                let statusPhrase = "";
-                //alert(apiResponse.status_id);
-                if (apiResponse.status_id == "1"){
-                    statusPhrase = "open";
+            const wasActive = state.tabs[index].id === state.activeTabId;
+            const closed = state.tabs.splice(index, 1)[0];
+            if (closed.type === "case" || closed.type === "ticket") {
+                const pane = document.getElementById(closed.paneId);
+                if (pane) {
+                    pane.remove();
                 }
-                else {
-                    statusPhrase = "close";
+            }
+            if (!state.tabs.length) {
+                state.activeTabId = null;
+                state.activeCaseId = null;
+                if (state.navItems.length) {
+                    openSectionTab(state.navItems[0].sectionId);
+                    return;
                 }
-                swal.fire({
-                title: 'Your help request status for help request id #' +String(apiResponse.ticket_requests_id)+ ' is ' +String(statusPhrase),
-                confirmButtonText: 'Continue'
-                }).then(function (result) {
-                /* Read more about isConfirmed, isDenied below */
-                if (result.isConfirmed) {
-                   document.location.reload();
-                } 
-                });
-                } else if (response.status === 400) { 
-                const apiResponse = await response.json();
-                swal.fire(
-                    "No se pudo completar la solicitud",
-                    apiResponse.message,
-                    "error"
-                );
-                resetInputs();
-            } else {
-                swal(
-                    "Ocurrió un error inesperado",
-                    "Inténtalo nuevamente.",
-                    "error"
-                );
             }
+            if (wasActive) {
+                const next = state.tabs[Math.max(0, index - 1)] || state.tabs[0];
+                activateTab(next ? next.id : null);
+                return;
+            }
+            renderTabs();
+            updateWorkspacePanes();
         }
 
-        async function cancelHelpRequest() {
-            const ticket_requests_id = document.getElementById("ticket_requests_id").value;
-            cancelHelpRequestByIdJSON = {
-                'token': window.sessionStorage.getItem("token"),
-                'tableName': 'ticket_requests',
-                'ticket_requests_id': ticket_requests_id
-            }
-            let sendRequest = {
-                method:"DELETE",
-                headers:{'Content-Type':"application/json"},
-                body: JSON.stringify(cancelHelpRequestByIdJSON)
-            }
-            const response = await fetch("http://localhost:8081/client/requests", sendRequest);
-            if (response.status === 201) {
-                const apiResponse = await response.json();
-                swal.fire({
-                title: 'La solicitud fue cancelada correctamente.',
-                confirmButtonText: 'Continue'
-                }).then(function (result) {
-                /* Read more about isConfirmed, isDenied below */
-                if (result.isConfirmed) {
-                    document.location.reload();
-                } 
-                });
-            } else if (response.status === 400) { 
-                const apiResponse = await response.json();
-                swal.fire(
-                    "No se pudo completar la solicitud",
-                    apiResponse.message,
-                    "error"
-                );
-                resetInputs();
-            } else {
-                swal(
-                    "Ocurrió un error inesperado",
-                    "Inténtalo nuevamente.",
-                    "error"
-                );
-
-            }
+        function updateWorkspacePanes() {
+            const activeTab = state.tabs.find(tab => tab.id === state.activeTabId);
+            document.querySelectorAll("#workspace > .workspace-section[data-section-pane='true']").forEach(section => {
+                section.classList.toggle("tab-pane-hidden", !activeTab || activeTab.type !== "section" || activeTab.sectionId !== section.id);
+            });
+            document.querySelectorAll("#workspace > .workspace-section[data-case-pane='true']").forEach(section => {
+                section.classList.toggle("tab-pane-hidden", !activeTab || activeTab.type !== "case" || activeTab.paneId !== section.id);
+            });
+            document.querySelectorAll("#workspace > .workspace-section[data-ticket-pane='true']").forEach(section => {
+                section.classList.toggle("tab-pane-hidden", !activeTab || activeTab.type !== "ticket" || activeTab.paneId !== section.id);
+            });
         }
 
-        async function resolveTicket(ticketsId,ticketRequestsId) {
-        
-            const resolution = document.getElementById("resolution").value;
-//            const cancel_ticket_id = document.getElementById("cancel_ticket_id").value;
-//            const cancel_ticket_request_id = document.getElementById("cancel_ticket_request_id").value;
-            resolveTicketByIdJSON = {
-                'token': window.sessionStorage.getItem("token"),
-                'tableName': 'tickets',
-                'employee_id': employeeId,
-                'resolution': resolution,
-                'tickets_id': ticketsId,
-                'ticket_requests_id': ticketRequestsId
-            }
-            let sendRequest = {
-                method:"DELETE",
-                headers:{'Content-Type':"application/json"},
-                body: JSON.stringify(resolveTicketByIdJSON)
-            }
-            const response = await fetch("http://localhost:8081/technician/requests", sendRequest);
-            if (response.status === 201) {
-                const apiResponse = await response.json();
-                swal.fire({
-                title: 'El ticket fue resuelto correctamente.',
-                confirmButtonText: 'Continue'
-                }).then(function (result) {
-                /* Read more about isConfirmed, isDenied below */
-                if (result.isConfirmed) {
-                    document.location.reload();
-                } 
-                });
-            } else if (response.status === 400) { 
-                const apiResponse = await response.json();
-                swal.fire(
-                    "No se pudo completar la solicitud",
-                    apiResponse.message,
-                    "error"
-                );
-                resetInputs();
-            } else {
-                swal(
-                    "Ocurrió un error inesperado",
-                    "Inténtalo nuevamente.",
-                    "error"
-                );
-
-            }
+        function activeSectionId() {
+            const tab = state.tabs.find(item => item.id === state.activeTabId);
+            return tab && tab.type === "section" ? tab.sectionId : null;
         }
 
-        let coll = document.getElementsByClassName("collapsible");
-        let i;
+        function sectionTabId(sectionId) {
+            return "section-" + sectionId;
+        }
 
-        for (i = 0; i < coll.length; i++) {
-            coll[i].addEventListener("click", function() {
-                this.classList.toggle("active");
-                let content = this.nextElementSibling;
-                if (content.style.display === "block") {
-                content.style.display = "none";
+        function caseTabId(caseId) {
+            return "case-" + caseId;
+        }
+
+        function casePaneId(caseId) {
+            return "casePane-" + caseId;
+        }
+
+        function ticketTabId(ticketId) {
+            return "ticket-" + ticketId;
+        }
+
+        function ticketPaneId(ticketId) {
+            return "ticketPane-" + ticketId;
+        }
+
+        function sectionLabel(section) {
+            const heading = section.querySelector("h1, h2, h3");
+            return heading ? heading.textContent.trim() : "Vista";
+        }
+
+        function setActiveNav(sectionId) {
+            document.querySelectorAll("#roleNav .nav-button").forEach(button => {
+                button.classList.toggle("active", Boolean(sectionId) && button.dataset.section === sectionId);
+            });
+        }
+
+        async function loadSites() {
+            state.sites = await api("/sites");
+            renderSiteOptions();
+            renderTicketSiteOptions();
+            renderAdminSiteOptions();
+            await onSiteChanged();
+        }
+
+        async function loadTechnicians() {
+            state.technicians = await api("/users/technicians");
+        }
+
+        async function loadAdminUsers() {
+            if (!isAdmin()) {
+                return;
+            }
+            state.users = await api("/admin/users");
+            renderAdminUsersTable();
+            if (state.editingUserId) {
+                const selected = findAdminUser(state.editingUserId);
+                if (selected) {
+                    fillAdminUserEditor(selected);
                 } else {
-                content.style.display = "block";
+                    clearAdminUserEditor();
+                }
+            }
+        }
+
+        function renderSiteOptions() {
+            const select = document.getElementById("caseSite");
+            select.innerHTML = "<option value=''>Seleccione sede</option>" +
+                state.sites.map(site => `<option value="${site.siteId}">${escapeHtml(site.name)}</option>`).join("");
+        }
+
+        function renderTicketSiteOptions() {
+            const select = document.getElementById("ticketSiteFilter");
+            select.innerHTML = "<option value=''>Todas</option>" +
+                state.sites.map(site => `<option value="${site.siteId}">${escapeHtml(site.name)}</option>`).join("");
+        }
+
+        function renderAdminSiteOptions() {
+            const select = document.getElementById("adminLocationSite");
+            select.innerHTML = "<option value=''>Seleccione sede</option>" +
+                state.sites.map(site => `<option value="${site.siteId}">${escapeHtml(site.name)}</option>`).join("");
+        }
+
+        async function onSiteChanged() {
+            const siteId = document.getElementById("caseSite").value;
+            const select = document.getElementById("caseLocation");
+            if (!siteId) {
+                select.innerHTML = "<option value=''>Sin ubicacion</option>";
+                select.disabled = true;
+                return;
+            }
+            const locations = await api("/sites/" + siteId + "/locations");
+            select.disabled = false;
+            select.innerHTML = "<option value=''>Sin ubicacion especifica</option>" +
+                locations.map(location => `<option value="${location.locationId}">${escapeHtml(labelFor(location.type))} - ${escapeHtml(location.name)}</option>`).join("");
+        }
+
+        async function refreshAll(options) {
+            const refreshTabs = !options || options.refreshTabs !== false;
+            const work = [refreshCases(), refreshTickets()];
+            if (canOperateTickets()) {
+                work.push(refreshQueues());
+                work.push(refreshDashboard());
+            }
+            if (isAdmin()) {
+                work.push(loadAdminUsers());
+            }
+            await Promise.all(work);
+            renderUserOverview();
+            if (refreshTabs) {
+                await refreshOpenOperationalTabs();
+            }
+        }
+
+        async function refreshOpenOperationalTabs() {
+            const operationalTabs = state.tabs.filter(tab => tab.type === "case" || tab.type === "ticket");
+            await Promise.all(operationalTabs.map(tab => {
+                if (tab.type === "ticket") {
+                    return refreshTicketTab(tab.ticketId, false);
+                }
+                return refreshCaseTab(tab.caseId, false);
+            }));
+        }
+
+        async function refreshDashboard() {
+            if (!canOperateTickets()) {
+                return;
+            }
+            const params = new URLSearchParams();
+            const dateFrom = document.getElementById("dashboardDateFrom").value;
+            const dateTo = document.getElementById("dashboardDateTo").value;
+            if (dateFrom) params.set("dateFrom", dateFrom);
+            if (dateTo) params.set("dateTo", dateTo);
+            const suffix = params.toString() ? "?" + params.toString() : "";
+            const dashboard = await api("/dashboard/technician" + suffix);
+            renderDashboard(dashboard);
+        }
+
+        function renderDashboard(dashboard) {
+            document.getElementById("dashboardScope").textContent =
+                (dashboard.scope === "ALL" ? "Vista ADMIN global" : "Vista de tickets asignados") +
+                " | " + dashboard.dateFrom + " a " + dashboard.dateTo;
+            const metrics = dashboard.byType || [];
+            document.getElementById("dashboardMetrics").innerHTML = metrics.map(renderMetricPanel).join("");
+        }
+
+        function renderMetricPanel(metric) {
+            const within = Number(metric.withinSlaPercent || 0);
+            const outside = Number(metric.outsideSlaPercent || 0);
+            const typeLabel = labelFor(metric.type);
+            return `
+                <article class="metric-panel" aria-label="Metricas ${escapeAttr(typeLabel)}">
+                    <header>
+                        <h3>${escapeHtml(typeLabel)}</h3>
+                        ${badge(metric.type)}
+                    </header>
+                    <div class="metric-total">${metric.ticketsTotal || 0}</div>
+                    <div class="metric-list">
+                        ${metricRow("Sin ticket", metric.casesWithoutTicket)}
+                        ${metricRow(labelFor("OPEN"), metric.openTickets)}
+                        ${metricRow(labelFor("IN_PROGRESS"), metric.inProgressTickets)}
+                        ${metricRow("Resueltos/cerrados", metric.resolvedTickets)}
+                        ${metricRow("En advertencia", metric.warningTickets)}
+                    </div>
+                    <div class="sla-bars">
+                        ${slaBar("Dentro de SLA", within, "ok", metric.withinSla)}
+                        ${slaBar("Fuera de SLA", outside, "out", metric.outsideSla)}
+                    </div>
+                </article>
+            `;
+        }
+
+        function metricRow(label, value) {
+            return `<div class="metric-row"><span>${escapeHtml(label)}</span><strong>${Number(value || 0)}</strong></div>`;
+        }
+
+        function slaBar(label, percent, kind, count) {
+            const safePercent = Math.max(0, Math.min(100, Number(percent || 0)));
+            return `
+                <div>
+                    <div class="sla-bar-label">
+                        <span>${escapeHtml(label)}</span>
+                        <span>${safePercent.toFixed(1)}% (${Number(count || 0)})</span>
+                    </div>
+                    <div class="sla-bar-track" role="meter" aria-label="${escapeAttr(label)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${safePercent.toFixed(1)}">
+                        <div class="sla-bar-fill ${kind === "out" ? "out" : ""}" style="width: ${safePercent}%"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function setDefaultDashboardDates() {
+            const from = document.getElementById("dashboardDateFrom");
+            const to = document.getElementById("dashboardDateTo");
+            if (!from.value || !to.value) {
+                const today = new Date();
+                const past = new Date(today.getTime());
+                past.setDate(today.getDate() - 30);
+                if (!from.value) from.value = dateInputValue(past);
+                if (!to.value) to.value = dateInputValue(today);
+            }
+        }
+
+        async function refreshQueues() {
+            const requestCases = await api("/queues/service-cases?type=REQUEST");
+            const incidentCases = await api("/queues/service-cases?type=INCIDENT");
+            renderCasesTable("requestQueue", requestCases, true);
+            renderCasesTable("incidentQueue", incidentCases, true);
+        }
+
+        async function refreshCases() {
+            const cases = await api("/service-cases");
+            state.cases = cases || [];
+            renderCasesTable("casesTable", cases, false);
+        }
+
+        async function refreshTickets() {
+            const params = new URLSearchParams();
+            const type = document.getElementById("ticketTypeFilter").value;
+            const status = document.getElementById("ticketStatusFilter").value;
+            const siteId = document.getElementById("ticketSiteFilter").value;
+            const due = document.getElementById("ticketDueFilter").value;
+            const dateFrom = document.getElementById("ticketDateFrom").value;
+            const dateTo = document.getElementById("ticketDateTo").value;
+            const query = document.getElementById("ticketSearch").value.trim();
+            if (type) params.set("type", type);
+            if (status) params.set("status", status);
+            if (siteId) params.set("siteId", siteId);
+            if (due) params.set("due", due);
+            if (dateFrom) params.set("dateFrom", dateFrom);
+            if (dateTo) params.set("dateTo", dateTo);
+            if (query) params.set("q", query);
+            const suffix = params.toString() ? "?" + params.toString() : "";
+            const tickets = await api("/tickets" + suffix);
+            state.tickets = tickets || [];
+            renderTicketsGroup(tickets);
+        }
+
+        function renderUserOverview() {
+            if (!state.user || state.user.role !== "USER") {
+                return;
+            }
+            const cases = state.cases || [];
+            const tickets = state.tickets || [];
+            const openCases = cases.filter(item => item.status === "OPEN").length;
+            const activeTickets = tickets.filter(item => item.status === "IN_PROGRESS" || item.status === "OPEN").length;
+            const breached = cases.filter(item => item.sla && item.sla.code === "BREACHED").length +
+                tickets.filter(item => item.sla && item.sla.code === "BREACHED").length;
+            document.getElementById("userOverviewCards").innerHTML = [
+                summaryCard("Casos registrados", cases.length),
+                summaryCard("Casos abiertos", openCases),
+                summaryCard("Tickets en atencion", activeTickets),
+                summaryCard("Fuera de SLA", breached)
+            ].join("");
+        }
+
+        function summaryCard(label, value) {
+            return `<article class="summary-card"><span>${escapeHtml(label)}</span><strong>${Number(value || 0)}</strong></article>`;
+        }
+
+        function renderCasesTable(targetId, cases, isQueue) {
+            const target = document.getElementById(targetId);
+            if (!cases || cases.length === 0) {
+                target.innerHTML = "<div class='empty'>Sin registros.</div>";
+                return;
+            }
+            if (!isQueue && state.user && state.user.role === "USER") {
+                target.innerHTML = renderCaseCards(cases);
+                return;
+            }
+            target.innerHTML = `<div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Numero</th>
+                            <th>Tipo</th>
+                            <th>Titulo</th>
+                            <th>Estado</th>
+                            <th>Prioridad</th>
+                            <th>SLA</th>
+                            <th>Sede / ubicacion</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${cases.map(item => `<tr>
+                            <td>${escapeHtml(item.caseNumber)}</td>
+                            <td>${badge(item.type)}</td>
+                            <td>${escapeHtml(item.title)}</td>
+                            <td>${badge(item.status)}</td>
+                            <td>${badge(item.priority)}</td>
+                            <td>${slaBadge(item.sla)}</td>
+                            <td>${escapeHtml(joinLocation(item.siteName, item.locationName))}</td>
+                            <td><button class="btn ${isQueue ? "blue" : "secondary"}" type="button" onclick="openCase(${item.caseId})">${isQueue ? "Atender" : "Ver"}</button></td>
+                        </tr>`).join("")}
+                    </tbody>
+                </table>
+            </div>`;
+        }
+
+        function renderCaseCards(cases) {
+            return `<div class="card-grid">${cases.map(item => `
+                <article class="case-card">
+                    <header>
+                        <div class="case-card-title">
+                            <span>${escapeHtml(item.caseNumber)}</span>
+                            <strong>${escapeHtml(item.title)}</strong>
+                        </div>
+                        ${slaBadge(item.sla)}
+                    </header>
+                    <div class="card-badges">
+                        ${badge(item.type)}
+                        ${badge(item.status)}
+                        ${badge(item.priority)}
+                    </div>
+                    <div class="card-meta">
+                        <span>${escapeHtml(joinLocation(item.siteName, item.locationName))}</span>
+                        <span>Creado: ${escapeHtml(formatDate(item.createdAt))}</span>
+                        <span>Vence: ${escapeHtml(formatDate(item.dueAt))}</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn secondary" type="button" onclick="openCase(${item.caseId})">Ver detalle</button>
+                    </div>
+                </article>
+            `).join("")}</div>`;
+        }
+
+        function renderTicketsGroup(tickets) {
+            const groups = {
+                OPEN: [],
+                IN_PROGRESS: [],
+                RESOLVED: []
+            };
+            (tickets || []).forEach(ticket => {
+                if (groups[ticket.status]) {
+                    groups[ticket.status].push(ticket);
+                } else if (ticket.status === "CLOSED" || ticket.status === "CANCELLED") {
+                    groups.RESOLVED.push(ticket);
                 }
             });
-        } 
-    
-</script>
+            renderTicketsTable("ticketsOpen", groups.OPEN);
+            renderTicketsTable("ticketsProgress", groups.IN_PROGRESS);
+            renderTicketsTable("ticketsResolved", groups.RESOLVED);
+        }
+
+        function renderTicketsTable(targetId, tickets) {
+            const target = document.getElementById(targetId);
+            if (!tickets || tickets.length === 0) {
+                target.innerHTML = "<div class='empty'>Sin tickets.</div>";
+                return;
+            }
+            if (state.user && state.user.role === "USER") {
+                target.innerHTML = renderTicketCards(tickets);
+                return;
+            }
+            target.innerHTML = `<div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID incidencia</th>
+                            <th>VIP</th>
+                            <th>Nivel</th>
+                            <th>Cliente</th>
+                            <th>Organizacion</th>
+                            <th>Sede de atencion</th>
+                            <th>Resumen</th>
+                            <th>Prioridad</th>
+                            <th>Estado</th>
+                            <th>Equipo resolutor</th>
+                            <th>Asignatario</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tickets.map(ticket => `<tr>
+                            <td>${escapeHtml(ticket.ticketNumber)}</td>
+                            <td>${escapeHtml(vipLabel(ticket))}</td>
+                            <td>${escapeHtml(levelLabel(ticket))}</td>
+                            <td>${escapeHtml(ticket.requesterName || ticket.requesterUsername || "-")}<br>${escapeHtml(ticket.requesterEmail || "")}</td>
+                            <td>${escapeHtml(ticket.siteName || "-")}</td>
+                            <td>${escapeHtml(joinLocation(ticket.siteName, ticket.locationName))}</td>
+                            <td>${escapeHtml(ticket.caseTitle || ticket.summary)}</td>
+                            <td>${badge(ticket.priority)}</td>
+                            <td>${badge(ticket.status)}</td>
+                            <td>${escapeHtml(resolverTeam(ticket))}</td>
+                            <td>${escapeHtml(ticket.assignedToName || ticket.assignedToUsername || "Sin asignar")}</td>
+                            <td><button class="btn secondary" type="button" onclick="openTicket(${ticket.ticketId})">Abrir</button></td>
+                        </tr>`).join("")}
+                    </tbody>
+                </table>
+            </div>`;
+        }
+
+        function renderTicketCards(tickets) {
+            return `<div class="card-grid">${tickets.map(ticket => `
+                <article class="case-card">
+                    <header>
+                        <div class="case-card-title">
+                            <span>${escapeHtml(ticket.ticketNumber)}</span>
+                            <strong>${escapeHtml(ticket.caseTitle || ticket.summary)}</strong>
+                        </div>
+                        ${slaBadge(ticket.sla)}
+                    </header>
+                    <div class="card-badges">
+                        ${badge(ticket.caseType)}
+                        ${badge(ticket.status)}
+                        ${badge(ticket.priority)}
+                    </div>
+                    <div class="card-meta">
+                        <span>${escapeHtml(ticket.caseNumber)}</span>
+                        <span>Asignado: ${escapeHtml(ticket.assignedToUsername || "Sin asignar")}</span>
+                        <span>Vence: ${escapeHtml(formatDate(ticket.dueAt))}</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn secondary" type="button" onclick="openTicket(${ticket.ticketId})">Ver detalle</button>
+                    </div>
+                </article>
+            `).join("")}</div>`;
+        }
+
+        function renderAdminUsersTable() {
+            const target = document.getElementById("adminUsersTable");
+            if (!target) {
+                return;
+            }
+            if (!state.users || state.users.length === 0) {
+                target.innerHTML = "<div class='empty'>No hay usuarios registrados.</div>";
+                return;
+            }
+            target.innerHTML = `<div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Nombre</th>
+                            <th>Perfil</th>
+                            <th>Estado</th>
+                            <th>Contacto</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${state.users.map(user => {
+                            const isSelf = sameUser(user.userId, state.user.userId);
+                            const statusClass = user.isActive ? "status-active" : "status-inactive";
+                            const statusText = user.isActive ? labelFor("ACTIVE") : labelFor("INACTIVE");
+                            const toggleLabel = user.isActive ? "Dar de baja" : "Activar";
+                            const toggleClass = user.isActive ? "red" : "secondary";
+                            return `<tr>
+                                <td>${escapeHtml(user.username)}</td>
+                                <td>${escapeHtml(fullName(user))}</td>
+                                <td>${badge(user.role)}</td>
+                                <td><span class="${statusClass}">${escapeHtml(statusText)}</span></td>
+                                <td>${escapeHtml(user.email || "-")}<br>${escapeHtml(user.phone || "")}</td>
+                                <td>
+                                    <div class="btn-row">
+                                        <button class="btn secondary" type="button" onclick="openAdminUserEditor(${user.userId})">Editar</button>
+                                        <button class="btn ${toggleClass}" type="button" onclick="setAdminUserStatus(${user.userId}, ${!user.isActive}, true)" ${isSelf ? "disabled title='No puedes dar de baja la cuenta actual'" : ""}>${toggleLabel}</button>
+                                    </div>
+                                </td>
+                            </tr>`;
+                        }).join("")}
+                    </tbody>
+                </table>
+            </div>`;
+        }
+
+        function openAdminUserEditor(userId) {
+            const user = findAdminUser(userId);
+            if (!user) {
+                notifyError("Usuario no encontrado.");
+                return;
+            }
+            fillAdminUserEditor(user);
+            document.getElementById("adminEditUserForm").scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+
+        function fillAdminUserEditor(user) {
+            state.editingUserId = user.userId;
+            const isSelf = sameUser(user.userId, state.user.userId);
+            document.getElementById("adminEditUserForm").classList.remove("hidden");
+            document.getElementById("adminEditUserTitle").textContent = "Editar usuario: " + user.username;
+            document.getElementById("editUserRole").value = user.role || "USER";
+            document.getElementById("editUserIsActive").value = String(Boolean(user.isActive));
+            document.getElementById("editUsername").value = user.username || "";
+            document.getElementById("editFirstName").value = user.firstName || "";
+            document.getElementById("editLastName").value = user.lastName || "";
+            document.getElementById("editEmail").value = user.email || "";
+            document.getElementById("editNotificationEmail").value = user.notificationEmail || "";
+            document.getElementById("editJobTitle").value = user.jobTitle || "";
+            document.getElementById("editPhone").value = user.phone || "";
+            document.getElementById("editUserRole").disabled = isSelf;
+            document.getElementById("editUserIsActive").disabled = isSelf;
+            const statusButton = document.getElementById("adminToggleUserStatusButton");
+            statusButton.disabled = isSelf;
+            statusButton.textContent = user.isActive ? "Dar de baja" : "Activar";
+            statusButton.className = user.isActive ? "btn red" : "btn secondary";
+        }
+
+        function clearAdminUserEditor() {
+            state.editingUserId = null;
+            document.getElementById("adminEditUserForm").reset();
+            document.getElementById("adminEditUserForm").classList.add("hidden");
+            document.getElementById("editUserRole").disabled = false;
+            document.getElementById("editUserIsActive").disabled = false;
+            document.getElementById("adminToggleUserStatusButton").disabled = false;
+        }
+
+        async function updateAdminUser(event) {
+            event.preventDefault();
+            const user = findAdminUser(state.editingUserId);
+            if (!user) {
+                notifyError("Selecciona un usuario para editar.");
+                return;
+            }
+            const role = document.getElementById("editUserRole").value;
+            const isActive = document.getElementById("editUserIsActive").value === "true";
+            if (sameUser(user.userId, state.user.userId) && (!isActive || role !== state.user.role)) {
+                notifyError("No puedes quitar permisos ni dar de baja la cuenta con la que estas trabajando.");
+                return;
+            }
+            const payload = {
+                role,
+                username: document.getElementById("editUsername").value.trim(),
+                firstName: document.getElementById("editFirstName").value.trim(),
+                lastName: document.getElementById("editLastName").value.trim(),
+                email: document.getElementById("editEmail").value.trim(),
+                notificationEmail: document.getElementById("editNotificationEmail").value.trim(),
+                jobTitle: document.getElementById("editJobTitle").value.trim(),
+                phone: document.getElementById("editPhone").value.trim()
+            };
+            try {
+                await api("/admin/users/" + user.userId, { method: "PATCH", body: JSON.stringify(payload) });
+                if (Boolean(user.isActive) !== isActive) {
+                    await updateAdminUserStatus(user.userId, isActive);
+                }
+                await loadAdminUsers();
+                if (user.role === "TECH" || role === "TECH") {
+                    await loadTechnicians();
+                }
+                if (sameUser(user.userId, state.user.userId)) {
+                    state.user = await api("/me");
+                    renderUser();
+                    applyRoleVisibility();
+                }
+                notifyOk("Usuario actualizado.");
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function toggleEditingUserStatus() {
+            const user = findAdminUser(state.editingUserId);
+            if (!user) {
+                notifyError("Selecciona un usuario para editar.");
+                return;
+            }
+            await setAdminUserStatus(user.userId, !user.isActive, true);
+        }
+
+        async function setAdminUserStatus(userId, isActive, askConfirm) {
+            const user = findAdminUser(userId);
+            if (!user) {
+                notifyError("Usuario no encontrado.");
+                return;
+            }
+            if (sameUser(user.userId, state.user.userId) && !isActive) {
+                notifyError("No puedes dar de baja la cuenta con la que estas trabajando.");
+                return;
+            }
+            if (askConfirm) {
+                const actionText = isActive ? "activar" : "dar de baja";
+                const decision = await Swal.fire({
+                    title: "Confirmar accion",
+                    text: "Vas a " + actionText + " a " + user.username + ".",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: isActive ? "Activar" : "Dar de baja",
+                    cancelButtonText: "Cancelar"
+                });
+                if (!decision.isConfirmed) {
+                    return;
+                }
+            }
+            try {
+                await updateAdminUserStatus(user.userId, isActive);
+                await loadAdminUsers();
+                if (user.role === "TECH") {
+                    await loadTechnicians();
+                }
+                notifyOk(isActive ? "Usuario activado." : "Usuario dado de baja.");
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function updateAdminUserStatus(userId, isActive) {
+            return api("/admin/users/" + userId + "/status", {
+                method: "PATCH",
+                body: JSON.stringify({ isActive })
+            });
+        }
+
+        function findAdminUser(userId) {
+            return (state.users || []).find(user => sameUser(user.userId, userId));
+        }
+
+        async function createServiceCase(event) {
+            event.preventDefault();
+            const title = document.getElementById("caseTitle").value.trim();
+            const description = document.getElementById("caseDescription").value.trim();
+            const siteId = document.getElementById("caseSite").value;
+            if (title.length < 8) {
+                notifyError("El titulo debe tener al menos 8 caracteres.");
+                return;
+            }
+            if (description.length < 20) {
+                notifyError("La descripcion debe tener al menos 20 caracteres.");
+                return;
+            }
+            if (!siteId) {
+                notifyError("Seleccione una sede.");
+                return;
+            }
+            const payload = {
+                type: document.getElementById("caseType").value,
+                title,
+                description,
+                priority: document.getElementById("casePriority").value,
+                siteId: Number(siteId)
+            };
+            const locationId = document.getElementById("caseLocation").value;
+            if (locationId) {
+                payload.locationId = Number(locationId);
+            }
+            try {
+                const created = await api("/service-cases", { method: "POST", body: JSON.stringify(payload) });
+                document.getElementById("caseForm").reset();
+                renderSiteOptions();
+                await onSiteChanged();
+                await refreshAll();
+                notifyOk("Caso creado correctamente.");
+                openCase(created.caseId);
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function createAdminUser(event) {
+            event.preventDefault();
+            const password = document.getElementById("adminPassword").value;
+            if (password.length < 8) {
+                notifyError("La contrasena temporal debe tener al menos 8 caracteres.");
+                return;
+            }
+            const payload = {
+                role: document.getElementById("adminUserRole").value,
+                username: document.getElementById("adminUsername").value.trim(),
+                firstName: document.getElementById("adminFirstName").value.trim(),
+                lastName: document.getElementById("adminLastName").value.trim(),
+                email: document.getElementById("adminEmail").value.trim(),
+                notificationEmail: document.getElementById("adminNotificationEmail").value.trim(),
+                jobTitle: document.getElementById("adminJobTitle").value.trim(),
+                phone: document.getElementById("adminPhone").value.trim(),
+                password
+            };
+            try {
+                const created = await api("/admin/users", { method: "POST", body: JSON.stringify(payload) });
+                document.getElementById("adminUserForm").reset();
+                document.getElementById("adminUserRole").value = "USER";
+                if (created.role === "TECH") {
+                    await loadTechnicians();
+                }
+                await loadAdminUsers();
+                notifyOk("Usuario creado: " + created.username);
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function createAdminSite(event) {
+            event.preventDefault();
+            const payload = {
+                code: document.getElementById("adminSiteCode").value.trim(),
+                name: document.getElementById("adminSiteName").value.trim(),
+                address: document.getElementById("adminSiteAddress").value.trim(),
+                city: document.getElementById("adminSiteCity").value.trim(),
+                province: document.getElementById("adminSiteProvince").value.trim(),
+                country: document.getElementById("adminSiteCountry").value.trim()
+            };
+            try {
+                const created = await api("/sites", { method: "POST", body: JSON.stringify(payload) });
+                document.getElementById("adminSiteForm").reset();
+                document.getElementById("adminSiteCity").value = "Canete";
+                document.getElementById("adminSiteProvince").value = "Canete";
+                document.getElementById("adminSiteCountry").value = "PE";
+                await loadSites();
+                document.getElementById("adminLocationSite").value = String(created.siteId);
+                notifyOk("Sede creada: " + created.name);
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function createAdminLocation(event) {
+            event.preventDefault();
+            const siteId = document.getElementById("adminLocationSite").value;
+            if (!siteId) {
+                notifyError("Seleccione la sede del ambiente.");
+                return;
+            }
+            const payload = {
+                type: document.getElementById("adminLocationType").value,
+                code: document.getElementById("adminLocationCode").value.trim(),
+                name: document.getElementById("adminLocationName").value.trim(),
+                floor: document.getElementById("adminLocationFloor").value.trim(),
+                description: document.getElementById("adminLocationDescription").value.trim()
+            };
+            try {
+                const created = await api("/sites/" + siteId + "/locations", { method: "POST", body: JSON.stringify(payload) });
+                const selectedSite = siteId;
+                document.getElementById("adminLocationForm").reset();
+                document.getElementById("adminLocationSite").value = selectedSite;
+                if (document.getElementById("caseSite").value === selectedSite) {
+                    await onSiteChanged();
+                }
+                notifyOk("Ambiente creado: " + labelFor(created.type) + " - " + created.name);
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function updateProfile(event) {
+            event.preventDefault();
+            const payload = {
+                firstName: document.getElementById("profileFirstName").value.trim(),
+                lastName: document.getElementById("profileLastName").value.trim(),
+                email: document.getElementById("profileEmail").value.trim(),
+                notificationEmail: document.getElementById("profileNotificationEmail").value.trim(),
+                jobTitle: document.getElementById("profileJobTitle").value.trim(),
+                phone: document.getElementById("profilePhone").value.trim()
+            };
+            try {
+                state.user = await api("/me", { method: "PATCH", body: JSON.stringify(payload) });
+                renderUser();
+                closeProfileDrawer();
+                notifyOk("Perfil actualizado.");
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function openCase(caseId) {
+            try {
+                const detail = await api("/service-cases/" + caseId);
+                if (detail.ticket && detail.ticket.ticketId) {
+                    detail.ticket.audit = await loadTicketAudit(detail.ticket.ticketId);
+                    upsertTicketTab(detail.ticket, detail);
+                    renderTicketTab(detail.ticket, detail);
+                    activateTab(ticketTabId(detail.ticket.ticketId));
+                    return;
+                }
+                upsertCaseTab(detail);
+                renderCaseTab(detail);
+                activateTab(caseTabId(caseId));
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function openTicket(ticketId) {
+            try {
+                const ticket = await api("/tickets/" + ticketId);
+                ticket.audit = await loadTicketAudit(ticketId);
+                upsertTicketTab(ticket, null);
+                renderTicketTab(ticket, null);
+                activateTab(ticketTabId(ticketId));
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function refreshCaseTab(caseId, activateAfter) {
+            try {
+                const detail = await api("/service-cases/" + caseId);
+                if (detail.ticket && detail.ticket.ticketId) {
+                    detail.ticket.audit = await loadTicketAudit(detail.ticket.ticketId);
+                    upsertTicketTab(detail.ticket, detail);
+                    renderTicketTab(detail.ticket, detail);
+                    if (activateAfter) {
+                        activateTab(ticketTabId(detail.ticket.ticketId));
+                    }
+                    return;
+                }
+                upsertCaseTab(detail);
+                renderCaseTab(detail);
+                if (activateAfter) {
+                    activateTab(caseTabId(caseId));
+                } else {
+                    renderTabs();
+                    updateWorkspacePanes();
+                }
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function refreshTicketTab(ticketId, activateAfter) {
+            try {
+                const ticket = await api("/tickets/" + ticketId);
+                ticket.audit = await loadTicketAudit(ticketId);
+                upsertTicketTab(ticket, null);
+                renderTicketTab(ticket, null);
+                if (activateAfter) {
+                    activateTab(ticketTabId(ticketId));
+                } else {
+                    renderTabs();
+                    updateWorkspacePanes();
+                }
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function loadTicketAudit(ticketId) {
+            try {
+                return await api("/tickets/" + ticketId + "/audit");
+            } catch (error) {
+                return [];
+            }
+        }
+
+        function upsertCaseTab(serviceCase) {
+            const tabId = caseTabId(serviceCase.caseId);
+            const ticket = serviceCase.ticket;
+            const label = ticket && ticket.ticketNumber ? ticket.ticketNumber : serviceCase.caseNumber;
+            const title = label + " | " + serviceCase.title;
+            let tab = state.tabs.find(item => item.id === tabId);
+            if (!tab) {
+                tab = {
+                    id: tabId,
+                    type: "case",
+                    caseId: serviceCase.caseId,
+                    paneId: casePaneId(serviceCase.caseId),
+                    label,
+                    title
+                };
+                state.tabs.push(tab);
+            } else {
+                tab.label = label;
+                tab.title = title;
+            }
+            return tab;
+        }
+
+        function upsertTicketTab(ticket, serviceCase) {
+            const tabId = ticketTabId(ticket.ticketId);
+            const label = ticket.ticketNumber || ("Ticket " + ticket.ticketId);
+            const title = label + " | " + (ticket.caseTitle || ticket.summary || (serviceCase && serviceCase.title) || "Detalle");
+            let tab = state.tabs.find(item => item.id === tabId);
+            if (!tab) {
+                tab = {
+                    id: tabId,
+                    type: "ticket",
+                    ticketId: ticket.ticketId,
+                    caseId: ticket.serviceCaseId || (serviceCase && serviceCase.caseId),
+                    paneId: ticketPaneId(ticket.ticketId),
+                    label,
+                    title
+                };
+                state.tabs.push(tab);
+            } else {
+                tab.label = label;
+                tab.title = title;
+                tab.caseId = ticket.serviceCaseId || tab.caseId;
+            }
+            return tab;
+        }
+
+        function ensureCasePane(caseId) {
+            let pane = document.getElementById(casePaneId(caseId));
+            if (!pane) {
+                pane = document.createElement("section");
+                pane.id = casePaneId(caseId);
+                pane.className = "workspace-section case-detail-section tab-pane-hidden";
+                pane.dataset.casePane = "true";
+                pane.dataset.caseId = String(caseId);
+                document.getElementById("workspace").appendChild(pane);
+            }
+            return pane;
+        }
+
+        function ensureTicketPane(ticketId) {
+            let pane = document.getElementById(ticketPaneId(ticketId));
+            if (!pane) {
+                pane = document.createElement("section");
+                pane.id = ticketPaneId(ticketId);
+                pane.className = "workspace-section case-detail-section tab-pane-hidden";
+                pane.dataset.ticketPane = "true";
+                pane.dataset.ticketId = String(ticketId);
+                document.getElementById("workspace").appendChild(pane);
+            }
+            return pane;
+        }
+
+        function renderCaseTab(serviceCase) {
+            const pane = ensureCasePane(serviceCase.caseId);
+            const label = serviceCase.caseNumber;
+            pane.innerHTML = `
+                <div class="case-detail-header">
+                    <div class="case-detail-title">
+                        <h1>${escapeHtml(label)} | ${escapeHtml(serviceCase.title)}</h1>
+                        <div class="case-detail-badges">
+                            ${badge(serviceCase.type)}
+                            ${badge(serviceCase.status)}
+                            ${badge(serviceCase.priority)}
+                            ${slaBadge(serviceCase.sla)}
+                        </div>
+                    </div>
+                    <button class="btn secondary" type="button" onclick="refreshCaseTab(${serviceCase.caseId}, true)">Actualizar</button>
+                </div>
+                <div class="drawer-body">${renderCaseDetailContent(serviceCase)}</div>
+            `;
+        }
+
+        function renderTicketTab(ticket, serviceCase) {
+            const pane = ensureTicketPane(ticket.ticketId);
+            pane.innerHTML = `
+                <div class="case-detail-header">
+                    <div class="case-detail-title">
+                        <h1>Peticion de servicio: ${escapeHtml(ticket.ticketNumber)} (${escapeHtml(labelFor(ticket.status))})</h1>
+                        <p>Creado por ${escapeHtml(ticket.requesterName || ticket.requesterUsername || "-")} ${escapeHtml(formatDate(ticket.createdAt))}</p>
+                        <div class="case-detail-badges">
+                            ${badge(ticket.caseType)}
+                            ${badge(ticket.status)}
+                            ${badge(ticket.priority)}
+                            ${slaBadge(ticket.sla)}
+                        </div>
+                    </div>
+                    <div>
+                        <strong>Objetivo de respuesta</strong>
+                        <p>${escapeHtml(formatDate(ticket.dueAt))}</p>
+                    </div>
+                </div>
+                ${renderEnterpriseTicketForm(ticket, serviceCase)}
+            `;
+        }
+
+        function renderDrawer(serviceCase) {
+            document.getElementById("drawerTitle").textContent = serviceCase.caseNumber + " | " + serviceCase.title;
+            document.getElementById("drawerSubtitle").innerHTML =
+                badge(serviceCase.type) + " " + badge(serviceCase.status) + " " + badge(serviceCase.priority) + " " + slaBadge(serviceCase.sla);
+            document.getElementById("drawerBody").innerHTML = renderCaseDetailContent(serviceCase);
+        }
+
+        function renderCaseDetailContent(serviceCase) {
+            const ticket = serviceCase.ticket;
+            let html = `
+                <section>
+                    <h2>Datos del caso</h2>
+                    ${detailLine("Solicitante", serviceCase.requesterUsername)}
+                    ${detailLine("Sede", joinLocation(serviceCase.siteName, serviceCase.locationName))}
+                    ${detailLine("Creado", formatDate(serviceCase.createdAt))}
+                    ${detailLine("Vence", formatDate(serviceCase.dueAt))}
+                    ${detailLineHtml("SLA", slaBadge(serviceCase.sla))}
+                    ${detailLine("Descripcion", serviceCase.description)}
+                </section>
+            `;
+            if (!ticket) {
+                html += canOperateTickets() ? renderCreateTicketForm(serviceCase) : "<div class='empty'>El caso aun no tiene ticket.</div>";
+            } else {
+                html += renderEnterpriseTicketForm(ticket, serviceCase);
+            }
+            return html;
+        }
+
+        function renderCreateTicketForm(serviceCase) {
+            return `
+                <section>
+                    <h2>Crear ticket</h2>
+                    <form class="form-grid" onsubmit="createTicket(event, ${serviceCase.caseId})">
+                        <label class="span-2">Resumen
+                            <input data-field="summary" type="text" minlength="8" maxlength="180" value="${escapeAttr(serviceCase.title)}" required>
+                        </label>
+                        <label>Asignar a
+                            <select data-field="assignee" required>${technicianOptions()}</select>
+                        </label>
+                        <label>Prioridad
+                            <select data-field="priority" required>
+                                <option value="LOW">${labelFor("LOW")}</option>
+                                <option value="MEDIUM" ${serviceCase.priority === "MEDIUM" ? "selected" : ""}>${labelFor("MEDIUM")}</option>
+                                <option value="HIGH" ${serviceCase.priority === "HIGH" ? "selected" : ""}>${labelFor("HIGH")}</option>
+                                <option value="CRITICAL" ${serviceCase.priority === "CRITICAL" ? "selected" : ""}>${labelFor("CRITICAL")}</option>
+                            </select>
+                        </label>
+                        <label class="span-2">Descripcion tecnica
+                            <textarea data-field="description">${escapeHtml(serviceCase.description || "")}</textarea>
+                        </label>
+                        <div class="span-2 btn-row">
+                            <button class="btn blue" type="submit">Crear y asignar</button>
+                        </div>
+                    </form>
+                </section>
+            `;
+        }
+
+        function renderEnterpriseTicketForm(ticket, serviceCase) {
+            const service = serviceCase || {};
+            const editable = canEditAnyTicket(ticket);
+            const terminalForTech = isTerminalTicket(ticket) && !isAdmin();
+            return `
+                <form class="ticket-form" onsubmit="saveTicketForm(event, ${ticket.ticketId}, ${ticket.serviceCaseId || service.caseId})"
+                    data-current-assignee="${escapeAttr(ticket.assignedToUserId || "")}"
+                    data-current-status="${escapeAttr(ticket.status || "")}"
+                    data-current-priority="${escapeAttr(ticket.priority || "")}"
+                    data-current-summary="${escapeAttr(ticket.summary || ticket.caseTitle || "")}"
+                    data-current-description="${escapeAttr(ticket.description || service.description || "")}"
+                    data-current-category="${escapeAttr(ticket.categoryCode || "GENERAL")}"
+                    data-current-requester="${escapeAttr(ticket.requesterUserId || "")}"
+                    data-current-site="${escapeAttr(ticket.siteId || "")}">
+                    <div class="ticket-command-bar">
+                        <button class="btn" type="submit" ${editable ? "" : "disabled"}>Guardar</button>
+                        <button class="btn secondary" type="button" onclick="refreshTicketTab(${ticket.ticketId}, true)">Cancelar</button>
+                        <button class="btn secondary" type="button" onclick="assignTicketToMe(${ticket.ticketId}, ${ticket.serviceCaseId || service.caseId})" ${canAssignToSelf(ticket) ? "" : "disabled"}>Asignarme</button>
+                        <button class="btn blue" type="submit" ${editable ? "" : "disabled"}>Transferir a equipo</button>
+                        <button class="btn red" type="button" onclick="resolveTicketFromForm(this, ${ticket.ticketId}, ${ticket.serviceCaseId || service.caseId})" ${canResolveTicket(ticket) ? "" : "disabled"}>Resolver solicitud</button>
+                    </div>
+
+                    <section class="ticket-form-section">
+                        <h2>Cliente y propietario</h2>
+                        <div class="ticket-form-grid compact-ticket-layout">
+                            ${ticketField("Usuario final", userSelect("requesterUserId", ticket.requesterUserId, ticket.requesterName || ticket.requesterUsername, ticketFieldDisabled(ticket, "requesterUserId")), ticket.requesterEmail || "", "ticket-final-user", true)}
+                            ${ticketField("Informado por", `<input value="${escapeAttr(ticket.requesterUsername || "")}" disabled>`, "", "ticket-reporter")}
+                            ${ticketField("Servicio", `<input data-field="categoryCode" value="${escapeAttr(ticket.categoryCode || "GENERAL")}" ${ticketFieldDisabled(ticket, "categoryCode")}>`, "", "ticket-service")}
+                            ${ticketField("Estado", statusSelect(ticket.status, ticketFieldDisabled(ticket, "status")), "", "ticket-status", true)}
+                            ${ticketField("Organizacion Cliente", siteSelect(ticket.siteId, ticketFieldDisabled(ticket, "siteId")), "", "ticket-org")}
+                            ${ticketField("Ubicacion", `<input value="${escapeAttr(ticket.locationName || service.locationName || "")}" disabled>`, "", "ticket-location")}
+                            ${ticketField("Categoria", `<input value="${escapeAttr(ticket.categoryCode || "GENERAL")}" disabled>`, "", "ticket-category")}
+                            ${ticketField("Fecha de programacion", `<input type="datetime-local" value="${escapeAttr(dateTimeLocalValue(ticket.dueAt))}" disabled>`, "", "ticket-schedule")}
+                            ${ticketField("Servicio Negocio", `<input value="${escapeAttr(labelFor(ticket.caseType))}" disabled>`, "", "ticket-business")}
+                            ${ticketField("Filtrar por analista", `<input type="checkbox" disabled>`, "", "ticket-filter")}
+                            ${ticketField("Nombre/resumen", `<input data-field="summary" value="${escapeAttr(ticket.summary || ticket.caseTitle || "")}" minlength="8" maxlength="180" ${ticketFieldDisabled(ticket, "summary")}>`, "", "ticket-summary", true)}
+                            ${ticketField("Descripcion", richTextArea("description", ticket.description || service.description || "", ticketFieldDisabled(ticket, "description")), "", "ticket-description-field")}
+                            <div class="ticket-side">
+                                ${ticketField("Equipo", `<input value="${escapeAttr(resolverTeam(ticket))}" disabled>`, "", "")}
+                                ${ticketField("Asignatario", technicianSelect("assignedToUserId", ticket.assignedToUserId, ticketFieldDisabled(ticket, "assignedToUserId")), "", "")}
+                                ${ticketField("Prioridad", prioritySelect(ticket.priority, ticketFieldDisabled(ticket, "priority")), "", "")}
+                                ${ticketField("# Caso Externo", `<input data-field="externalCase" value="" ${ticketFieldDisabled(ticket, "externalCase")}>`, "", "")}
+                            </div>
+                            ${ticketField("Comentario tecnico", `<textarea data-field="body" placeholder="Agregar observacion interna" ${terminalForTech ? "disabled" : ""}></textarea>`, "", "ticket-comment")}
+                            ${ticketField("Resolucion publica", `<textarea data-field="resolution" minlength="12" placeholder="Solucion para cerrar" ${canResolveTicket(ticket) ? "" : "disabled"}>${escapeHtml(ticket.resolution || "")}</textarea>`, "", "ticket-resolution")}
+                        </div>
+                    </section>
+                </form>
+                <details class="ticket-collapsible">
+                    <summary>Actualizaciones</summary>
+                    ${renderUpdates(ticket.updates || [])}
+                </details>
+                <details class="ticket-collapsible">
+                    <summary>Auditoria</summary>
+                    ${renderAuditTrail(ticket.audit || [])}
+                </details>
+            `;
+        }
+
+        function renderTicketDetail(ticket) {
+            return `
+                <section>
+                    <h2>Ticket ${escapeHtml(ticket.ticketNumber)}</h2>
+                    ${detailLine("Resumen", ticket.summary)}
+                    ${detailLineHtml("Estado", badge(ticket.status))}
+                    ${detailLine("Asignado", ticket.assignedToUsername || "Sin asignar")}
+                    ${detailLineHtml("Prioridad", badge(ticket.priority))}
+                    ${detailLine("Vence", formatDate(ticket.dueAt))}
+                    ${detailLineHtml("SLA", slaBadge(ticket.sla))}
+                    ${detailLine("Resolucion", ticket.resolution || "Pendiente")}
+                </section>
+                <section>
+                    <h2>Actualizaciones</h2>
+                    ${renderUpdates(ticket.updates || [])}
+                </section>
+            `;
+        }
+
+        function renderTicketActions(ticket, caseId) {
+            return `
+                <section>
+                    <h2>Actualizar ticket</h2>
+                    <form class="form-grid" onsubmit="updateTicket(event, ${ticket.ticketId}, ${caseId})">
+                        <label>Visibilidad
+                            <select data-field="visibility">
+                                <option value="PUBLIC">${labelFor("PUBLIC")}</option>
+                                <option value="INTERNAL" selected>${labelFor("INTERNAL")}</option>
+                            </select>
+                        </label>
+                        <label>Estado
+                            <select data-field="status">
+                                <option value="">Sin cambio</option>
+                                <option value="OPEN">${labelFor("OPEN")}</option>
+                                <option value="IN_PROGRESS">${labelFor("IN_PROGRESS")}</option>
+                            </select>
+                        </label>
+                        <label>Prioridad
+                            <select data-field="priority">
+                                <option value="">Sin cambio</option>
+                                <option value="LOW">${labelFor("LOW")}</option>
+                                <option value="MEDIUM">${labelFor("MEDIUM")}</option>
+                                <option value="HIGH">${labelFor("HIGH")}</option>
+                                <option value="CRITICAL">${labelFor("CRITICAL")}</option>
+                            </select>
+                        </label>
+                        <label class="span-2">Nota
+                            <textarea data-field="body" placeholder="Detalle de la actualizacion"></textarea>
+                        </label>
+                        <div class="span-2 btn-row">
+                            <button class="btn" type="submit">Guardar actualizacion</button>
+                        </div>
+                    </form>
+                </section>
+                <section>
+                    <h2>Derivar</h2>
+                    <form class="form-grid" onsubmit="assignTicket(event, ${ticket.ticketId}, ${caseId})">
+                        <label class="span-2">Tecnico
+                            <select data-field="assignee" required>${technicianOptions(ticket.assignedToUserId)}</select>
+                        </label>
+                        <div class="span-2 btn-row">
+                            <button class="btn blue" type="submit">Derivar ticket</button>
+                        </div>
+                    </form>
+                </section>
+                <section>
+                    <h2>Resolver</h2>
+                    <form class="form-grid" onsubmit="resolveTicket(event, ${ticket.ticketId}, ${caseId})">
+                        <label class="span-2">Resolucion publica
+                            <textarea data-field="resolution" minlength="12" required></textarea>
+                        </label>
+                        <div class="span-2 btn-row">
+                            <button class="btn red" type="submit">Resolver ticket</button>
+                        </div>
+                    </form>
+                </section>
+            `;
+        }
+
+        function ticketField(label, control, help, spanClass, required) {
+            return `
+                <div class="ticket-field ${spanClass || ""}">
+                    <label>${escapeHtml(label)}${required ? " <span class='required'>*</span>" : ""}</label>
+                    <div class="ticket-control">${control}</div>
+                    <div class="ticket-help">${escapeHtml(help || "")}</div>
+                </div>
+            `;
+        }
+
+        function richTextArea(field, value, disabledAttr) {
+            return `
+                <div class="rich-toolbar" aria-hidden="true">
+                    <button class="rich-tool" type="button" tabindex="-1">B</button>
+                    <button class="rich-tool" type="button" tabindex="-1"><i>I</i></button>
+                    <button class="rich-tool" type="button" tabindex="-1"><u>U</u></button>
+                    <button class="rich-tool" type="button" tabindex="-1">A</button>
+                    <button class="rich-tool" type="button" tabindex="-1">=</button>
+                </div>
+                <textarea class="ticket-description" data-field="${escapeAttr(field)}" ${disabledAttr}>${escapeHtml(value || "")}</textarea>
+            `;
+        }
+
+        function statusSelect(current, disabledAttr) {
+            const statuses = isAdmin()
+                ? ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED", "CANCELLED"]
+                : ["OPEN", "IN_PROGRESS"];
+            return `<select data-field="status" ${disabledAttr}>${statuses.map(status => option(status, labelFor(status), status === current)).join("")}</select>`;
+        }
+
+        function prioritySelect(current, disabledAttr) {
+            return `<select data-field="priority" ${disabledAttr}>
+                ${["LOW", "MEDIUM", "HIGH", "CRITICAL"].map(priority => option(priority, labelFor(priority), priority === current)).join("")}
+            </select>`;
+        }
+
+        function technicianSelect(field, selectedId, disabledAttr) {
+            return `<select data-field="${escapeAttr(field)}" ${disabledAttr}>${technicianSelectOptions(selectedId)}</select>`;
+        }
+
+        function technicianSelectOptions(selectedId) {
+            if (!state.technicians.length) {
+                return "<option value=''>Sin tecnicos activos</option>";
+            }
+            return "<option value=''>Sin asignar</option>" + state.technicians.map(tech =>
+                option(tech.userId, `${tech.name} (${tech.username})`, String(tech.userId) === String(selectedId || ""))
+            ).join("");
+        }
+
+        function userSelect(field, selectedId, fallbackName, disabledAttr) {
+            let options = "";
+            if (state.users && state.users.length) {
+                options = state.users.map(user => option(user.userId, `${fullName(user)} (${user.username})`, String(user.userId) === String(selectedId || ""))).join("");
+            } else {
+                options = option(selectedId || "", fallbackName || "-", true);
+            }
+            return `<select data-field="${escapeAttr(field)}" ${disabledAttr}>${options}</select>`;
+        }
+
+        function siteSelect(selectedId, disabledAttr) {
+            const options = option("", "Sin sede", !selectedId) +
+                state.sites.map(site => option(site.siteId, site.name, String(site.siteId) === String(selectedId || ""))).join("");
+            return `<select data-field="siteId" ${disabledAttr}>${options}</select>`;
+        }
+
+        function option(value, label, selected) {
+            return `<option value="${escapeAttr(value)}" ${selected ? "selected" : ""}>${escapeHtml(label)}</option>`;
+        }
+
+        function ticketFieldDisabled(ticket, field) {
+            if (field === "externalCase") {
+                return "disabled";
+            }
+            if (!canOperateTickets()) {
+                return "disabled";
+            }
+            if (isTerminalTicket(ticket) && !isAdmin()) {
+                return "disabled";
+            }
+            if (isAdmin()) {
+                return "";
+            }
+            return ["status", "priority", "assignedToUserId"].indexOf(field) >= 0 ? "" : "disabled";
+        }
+
+        function canOperateTicket(ticket) {
+            return canOperateTickets() && (!isTerminalTicket(ticket) || isAdmin());
+        }
+
+        function canAssignToSelf(ticket) {
+            return state.user && state.user.role === "TECH" && canOperateTicket(ticket);
+        }
+
+        function canEditAnyTicket(ticket) {
+            return canOperateTicket(ticket);
+        }
+
+        function canResolveTicket(ticket) {
+            return canOperateTickets() && !isTerminalTicket(ticket);
+        }
+
+        function isTerminalTicket(ticket) {
+            return ticket && (ticket.status === "RESOLVED" || ticket.status === "CLOSED" || ticket.status === "CANCELLED");
+        }
+
+        async function saveTicketForm(event, ticketId, caseId) {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const payload = { visibility: "INTERNAL" };
+            const body = formValue(form, "body").trim();
+            const status = formValue(form, "status");
+            const priority = formValue(form, "priority");
+            const assignedToUserId = formValue(form, "assignedToUserId");
+            const assignmentChanged = assignedToUserId && assignedToUserId !== form.dataset.currentAssignee;
+            if (body) payload.body = body;
+            if (status && status !== form.dataset.currentStatus) payload.status = status;
+            if (priority && priority !== form.dataset.currentPriority) payload.priority = priority;
+            if (isAdmin()) {
+                const summary = formValue(form, "summary").trim();
+                const description = formValue(form, "description").trim();
+                const categoryCode = formValue(form, "categoryCode").trim();
+                const requesterUserId = formValue(form, "requesterUserId");
+                const siteId = formValue(form, "siteId");
+                if (summary && summary !== form.dataset.currentSummary) payload.summary = summary;
+                if (description && description !== form.dataset.currentDescription) payload.description = description;
+                if (categoryCode && categoryCode !== form.dataset.currentCategory) payload.categoryCode = categoryCode;
+                if (requesterUserId && requesterUserId !== form.dataset.currentRequester) payload.requesterUserId = Number(requesterUserId);
+                if (siteId && siteId !== form.dataset.currentSite) payload.siteId = Number(siteId);
+                if (assignmentChanged) payload.assignedToUserId = Number(assignedToUserId);
+            }
+            const hasPatch = Object.keys(payload).some(key => key !== "visibility");
+            if (!hasPatch && !assignmentChanged) {
+                notifyError("No hay cambios para guardar.");
+                return;
+            }
+            try {
+                if (hasPatch) {
+                    await api("/tickets/" + ticketId, { method: "PATCH", body: JSON.stringify(payload) });
+                }
+                if (assignmentChanged && !isAdmin()) {
+                    await api("/tickets/" + ticketId + "/assign", {
+                        method: "POST",
+                        body: JSON.stringify({ assignedToUserId: Number(assignedToUserId) })
+                    });
+                }
+                await refreshAll({ refreshTabs: false });
+                await openTicket(ticketId);
+                notifyOk("Ticket actualizado.");
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function assignTicketToMe(ticketId, caseId) {
+            if (!state.user || state.user.role !== "TECH") {
+                notifyError("Solo un tecnico puede autoasignarse.");
+                return;
+            }
+            try {
+                await api("/tickets/" + ticketId + "/assign", {
+                    method: "POST",
+                    body: JSON.stringify({ assignedToUserId: Number(state.user.userId) })
+                });
+                await refreshAll({ refreshTabs: false });
+                await openTicket(ticketId);
+                notifyOk("Ticket asignado a tu usuario.");
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function resolveTicketFromForm(button, ticketId, caseId) {
+            const form = button.closest("form");
+            const resolution = formValue(form, "resolution").trim();
+            if (resolution.length < 12) {
+                notifyError("La resolucion debe tener al menos 12 caracteres.");
+                return;
+            }
+            try {
+                await api("/tickets/" + ticketId + "/resolve", {
+                    method: "POST",
+                    body: JSON.stringify({ resolution, publicUpdate: resolution })
+                });
+                await refreshAll({ refreshTabs: false });
+                await openTicket(ticketId);
+                notifyOk("Ticket resuelto.");
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        function renderAuditTrail(audit) {
+            if (!audit || !audit.length) {
+                return "<div class='empty'>Sin eventos de auditoria para este ticket.</div>";
+            }
+            return `<div class="audit-list">${audit.map(entry => `
+                <article class="audit-item">
+                    <header>
+                        <span>${escapeHtml(entry.actorUsername || "Sistema")} | ${escapeHtml(labelFor(entry.action || ""))}</span>
+                        <span>${escapeHtml(formatDate(entry.createdAt))}</span>
+                    </header>
+                    ${(entry.changes || []).map(change => `
+                        <div class="audit-change">
+                            <strong>${escapeHtml(auditFieldLabel(change.field))}</strong>
+                            <span>Antes: ${escapeHtml(formatAuditValue(change.previousValue))}</span>
+                            <span>Despues: ${escapeHtml(formatAuditValue(change.newValue))}</span>
+                        </div>
+                    `).join("") || "<div class='empty'>Evento registrado sin cambios de campo.</div>"}
+                </article>
+            `).join("")}</div>`;
+        }
+
+        function auditFieldLabel(field) {
+            const labels = {
+                summary: "Resumen",
+                description: "Descripcion",
+                status: "Estado",
+                priority: "Prioridad",
+                categoryCode: "Categoria",
+                assignedToUserId: "Asignatario",
+                assignedToName: "Asignatario",
+                requesterUserId: "Usuario final",
+                requesterName: "Usuario final",
+                siteId: "Organizacion",
+                siteName: "Organizacion",
+                locationName: "Ubicacion",
+                resolution: "Resolucion"
+            };
+            return labels[field] || field || "-";
+        }
+
+        function formatAuditValue(value) {
+            if (value === null || value === undefined || value === "") {
+                return "-";
+            }
+            if (typeof value === "object") {
+                return JSON.stringify(value);
+            }
+            return labelFor(String(value));
+        }
+
+        function renderUpdates(updates) {
+            if (!updates.length) {
+                return "<div class='empty'>Sin actualizaciones visibles.</div>";
+            }
+            return `<div class="updates">${updates.map(update => `
+                <article class="update-item">
+                    <div class="update-meta">
+                        ${badge(update.visibility)}
+                        ${badge(update.updateType)}
+                        <span>${escapeHtml(update.authorUsername || "Sistema")}</span>
+                        <span>${formatDate(update.createdAt)}</span>
+                    </div>
+                    <div>${escapeHtml(update.body)}</div>
+                </article>
+            `).join("")}</div>`;
+        }
+
+        async function createTicket(event, caseId) {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const assignedToUserId = formValue(form, "assignee");
+            const summary = formValue(form, "summary").trim();
+            if (!assignedToUserId) {
+                notifyError("Seleccione un tecnico.");
+                return;
+            }
+            if (summary.length < 8) {
+                notifyError("El resumen debe tener al menos 8 caracteres.");
+                return;
+            }
+            const payload = {
+                assignedToUserId: Number(assignedToUserId),
+                summary,
+                description: formValue(form, "description").trim(),
+                priority: formValue(form, "priority"),
+                categoryCode: "GENERAL"
+            };
+            try {
+                await api("/service-cases/" + caseId + "/tickets", { method: "POST", body: JSON.stringify(payload) });
+                await refreshAll({ refreshTabs: false });
+                await openCase(caseId);
+                notifyOk("Ticket creado y asignado.");
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function updateTicket(event, ticketId, caseId) {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const payload = {
+                visibility: formValue(form, "visibility")
+            };
+            const body = formValue(form, "body").trim();
+            const status = formValue(form, "status");
+            const priority = formValue(form, "priority");
+            if (body) payload.body = body;
+            if (status) payload.status = status;
+            if (priority) payload.priority = priority;
+            if (!body && !status && !priority) {
+                notifyError("Ingrese una nota o un cambio de estado/prioridad.");
+                return;
+            }
+            try {
+                await api("/tickets/" + ticketId, { method: "PATCH", body: JSON.stringify(payload) });
+                await refreshAll({ refreshTabs: false });
+                await openCase(caseId);
+                notifyOk("Ticket actualizado.");
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function assignTicket(event, ticketId, caseId) {
+            event.preventDefault();
+            const assignedToUserId = formValue(event.currentTarget, "assignee");
+            if (!assignedToUserId) {
+                notifyError("Seleccione un tecnico.");
+                return;
+            }
+            try {
+                await api("/tickets/" + ticketId + "/assign", {
+                    method: "POST",
+                    body: JSON.stringify({ assignedToUserId: Number(assignedToUserId) })
+                });
+                await refreshAll({ refreshTabs: false });
+                await openCase(caseId);
+                notifyOk("Ticket derivado.");
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function resolveTicket(event, ticketId, caseId) {
+            event.preventDefault();
+            const resolution = formValue(event.currentTarget, "resolution").trim();
+            if (resolution.length < 12) {
+                notifyError("La resolucion debe tener al menos 12 caracteres.");
+                return;
+            }
+            try {
+                await api("/tickets/" + ticketId + "/resolve", {
+                    method: "POST",
+                    body: JSON.stringify({ resolution, publicUpdate: resolution })
+                });
+                await refreshAll({ refreshTabs: false });
+                await openCase(caseId);
+                notifyOk("Ticket resuelto.");
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function logout() {
+            try {
+                await api("/logout", { method: "POST", body: "{}" });
+            } catch (error) {
+                console.error(error);
+            }
+            window.sessionStorage.removeItem("token");
+            window.sessionStorage.removeItem("user");
+            redirectToLogin();
+        }
+
+        function technicianOptions(selectedId) {
+            if (!state.technicians.length) {
+                return "<option value=''>No hay tecnicos activos</option>";
+            }
+            return "<option value=''>Seleccione tecnico</option>" + state.technicians.map(tech => {
+                const selected = String(tech.userId) === String(selectedId || state.user.userId) ? "selected" : "";
+                return `<option value="${tech.userId}" ${selected}>${escapeHtml(tech.name)} (${escapeHtml(tech.username)})</option>`;
+            }).join("");
+        }
+
+        function detailLine(label, value) {
+            return `<div class="detail-line"><strong>${escapeHtml(label)}</strong><span>${escapeHtml(value)}</span></div>`;
+        }
+
+        function detailLineHtml(label, html) {
+            return `<div class="detail-line"><strong>${escapeHtml(label)}</strong><span>${html}</span></div>`;
+        }
+
+        function formValue(form, field) {
+            const input = form.querySelector(`[data-field="${field}"]`);
+            return input ? input.value : "";
+        }
+
+        function badge(value) {
+            const raw = value || "-";
+            const safeClass = escapeHtml(raw);
+            return `<span class="badge ${safeClass}">${escapeHtml(labelFor(raw))}</span>`;
+        }
+
+        function labelFor(value) {
+            return DISPLAY_LABELS[value] || value || "-";
+        }
+
+        function fullName(user) {
+            const name = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
+            return name || user.username || "-";
+        }
+
+        function initialsFor(user) {
+            const source = [user.firstName, user.lastName].filter(Boolean);
+            if (!source.length && user.username) {
+                source.push(user.username);
+            }
+            return source.map(part => String(part).charAt(0).toUpperCase()).join("").substring(0, 2) || "US";
+        }
+
+        function sameUser(left, right) {
+            return String(left) === String(right);
+        }
+
+        function slaBadge(sla) {
+            if (!sla) {
+                return "<span class='sla-badge sla-neutral'>[i] Sin SLA</span>";
+            }
+            const colorClass = escapeHtml(sla.colorClass || "sla-neutral");
+            const icon = escapeHtml(sla.icon || "[i]");
+            const text = escapeHtml(sla.text || sla.code || "Sin SLA");
+            return `<span class="sla-badge ${colorClass}"><span aria-hidden="true">${icon}</span><span>${text}</span></span>`;
+        }
+
+        function joinLocation(site, location) {
+            return [site, location].filter(Boolean).join(" / ") || "-";
+        }
+
+        function vipLabel(ticket) {
+            return ticket && ticket.priority === "CRITICAL" ? "Si" : "No";
+        }
+
+        function levelLabel(ticket) {
+            return ticket && ticket.priority ? labelFor(ticket.priority) : "-";
+        }
+
+        function resolverTeam(ticket) {
+            return ticket && ticket.resolverTeam ? ticket.resolverTeam : "Mesa de Ayuda";
+        }
+
+        function openProfileDrawer() {
+            state.profilePreviousFocus = document.activeElement;
+            document.getElementById("profileBackdrop").classList.add("open");
+            document.getElementById("profileDrawer").classList.add("open");
+            document.getElementById("profileDrawer").setAttribute("aria-hidden", "false");
+            document.getElementById("profileDrawer").focus();
+        }
+
+        function closeProfileDrawer() {
+            const drawer = document.getElementById("profileDrawer");
+            if (!drawer.classList.contains("open")) {
+                return;
+            }
+            document.getElementById("profileBackdrop").classList.remove("open");
+            drawer.classList.remove("open");
+            drawer.setAttribute("aria-hidden", "true");
+            if (state.profilePreviousFocus && typeof state.profilePreviousFocus.focus === "function") {
+                state.profilePreviousFocus.focus();
+            }
+            state.profilePreviousFocus = null;
+        }
+
+        function closeDrawer() {
+            document.getElementById("drawerBackdrop").classList.remove("open");
+            document.getElementById("detailDrawer").classList.remove("open");
+            document.getElementById("detailDrawer").setAttribute("aria-hidden", "true");
+            state.activeCaseId = null;
+            if (state.previousFocus && typeof state.previousFocus.focus === "function") {
+                state.previousFocus.focus();
+            }
+            state.previousFocus = null;
+        }
+
+        function onGlobalKeydown(event) {
+            if (event.key !== "Escape") {
+                return;
+            }
+            if (document.getElementById("profileDrawer").classList.contains("open")) {
+                closeProfileDrawer();
+                return;
+            }
+            if (document.getElementById("detailDrawer").classList.contains("open")) {
+                closeDrawer();
+            }
+        }
+
+        function redirectToLogin() {
+            window.location.href = "login.html";
+        }
+
+        function notifyOk(message) {
+            Swal.fire("Listo", message, "success");
+        }
+
+        function notifyError(message) {
+            Swal.fire("No se pudo completar", message, "error");
+        }
+
+        function formatDate(value) {
+            if (!value) {
+                return "-";
+            }
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return "-";
+            }
+            return date.toLocaleString();
+        }
+
+        function dateInputValue(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            return year + "-" + month + "-" + day;
+        }
+
+        function dateTimeLocalValue(value) {
+            if (!value) {
+                return "";
+            }
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return "";
+            }
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            const hour = String(date.getHours()).padStart(2, "0");
+            const minute = String(date.getMinutes()).padStart(2, "0");
+            return `${year}-${month}-${day}T${hour}:${minute}`;
+        }
+
+        function escapeHtml(value) {
+            return String(value === null || value === undefined ? "" : value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function escapeAttr(value) {
+            return escapeHtml(value).replace(/`/g, "&#096;");
+        }
+
+        function debounce(fn, wait) {
+            let timeout;
+            return function() {
+                clearTimeout(timeout);
+                const args = arguments;
+                timeout = setTimeout(() => fn.apply(null, args), wait);
+            };
+        }
+    </script>
+</body>
 </html>
