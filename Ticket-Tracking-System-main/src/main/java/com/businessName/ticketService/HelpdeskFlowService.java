@@ -401,48 +401,81 @@ public class HelpdeskFlowService {
         }
 
         try (Connection connection = requireConnection()) {
-            validateSiteAndLocation(connection, siteId, locationId);
-            SlaPolicyDetails policy = findSlaPolicyDetails(connection, type, priority);
-            Timestamp startAt = Timestamp.from(Instant.now());
-            Timestamp dueAt = SlaEngine.calculateDueAt(type, startAt, policy.resolutionMinutes,
-                    policy.calendarCode, policy.businessHoursOnly);
-            try (PreparedStatement ps = connection.prepareStatement(
-                    "INSERT INTO p2_sandbox.service_case " +
-                            "(type, title, description, requester_user_id, affected_user_id, site_id, location_id, " +
-                            "status, priority, sla_policy_id, due_at, created_by_user_id, created_at, updated_at) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?, 'OPEN', ?, ?, ?, ?, ?, ?) " +
-                            "RETURNING case_id")) {
-                ps.setString(1, type);
-                ps.setString(2, title);
-                ps.setString(3, description);
-                ps.setLong(4, user.userId);
-                ps.setLong(5, user.userId);
-                ps.setInt(6, siteId);
-                if (locationId == null) {
-                    ps.setNull(7, Types.BIGINT);
-                } else {
-                    ps.setLong(7, locationId);
+            connection.setAutoCommit(false);
+            try {
+                validateSiteAndLocation(connection, siteId, locationId);
+                SlaPolicyDetails policy = findSlaPolicyDetails(connection, type, priority);
+                Timestamp startAt = Timestamp.from(Instant.now());
+                Timestamp dueAt = SlaEngine.calculateDueAt(type, startAt, policy.resolutionMinutes,
+                        policy.calendarCode, policy.businessHoursOnly);
+                try (PreparedStatement ps = connection.prepareStatement(
+                        "INSERT INTO p2_sandbox.service_case " +
+                                "(type, title, description, requester_user_id, affected_user_id, site_id, location_id, " +
+                                "status, priority, sla_policy_id, due_at, created_by_user_id, created_at, updated_at) " +
+                                "VALUES (?, ?, ?, ?, ?, ?, ?, 'OPEN', ?, ?, ?, ?, ?, ?) " +
+                                "RETURNING case_id")) {
+                    ps.setString(1, type);
+                    ps.setString(2, title);
+                    ps.setString(3, description);
+                    ps.setLong(4, user.userId);
+                    ps.setLong(5, user.userId);
+                    ps.setInt(6, siteId);
+                    if (locationId == null) {
+                        ps.setNull(7, Types.BIGINT);
+                    } else {
+                        ps.setLong(7, locationId);
+                    }
+                    ps.setString(8, priority);
+                    if (policy.slaPolicyId == null) {
+                        ps.setNull(9, Types.INTEGER);
+                    } else {
+                        ps.setInt(9, policy.slaPolicyId);
+                    }
+                    ps.setTimestamp(10, dueAt);
+                    ps.setLong(11, user.userId);
+                    ps.setTimestamp(12, startAt);
+                    ps.setTimestamp(13, startAt);
+                    long caseId;
+                    try (ResultSet rs = ps.executeQuery()) {
+                        rs.next();
+                        caseId = rs.getLong("case_id");
+                    }
+                    long ticketId;
+                    try (PreparedStatement ticketPs = connection.prepareStatement(
+                            "INSERT INTO p2_sandbox.ticket " +
+                                    "(service_case_id, assigned_to_user_id, created_by_user_id, sla_policy_id, category_code, " +
+                                    "summary, description, status, priority, due_at) " +
+                                    "VALUES (?, NULL, ?, ?, 'GENERAL', ?, ?, 'OPEN', ?, ?) RETURNING ticket_id")) {
+                        ticketPs.setLong(1, caseId);
+                        ticketPs.setLong(2, user.userId);
+                        if (policy.slaPolicyId == null) {
+                            ticketPs.setNull(3, Types.INTEGER);
+                        } else {
+                            ticketPs.setInt(3, policy.slaPolicyId);
+                        }
+                        ticketPs.setString(4, title);
+                        ticketPs.setString(5, description);
+                        ticketPs.setString(6, priority);
+                        ticketPs.setTimestamp(7, dueAt);
+                        try (ResultSet ticketRs = ticketPs.executeQuery()) {
+                            ticketRs.next();
+                            ticketId = ticketRs.getLong("ticket_id");
+                        }
+                    }
+                    addTicketUpdate(connection, ticketId, user.userId, "PUBLIC", "SYSTEM",
+                            "Ticket registrado por el usuario.", null, "OPEN");
+                    JSONObject created = getServiceCase(connection, user, caseId);
+                    JSONObject ticket = getTicket(connection, user, ticketId);
+                    audit(connection, user.userId, "service_case", String.valueOf(caseId), "SERVICE_CASE_CREATED",
+                            null, created, ctx);
+                    audit(connection, user.userId, "ticket", String.valueOf(ticketId), "TICKET_CREATED", null, ticket, ctx);
+                    notificationService.notifyTicketCreated(connection, ticketId);
+                    connection.commit();
+                    return created;
                 }
-                ps.setString(8, priority);
-                if (policy.slaPolicyId == null) {
-                    ps.setNull(9, Types.INTEGER);
-                } else {
-                    ps.setInt(9, policy.slaPolicyId);
-                }
-                ps.setTimestamp(10, dueAt);
-                ps.setLong(11, user.userId);
-                ps.setTimestamp(12, startAt);
-                ps.setTimestamp(13, startAt);
-                long caseId;
-                try (ResultSet rs = ps.executeQuery()) {
-                    rs.next();
-                    caseId = rs.getLong("case_id");
-                }
-                JSONObject created = getServiceCase(connection, user, caseId);
-                audit(connection, user.userId, "service_case", String.valueOf(caseId), "SERVICE_CASE_CREATED",
-                        null, created, ctx);
-                notificationService.notifyCaseCreated(connection, caseId);
-                return created;
+            } catch (Exception e) {
+                rollbackQuietly(connection);
+                throw e;
             }
         } catch (AuthException e) {
             throw e;
@@ -1492,6 +1525,13 @@ public class HelpdeskFlowService {
             throw new AuthException(500, "Database connection unavailable");
         }
         return connection;
+    }
+
+    private void rollbackQuietly(Connection connection) {
+        try {
+            connection.rollback();
+        } catch (Exception ignored) {
+        }
     }
 
     private JSONObject parseJson(String body) {

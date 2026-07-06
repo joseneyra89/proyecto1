@@ -480,6 +480,33 @@
             min-width: 0;
         }
 
+        .board-header {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .board-header h3 {
+            margin-bottom: 0;
+        }
+
+        .board-header p {
+            margin-top: 3px;
+            font-size: 13px;
+        }
+
+        .board-filter {
+            width: min(220px, 100%);
+        }
+
+        .ticket-board-grid {
+            display: grid;
+            gap: 14px;
+        }
+
         .user-overview-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1403,8 +1430,8 @@
             <section class="workspace-section primary-case" id="newCaseSection">
                 <div class="toolbar">
                     <div>
-                        <h1>Nuevo caso de servicio</h1>
-                        <p>Registra una solicitud o incidencia con la sede, ubicacion y detalle necesario.</p>
+                        <h1>Nuevo ticket</h1>
+                        <p>Registra una solicitud o incidencia como ticket directo para mesa de ayuda.</p>
                     </div>
                 </div>
                 <form id="caseForm" class="form-grid">
@@ -1435,7 +1462,7 @@
                         <textarea id="caseDescription" minlength="20" maxlength="4000" required></textarea>
                     </label>
                     <div class="span-2 btn-row">
-                        <button class="btn" type="submit">Crear caso</button>
+                        <button class="btn" type="submit">Registrar ticket</button>
                     </div>
                 </form>
             </section>
@@ -1464,8 +1491,8 @@
             <section class="workspace-section" id="queuesSection">
                 <div class="toolbar">
                     <div>
-                        <h2>Colas sin ticket</h2>
-                        <p>Casos abiertos separados por tipo y listos para ser convertidos en ticket.</p>
+                        <h2>Casos sin ticket</h2>
+                        <p>Casos historicos que aun necesitan un ticket operativo.</p>
                     </div>
                 </div>
                 <div class="queue-grid">
@@ -1494,26 +1521,9 @@
                 <div class="toolbar">
                     <div>
                         <h2 id="ticketsTitle">Bandejas de tickets</h2>
-                        <p id="ticketsSubtitle">Tickets agrupados por estado. ADMIN puede buscar sobre todo el universo.</p>
+                        <p id="ticketsSubtitle">Solicitudes e incidencias con filtros de pendientes, resueltas y todas.</p>
                     </div>
                     <div class="filters">
-                        <label>Tipo
-                            <select id="ticketTypeFilter">
-                                <option value="">Todos</option>
-                                <option value="REQUEST">Solicitud</option>
-                                <option value="INCIDENT">Incidente</option>
-                            </select>
-                        </label>
-                        <label>Estado
-                            <select id="ticketStatusFilter">
-                                <option value="">Todos</option>
-                                <option value="OPEN">Nuevo</option>
-                                <option value="IN_PROGRESS">En proceso</option>
-                                <option value="RESOLVED">Resuelto</option>
-                                <option value="CLOSED">Cerrado</option>
-                                <option value="CANCELLED">Cancelado</option>
-                            </select>
-                        </label>
                         <label>Sede
                             <select id="ticketSiteFilter">
                                 <option value="">Todas</option>
@@ -1540,18 +1550,38 @@
                         </label>
                     </div>
                 </div>
-                <div class="status-grid">
-                    <div class="status-block">
-                        <h3>Abiertos</h3>
-                        <div id="ticketsOpen"></div>
+                <div class="ticket-board-grid">
+                    <div class="queue-block">
+                        <div class="board-header">
+                            <div>
+                                <h3>Solicitudes</h3>
+                                <p id="requestTicketsCount">Pendientes de atencion.</p>
+                            </div>
+                            <label class="board-filter">Ver
+                                <select id="requestTicketView">
+                                    <option value="PENDING">Pendientes</option>
+                                    <option value="RESOLVED">Resueltas</option>
+                                    <option value="ALL">Todas</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div id="requestTickets"></div>
                     </div>
-                    <div class="status-block">
-                        <h3>En progreso</h3>
-                        <div id="ticketsProgress"></div>
-                    </div>
-                    <div class="status-block">
-                        <h3>Resueltos</h3>
-                        <div id="ticketsResolved"></div>
+                    <div class="queue-block">
+                        <div class="board-header">
+                            <div>
+                                <h3>Incidencias</h3>
+                                <p id="incidentTicketsCount">Pendientes de atencion.</p>
+                            </div>
+                            <label class="board-filter">Ver
+                                <select id="incidentTicketView">
+                                    <option value="PENDING">Pendientes</option>
+                                    <option value="RESOLVED">Resueltas</option>
+                                    <option value="ALL">Todas</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div id="incidentTickets"></div>
                     </div>
                 </div>
             </section>
@@ -1725,8 +1755,8 @@
             document.getElementById("dashboardRefreshButton").addEventListener("click", refreshDashboard);
             document.getElementById("dashboardDateFrom").addEventListener("change", refreshDashboard);
             document.getElementById("dashboardDateTo").addEventListener("change", refreshDashboard);
-            document.getElementById("ticketTypeFilter").addEventListener("change", refreshTickets);
-            document.getElementById("ticketStatusFilter").addEventListener("change", refreshTickets);
+            document.getElementById("requestTicketView").addEventListener("change", () => renderTicketsGroup(state.tickets));
+            document.getElementById("incidentTicketView").addEventListener("change", () => renderTicketsGroup(state.tickets));
             document.getElementById("ticketSiteFilter").addEventListener("change", refreshTickets);
             document.getElementById("ticketDueFilter").addEventListener("change", refreshTickets);
             document.getElementById("ticketDateFrom").addEventListener("change", refreshTickets);
@@ -1787,9 +1817,11 @@
             document.getElementById("casesSubtitle").textContent =
                 state.user.role === "USER" ? "Estado, sede y SLA de los casos que registraste." : "Vista operativa segun permisos del rol.";
             document.getElementById("ticketsTitle").textContent =
-                state.user.role === "USER" ? "Seguimiento de tickets" : "Bandejas de tickets";
+                state.user.role === "USER" ? "Mis tickets registrados" : "Bandejas de solicitudes e incidencias";
             document.getElementById("ticketsSubtitle").textContent =
-                state.user.role === "USER" ? "Tickets vinculados a tus casos, agrupados por estado." : "Tickets agrupados por estado. ADMIN puede buscar sobre todo el universo.";
+                state.user.role === "USER"
+                    ? "Tickets creados directamente por ti y separados por tipo."
+                    : "Usa los desplegables para ver pendientes, resueltas o todas en general.";
         }
 
         function applyRoleVisibility() {
@@ -1797,7 +1829,7 @@
             document.getElementById("userOverviewSection").classList.toggle("hidden", state.user.role !== "USER");
             document.getElementById("newCaseSection").classList.toggle("hidden", !canCreateCases());
             document.getElementById("dashboardSection").classList.toggle("hidden", !canOperateTickets());
-            document.getElementById("queuesSection").classList.toggle("hidden", !canOperateTickets());
+            document.getElementById("queuesSection").classList.add("hidden");
             document.getElementById("ticketSearch").disabled = false;
             renderNavigation();
             setDefaultDashboardDates();
@@ -1820,15 +1852,13 @@
             if (state.user.role === "USER") {
                 items.push(
                     { sectionId: "userOverviewSection", label: "Resumen" },
-                    { sectionId: "newCaseSection", label: "Crear solicitud" },
-                    { sectionId: "casesSection", label: "Mis casos" },
+                    { sectionId: "newCaseSection", label: "Registrar ticket" },
                     { sectionId: "ticketsSection", label: "Mis tickets" }
                 );
             }
             if (state.user.role === "TECH") {
                 items.push(
                     { sectionId: "dashboardSection", label: "Dashboard" },
-                    { sectionId: "queuesSection", label: "Crear ticket" },
                     { sectionId: "casesSection", label: "Casos" },
                     { sectionId: "ticketsSection", label: "Tickets" }
                 );
@@ -1836,9 +1866,8 @@
             if (state.user.role === "ADMIN") {
                 items.push(
                     { sectionId: "adminManagementSection", label: "Usuarios" },
-                    { sectionId: "newCaseSection", label: "Crear solicitud" },
+                    { sectionId: "newCaseSection", label: "Registrar ticket" },
                     { sectionId: "dashboardSection", label: "Dashboard" },
-                    { sectionId: "queuesSection", label: "Crear ticket" },
                     { sectionId: "casesSection", label: "Casos" },
                     { sectionId: "ticketsSection", label: "Tickets" }
                 );
@@ -2083,7 +2112,6 @@
             const refreshTabs = !options || options.refreshTabs !== false;
             const work = [refreshCases(), refreshTickets()];
             if (canOperateTickets()) {
-                work.push(refreshQueues());
                 work.push(refreshDashboard());
             }
             if (isAdmin()) {
@@ -2200,15 +2228,11 @@
 
         async function refreshTickets() {
             const params = new URLSearchParams();
-            const type = document.getElementById("ticketTypeFilter").value;
-            const status = document.getElementById("ticketStatusFilter").value;
             const siteId = document.getElementById("ticketSiteFilter").value;
             const due = document.getElementById("ticketDueFilter").value;
             const dateFrom = document.getElementById("ticketDateFrom").value;
             const dateTo = document.getElementById("ticketDateTo").value;
             const query = document.getElementById("ticketSearch").value.trim();
-            if (type) params.set("type", type);
-            if (status) params.set("status", status);
             if (siteId) params.set("siteId", siteId);
             if (due) params.set("due", due);
             if (dateFrom) params.set("dateFrom", dateFrom);
@@ -2227,14 +2251,14 @@
             }
             const cases = state.cases || [];
             const tickets = state.tickets || [];
-            const openCases = cases.filter(item => item.status === "OPEN").length;
-            const activeTickets = tickets.filter(item => item.status === "IN_PROGRESS" || item.status === "OPEN").length;
+            const pendingTickets = tickets.filter(item => item.status === "IN_PROGRESS" || item.status === "OPEN").length;
+            const resolvedTickets = tickets.filter(item => item.status === "RESOLVED" || item.status === "CLOSED").length;
             const breached = cases.filter(item => item.sla && item.sla.code === "BREACHED").length +
                 tickets.filter(item => item.sla && item.sla.code === "BREACHED").length;
             document.getElementById("userOverviewCards").innerHTML = [
-                summaryCard("Casos registrados", cases.length),
-                summaryCard("Casos abiertos", openCases),
-                summaryCard("Tickets en atencion", activeTickets),
+                summaryCard("Tickets registrados", tickets.length),
+                summaryCard("Tickets pendientes", pendingTickets),
+                summaryCard("Tickets resueltos", resolvedTickets),
                 summaryCard("Fuera de SLA", breached)
             ].join("");
         }
@@ -2311,21 +2335,39 @@
         }
 
         function renderTicketsGroup(tickets) {
-            const groups = {
-                OPEN: [],
-                IN_PROGRESS: [],
-                RESOLVED: []
+            const requestView = document.getElementById("requestTicketView").value;
+            const incidentView = document.getElementById("incidentTicketView").value;
+            const requestTickets = filterTicketsForBoard(tickets, "REQUEST", requestView);
+            const incidentTickets = filterTicketsForBoard(tickets, "INCIDENT", incidentView);
+            renderBoardCount("requestTicketsCount", requestTickets.length, requestView);
+            renderBoardCount("incidentTicketsCount", incidentTickets.length, incidentView);
+            renderTicketsTable("requestTickets", requestTickets);
+            renderTicketsTable("incidentTickets", incidentTickets);
+        }
+
+        function filterTicketsForBoard(tickets, type, view) {
+            const statuses = {
+                PENDING: ["OPEN", "IN_PROGRESS"],
+                RESOLVED: ["RESOLVED", "CLOSED", "CANCELLED"]
             };
-            (tickets || []).forEach(ticket => {
-                if (groups[ticket.status]) {
-                    groups[ticket.status].push(ticket);
-                } else if (ticket.status === "CLOSED" || ticket.status === "CANCELLED") {
-                    groups.RESOLVED.push(ticket);
+            return (tickets || []).filter(ticket => {
+                if (ticket.caseType !== type) {
+                    return false;
                 }
+                if (view === "ALL") {
+                    return true;
+                }
+                return (statuses[view] || statuses.PENDING).indexOf(ticket.status) >= 0;
             });
-            renderTicketsTable("ticketsOpen", groups.OPEN);
-            renderTicketsTable("ticketsProgress", groups.IN_PROGRESS);
-            renderTicketsTable("ticketsResolved", groups.RESOLVED);
+        }
+
+        function renderBoardCount(targetId, count, view) {
+            const labels = {
+                PENDING: "pendientes",
+                RESOLVED: "resueltas",
+                ALL: "en total"
+            };
+            document.getElementById(targetId).textContent = Number(count || 0) + " tickets " + (labels[view] || labels.PENDING) + ".";
         }
 
         function renderTicketsTable(targetId, tickets) {
@@ -2624,8 +2666,12 @@
                 renderSiteOptions();
                 await onSiteChanged();
                 await refreshAll();
-                notifyOk("Caso creado correctamente.");
-                openCase(created.caseId);
+                notifyOk("Ticket registrado correctamente.");
+                if (created.ticket && created.ticket.ticketId) {
+                    openTicket(created.ticket.ticketId);
+                } else {
+                    openCase(created.caseId);
+                }
             } catch (error) {
                 notifyError(error.message);
             }
