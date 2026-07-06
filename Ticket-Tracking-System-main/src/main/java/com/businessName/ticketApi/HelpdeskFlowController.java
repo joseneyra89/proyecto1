@@ -1,5 +1,6 @@
 package com.businessName.ticketApi;
 
+import com.businessName.common.PageRequest;
 import com.businessName.security.AuthException;
 import com.businessName.security.AuthenticatedUser;
 import com.businessName.ticketService.HelpdeskFlowService;
@@ -43,7 +44,8 @@ public class HelpdeskFlowController {
             service.createServiceCase(authUser(ctx), ctx.body(), ctx).toString(), 201);
 
     public Handler listServiceCases = ctx -> handle(ctx, () ->
-            service.listServiceCases(authUser(ctx), ctx.queryParam("type"), ctx.queryParam("status")).toString());
+            service.listServiceCases(authUser(ctx), ctx.queryParam("type"), ctx.queryParam("status"),
+                    PageRequest.from(ctx.queryParam("page"), ctx.queryParam("pageSize"))).toString());
 
     public Handler getServiceCase = ctx -> handle(ctx, () ->
             service.getServiceCase(authUser(ctx), Long.parseLong(ctx.pathParam("caseId"))).toString());
@@ -58,7 +60,8 @@ public class HelpdeskFlowController {
             service.listTickets(authUser(ctx), ctx.queryParam("status"), ctx.queryParam("type"), ctx.queryParam("q"),
                     ctx.queryParam("siteId"), ctx.queryParam("dateFrom"), ctx.queryParam("dateTo"), ctx.queryParam("due"),
                     ctx.queryParam("ticketNumber"), ctx.queryParam("user"), ctx.queryParam("technician"),
-                    ctx.queryParam("email"), ctx.queryParam("title")).toString());
+                    ctx.queryParam("email"), ctx.queryParam("title"),
+                    PageRequest.from(ctx.queryParam("page"), ctx.queryParam("pageSize"))).toString());
 
     public Handler getTicket = ctx -> handle(ctx, () ->
             service.getTicket(authUser(ctx), Long.parseLong(ctx.pathParam("ticketId"))).toString());

@@ -1,54 +1,89 @@
 # Ticket Tracking System
-12
-## Levantar el proyecto desde cualquier PC
-123454
-Cada integrante puede abrir su rama y levantar la app completa con Docker:
+
+Sistema web para registrar solicitudes e incidencias, convertirlas en tickets, asignarlas a tecnicos, controlar SLA y administrar usuarios, sedes y ubicaciones.
+
+## Contenido principal
+
+- Frontend estatico: `login.html` y `employee.html`, servido por Nginx.
+- API Java: Javalin en `src/main/java/com/businessName/ticketApi`.
+- Base de datos: PostgreSQL con scripts de inicio en `docker/postgres/init`.
+- Docker: app, web, PostgreSQL y Adminer.
+- Documentacion funcional: carpeta `documentacion`.
+
+## Requisitos
+
+Opcion recomendada para todos los integrantes:
+
+- Git.
+- Docker Desktop con Docker Compose.
+- Un puerto libre para cada servicio: `8080`, `8081`, `8082` y `5432`.
+
+Opcion local sin Docker para desarrollo Java:
+
+- JDK 8.
+- Maven 3.8 o superior.
+- PostgreSQL 14 o compatible.
+
+## Levantar el proyecto desde cero
+
+Desde la raiz del repositorio:
 
 ```powershell
-git fetch
-git checkout nombre-de-tu-rama
 cd Ticket-Tracking-System-main
 Copy-Item .env.example .env
 docker compose up --build
 ```
 
-Servicios locales:
+En Git Bash, Linux o macOS:
 
-- Web: http://localhost:8080/login.html
-- API: http://localhost:8081
-- Adminer para gestionar la base: http://localhost:8082
-- PostgreSQL desde la PC host: localhost:5432
-
-Nota: el frontend actual llama a la API en `localhost:8081`. Si ese puerto esta ocupado, libera el puerto antes de levantar el proyecto.
-
-Usuarios de prueba:
-
-- Usuario: `mb1` / `pass`
-- Tecnico: `tech1` / `pass`
-- Admin: `admin` / `pass`
-
-## Entrar a la base desde Adminer
-
-En http://localhost:8082 usa:
-
-- Sistema: PostgreSQL
-- Servidor: `postgres`
-- Usuario: `tickets_user`
-- Contrasena: `tickets_password`
-- Base de datos: `tickets_db`
-
-## Reiniciar la base desde cero
-
-Si quieres borrar datos de prueba y recrear la base:
-
-```powershell
-docker compose down -v
+```bash
+cd Ticket-Tracking-System-main
+cp .env.example .env
 docker compose up --build
 ```
 
-## Conectarse a una base en otra PC
+Cuando los contenedores terminen de iniciar, abrir:
 
-Si quieren que la app Docker use una base compartida en otra PC:
+- Web: http://localhost:8080/login.html
+- API: http://localhost:8081
+- Health check: http://localhost:8081/health
+- Adminer: http://localhost:8082
+- PostgreSQL desde la PC host: `localhost:5432`
+
+El frontend actual llama a la API en `localhost:8081`. Si ese puerto esta ocupado, liberar el puerto o cambiar `APP_PORT` y revisar la configuracion del frontend.
+
+## Usuarios de prueba
+
+| Rol | Usuario | Contrasena |
+| --- | --- | --- |
+| Solicitante | `mb1` | `pass` |
+| Tecnico | `tech1` | `pass` |
+| Administrador | `admin` | `pass` |
+
+## Variables de entorno
+
+Copiar siempre un ejemplo a `.env`. El archivo `.env` no debe subirse al repositorio.
+
+Para trabajar con la base local de Docker:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Valores principales:
+
+| Variable | Uso | Valor local |
+| --- | --- | --- |
+| `WEB_PORT` | Puerto del frontend Nginx | `8080` |
+| `APP_PORT` | Puerto expuesto de la API | `8081` |
+| `ADMINER_PORT` | Puerto de Adminer | `8082` |
+| `DB_HOST_PORT` | Puerto PostgreSQL en la PC host | `5432` |
+| `DB_HOST` | Host de DB visto por la app | `postgres` |
+| `DB_NAME` | Nombre de base | `tickets_db` |
+| `DB_USER` | Usuario de base | `tickets_user` |
+| `DB_PASSWORD` | Password de base | `tickets_password` |
+
+Para conectar la app Docker a una base PostgreSQL de otra PC:
 
 ```powershell
 Copy-Item .env.remote-db.example .env
@@ -56,4 +91,209 @@ notepad .env
 docker compose -f docker-compose.remote-db.yml up --build
 ```
 
-En ese caso, cambia `DB_HOST` por la IP LAN de la PC donde esta PostgreSQL.
+En ese modo, cambiar `DB_HOST` por la IP LAN o DNS donde corre PostgreSQL.
+
+## Acceso a la base con Adminer
+
+Abrir http://localhost:8082 y usar:
+
+| Campo | Valor |
+| --- | --- |
+| Sistema | PostgreSQL |
+| Servidor | `postgres` |
+| Usuario | `tickets_user` |
+| Contrasena | `tickets_password` |
+| Base de datos | `tickets_db` |
+
+## Reiniciar la base desde cero
+
+Esto borra el volumen de PostgreSQL y recrea los datos iniciales:
+
+```powershell
+docker compose down -v
+docker compose up --build
+```
+
+## Comandos utiles
+
+Ver contenedores:
+
+```powershell
+docker compose ps
+```
+
+Ver logs de la API:
+
+```powershell
+docker compose logs -f ticket-api
+```
+
+Ver logs de PostgreSQL:
+
+```powershell
+docker compose logs -f postgres
+```
+
+Detener el ambiente sin borrar datos:
+
+```powershell
+docker compose down
+```
+
+Validar salud de la API:
+
+```powershell
+curl.exe http://localhost:8081/health
+```
+
+Respuesta esperada:
+
+```json
+{
+  "status": "UP",
+  "service": "ticket-tracking-api",
+  "timestamp": "2026-07-01T00:00:00Z"
+}
+```
+
+## Ejecutar pruebas
+
+Pruebas clave sin depender de PostgreSQL ni drivers de navegador:
+
+```powershell
+mvn clean verify "-Dtest=EntityTests,AuthorizationPolicyTests,SlaEngineTests,DashboardMetricsTests,PaginationTests"
+```
+
+El workflow de GitHub Actions ejecuta el mismo grupo de pruebas y despues construye la imagen Docker. Las pruebas `DataAccessTests`, `ServiceLayerTests` y flujos UI con Cucumber/Selenium requieren base de datos o drivers de navegador, por eso no se incluyen en el CI liviano.
+
+## API principal
+
+### Health
+
+`GET /health` es publico y sirve para comprobar que la API esta arriba.
+
+### Autenticacion
+
+- `POST /login`: inicia sesion.
+- `POST /logout`: cierra sesion.
+- `GET /me`: devuelve el usuario autenticado.
+
+### Casos y tickets
+
+- `POST /service-cases`: crea una solicitud o incidencia.
+- `GET /service-cases`: lista casos con paginacion.
+- `GET /service-cases/{id}`: obtiene detalle de caso.
+- `POST /service-cases/{id}/tickets`: convierte un caso en ticket.
+- `GET /tickets`: lista tickets con paginacion y filtros.
+- `GET /tickets/{id}`: obtiene detalle de ticket.
+- `PATCH /tickets/{id}`: actualiza estado, prioridad, asignacion u otros datos permitidos.
+- `POST /tickets/{id}/updates`: agrega una actualizacion al ticket.
+- `POST /tickets/{id}/resolve`: resuelve el ticket.
+
+### Administracion
+
+- `GET /admin/users`: lista usuarios con paginacion.
+- `POST /admin/users`: crea usuario.
+- `PATCH /admin/users/{id}`: actualiza usuario.
+- `GET /admin/reference-data`: datos de sedes, ubicaciones, roles y categorias.
+
+## Paginacion
+
+Los listados `GET /service-cases`, `GET /tickets` y `GET /admin/users` aceptan:
+
+| Parametro | Regla |
+| --- | --- |
+| `page` | Empieza en `1` |
+| `pageSize` | Por defecto `50`, maximo `100` |
+
+La respuesta usa esta forma:
+
+```json
+{
+  "data": [],
+  "pagination": {
+    "page": 1,
+    "pageSize": 50,
+    "totalItems": 0,
+    "totalPages": 0
+  }
+}
+```
+
+Ejemplo:
+
+```http
+GET /tickets?page=1&pageSize=25&status=IN_PROGRESS
+```
+
+## Rutas legacy retiradas
+
+Las rutas antiguas que dependian de SQL concatenado fueron cerradas con `410 Gone`:
+
+- `POST /`
+- `GET /user/requests`
+- `GET /client/requests`
+- `GET /technician/`
+- `GET /technician/requests`
+
+Usar las rutas modernas: `/service-cases`, `/tickets`, `/me` y `/admin/users`.
+
+## Adjuntos
+
+La estructura de base ya incluye `p2_sandbox.attachments` para metadatos de adjuntos asociados a casos, tickets o actualizaciones. El archivo binario debe almacenarse en storage externo o local y guardar en base:
+
+- `storage_key`
+- `original_filename`
+- `content_type`
+- `byte_size`
+- `checksum_sha256`
+
+Esta estructura deja listo el modelo para agregar endpoints de carga y descarga sin cambiar el dominio principal.
+
+## Documentacion del sistema
+
+La carpeta `documentacion` contiene los entregables en Word y PDF:
+
+- `analisis_completo_sistema.docx`
+- `analisis_completo_sistema.pdf`
+- `manual_usuario_solicitante.docx`
+- `manual_usuario_solicitante.pdf`
+- `manual_tecnico.docx`
+- `manual_tecnico.pdf`
+- `manual_administrador.docx`
+- `manual_administrador.pdf`
+
+## Problemas comunes
+
+Si Docker no inicia:
+
+```powershell
+docker --version
+docker compose version
+```
+
+Si un puerto esta ocupado, revisar el proceso o cambiar el valor en `.env`:
+
+```powershell
+docker compose ps
+```
+
+Si la API no responde, revisar logs:
+
+```powershell
+docker compose logs -f ticket-api
+```
+
+Si la app dice que no puede conectar a PostgreSQL, esperar a que `postgres` este healthy o reiniciar:
+
+```powershell
+docker compose down
+docker compose up --build
+```
+
+Si se necesitan datos limpios:
+
+```powershell
+docker compose down -v
+docker compose up --build
+```

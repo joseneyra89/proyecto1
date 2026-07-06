@@ -1,5 +1,6 @@
 package com.businessName.ticketApi;
 
+import com.businessName.common.PageRequest;
 import com.businessName.security.AuthException;
 import com.businessName.security.AuthService;
 import com.businessName.security.AuthenticatedUser;
@@ -61,7 +62,8 @@ public class AuthController {
 
     public Handler listUsers = ctx -> {
         try {
-            ctx.status(200).result(authService.listUsers().toString());
+            ctx.status(200).result(authService.listUsers(
+                    PageRequest.from(ctx.queryParam("page"), ctx.queryParam("pageSize"))).toString());
         } catch (AuthException e) {
             ctx.status(e.getStatusCode()).result(new JSONObject().put("message", e.getMessage()).toString());
         }

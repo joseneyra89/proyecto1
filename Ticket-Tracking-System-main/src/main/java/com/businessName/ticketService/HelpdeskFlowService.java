@@ -1,5 +1,6 @@
 package com.businessName.ticketService;
 
+import com.businessName.common.PageRequest;
 import com.businessName.security.AuthException;
 import com.businessName.security.AuthenticatedUser;
 import com.businessName.ticketDao.ConnectionObject;
@@ -450,7 +451,7 @@ public class HelpdeskFlowService {
         }
     }
 
-    public JSONArray listServiceCases(AuthenticatedUser user, String type, String status) {
+    public JSONObject listServiceCases(AuthenticatedUser user, String type, String status, PageRequest pageRequest) {
         StringBuilder sql = new StringBuilder(
                 "SELECT sc.case_id, sc.case_number, sc.type, sc.title, sc.description, sc.status, sc.priority, " +
                         "sc.created_at, sc.updated_at, sc.resolved_at, sc.due_at, s.site_id, s.name AS site_name, " +
@@ -470,7 +471,9 @@ public class HelpdeskFlowService {
             sql.append(" AND sc.requester_user_id = ?");
             params.add(user.userId);
         } else if ("TECH".equals(user.roleCode)) {
-            sql.append(" AND t.assigned_to_user_id = ?");
+            sql.append(" AND EXISTS (SELECT 1 FROM p2_sandbox.ticket assigned_ticket " +
+                    "WHERE assigned_ticket.service_case_id = sc.case_id " +
+                    "AND assigned_ticket.deleted_at IS NULL AND assigned_ticket.assigned_to_user_id = ?)");
             params.add(user.userId);
         }
         if (type != null && !type.trim().isEmpty()) {
@@ -481,8 +484,7 @@ public class HelpdeskFlowService {
             sql.append(" AND sc.status = ?");
             params.add(requireEnum(status, "status", "OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED", "CANCELLED"));
         }
-        sql.append(" ORDER BY sc.created_at DESC");
-        return queryServiceCases(sql.toString(), params);
+        return queryPagedServiceCases(sql.toString(), " ORDER BY sc.created_at DESC", params, pageRequest);
     }
 
     public JSONArray listQueues(String type) {
@@ -575,10 +577,10 @@ public class HelpdeskFlowService {
         }
     }
 
-    public JSONArray listTickets(AuthenticatedUser user, String status, String type, String query,
-                                 String siteId, String dateFrom, String dateTo, String due,
-                                 String ticketNumber, String userFilter, String technicianFilter,
-                                 String emailFilter, String titleFilter) {
+    public JSONObject listTickets(AuthenticatedUser user, String status, String type, String query,
+                                  String siteId, String dateFrom, String dateTo, String due,
+                                  String ticketNumber, String userFilter, String technicianFilter,
+                                  String emailFilter, String titleFilter, PageRequest pageRequest) {
         StringBuilder sql = new StringBuilder(ticketBaseSql() + " WHERE t.deleted_at IS NULL");
         List<Object> params = new ArrayList<>();
         if ("USER".equals(user.roleCode)) {
@@ -649,11 +651,22 @@ public class HelpdeskFlowService {
             sql.append(" AND sc.created_at < CAST(? AS date) + INTERVAL '1 day'");
             params.add(dateTo.trim());
         }
-        sql.append(" ORDER BY t.updated_at DESC, t.created_at DESC");
+        String orderBy = " ORDER BY t.updated_at DESC, t.created_at DESC";
+        String baseSql = sql.toString();
+        String dueFilter = normalizeDueFilter(due);
         try (Connection connection = requireConnection();
-             PreparedStatement ps = connection.prepareStatement(sql.toString())) {
-            bind(ps, params);
-            String dueFilter = normalizeDueFilter(due);
+             PreparedStatement ps = connection.prepareStatement(dueFilter == null
+                     ? baseSql + orderBy + " LIMIT ? OFFSET ?"
+                     : baseSql + orderBy)) {
+            List<Object> queryParams = new ArrayList<>(params);
+            if (dueFilter == null) {
+                queryParams.add(pageRequest.pageSize);
+                queryParams.add(pageRequest.offset);
+            }
+            long total = dueFilter == null
+                    ? countRows(connection, "SELECT COUNT(*) AS total FROM (" + baseSql + ") ticket_rows", params)
+                    : -1;
+            bind(ps, queryParams);
             JSONArray tickets = new JSONArray();
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -663,7 +676,7 @@ public class HelpdeskFlowService {
                     }
                 }
             }
-            return tickets;
+            return dueFilter == null ? pageRequest.toResponse(tickets, total) : pageRequest.toResponseFromFullList(tickets);
         } catch (AuthException e) {
             throw e;
         } catch (Exception e) {
@@ -1002,6 +1015,37 @@ public class HelpdeskFlowService {
             return cases;
         } catch (Exception e) {
             throw new AuthException(500, "Unable to list service cases");
+        }
+    }
+
+    private JSONObject queryPagedServiceCases(String baseSql, String orderBy, List<Object> params, PageRequest pageRequest) {
+        try (Connection connection = requireConnection()) {
+            long total = countRows(connection, "SELECT COUNT(*) AS total FROM (" + baseSql + ") service_case_rows", params);
+            List<Object> queryParams = new ArrayList<>(params);
+            queryParams.add(pageRequest.pageSize);
+            queryParams.add(pageRequest.offset);
+            try (PreparedStatement ps = connection.prepareStatement(baseSql + orderBy + " LIMIT ? OFFSET ?")) {
+                bind(ps, queryParams);
+                JSONArray cases = new JSONArray();
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        cases.put(serviceCaseSummaryJson(rs));
+                    }
+                }
+                return pageRequest.toResponse(cases, total);
+            }
+        } catch (Exception e) {
+            throw new AuthException(500, "Unable to list service cases");
+        }
+    }
+
+    private long countRows(Connection connection, String sql, List<Object> params) throws Exception {
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            bind(ps, params);
+            try (ResultSet rs = ps.executeQuery()) {
+                rs.next();
+                return rs.getLong("total");
+            }
         }
     }
 

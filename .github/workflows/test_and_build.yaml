@@ -40,9 +40,9 @@ jobs:
       - name: Validate Maven project
         run: mvn -B -ntp validate
 
-      # The other test classes depend on an external PostgreSQL database or Windows browser drivers.
-      - name: Build and run unit tests
-        run: mvn -B -ntp clean verify -Dtest=EntityTests
+      # DataAccessTests, ServiceLayerTests and Cucumber UI tests depend on PostgreSQL or browser drivers.
+      - name: Build and run key unit tests
+        run: mvn -B -ntp clean verify -Dtest=EntityTests,AuthorizationPolicyTests,SlaEngineTests,DashboardMetricsTests,PaginationTests
 
       - name: Upload test reports
         if: always()

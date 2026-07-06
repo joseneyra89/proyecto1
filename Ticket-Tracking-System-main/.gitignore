@@ -10,6 +10,7 @@
 
 # Log file
 *.log
+logs/
 
 # BlueJ files
 *.ctxt
@@ -32,6 +33,16 @@ replay_pid*
 
 # Local Docker/database secrets
 .env
+*.env
+!.env.example
+!.env.remote-db.example
+
+# Test/build output
+test-output/
+src/test/resources/reports/
+
+# Local browser driver binaries
+*.exe
 
 # End of https://www.toptal.com/developers/gitignore/api/java
 
