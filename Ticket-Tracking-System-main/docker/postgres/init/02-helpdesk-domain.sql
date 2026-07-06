@@ -175,6 +175,24 @@ CREATE TABLE IF NOT EXISTS p2_sandbox.ticket_updates (
     deleted_at TIMESTAMPTZ
 );
 
+CREATE TABLE IF NOT EXISTS p2_sandbox.attachments (
+    attachment_id BIGSERIAL PRIMARY KEY,
+    service_case_id BIGINT REFERENCES p2_sandbox.service_case(case_id),
+    ticket_id BIGINT REFERENCES p2_sandbox.ticket(ticket_id),
+    ticket_update_id BIGINT REFERENCES p2_sandbox.ticket_updates(ticket_update_id),
+    uploaded_by_user_id BIGINT REFERENCES p2_sandbox.app_users(user_id),
+    file_name VARCHAR(255) NOT NULL,
+    content_type VARCHAR(120),
+    storage_key VARCHAR(500) NOT NULL,
+    byte_size BIGINT NOT NULL CHECK (byte_size >= 0),
+    checksum_sha256 VARCHAR(64),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    CONSTRAINT chk_attachment_single_parent CHECK (
+        num_nonnulls(service_case_id, ticket_id, ticket_update_id) = 1
+    )
+);
+
 CREATE TABLE IF NOT EXISTS p2_sandbox.notifications (
     notification_id BIGSERIAL PRIMARY KEY,
     recipient_user_id BIGINT NOT NULL REFERENCES p2_sandbox.app_users(user_id),
@@ -298,6 +316,18 @@ CREATE INDEX IF NOT EXISTS idx_ticket_number_search
 CREATE INDEX IF NOT EXISTS idx_ticket_updates_ticket_created
     ON p2_sandbox.ticket_updates (ticket_id, created_at DESC)
     WHERE deleted_at IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_attachments_service_case
+    ON p2_sandbox.attachments (service_case_id, created_at DESC)
+    WHERE service_case_id IS NOT NULL AND deleted_at IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_attachments_ticket
+    ON p2_sandbox.attachments (ticket_id, created_at DESC)
+    WHERE ticket_id IS NOT NULL AND deleted_at IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_attachments_ticket_update
+    ON p2_sandbox.attachments (ticket_update_id, created_at DESC)
+    WHERE ticket_update_id IS NOT NULL AND deleted_at IS NULL;
 
 CREATE INDEX IF NOT EXISTS idx_notifications_recipient_status
     ON p2_sandbox.notifications (recipient_user_id, status, created_at DESC)
@@ -596,4 +626,5 @@ COMMENT ON TABLE p2_sandbox.app_users IS 'Entidad base unificada de usuarios par
 COMMENT ON TABLE p2_sandbox.service_case IS 'Caso base de mesa de ayuda: REQUEST o INCIDENT.';
 COMMENT ON TABLE p2_sandbox.ticket IS 'Ticket operativo relacionado a un service_case.';
 COMMENT ON TABLE p2_sandbox.ticket_updates IS 'Historial de comentarios/cambios del ticket con visibilidad PUBLIC o INTERNAL.';
+COMMENT ON TABLE p2_sandbox.attachments IS 'Metadatos de adjuntos para casos, tickets o actualizaciones; el binario vive en storage externo/local.';
 COMMENT ON TABLE p2_sandbox.audit_logs IS 'Registro historico de cambios y migraciones; no se borra fisicamente.';

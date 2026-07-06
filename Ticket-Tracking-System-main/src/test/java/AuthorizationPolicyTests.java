@@ -11,6 +11,12 @@ public class AuthorizationPolicyTests {
     }
 
     @Test
+    public void healthIsPublic() {
+        AccessPolicy policy = new AccessPolicy();
+        Assert.assertTrue(policy.isPublic("GET", "/health"));
+    }
+
+    @Test
     public void unknownRoutesAreDeniedByDefault() {
         AccessPolicy policy = new AccessPolicy();
         Assert.assertNull(policy.requiredPermission("GET", "/unregistered/admin/export"));

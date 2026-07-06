@@ -13,6 +13,7 @@ public class AccessPolicy {
 
     public AccessPolicy() {
         addPublic("POST", "/login");
+        addPublic("GET", "/health");
         addPublic("POST", "/password/forgot");
         addPublic("POST", "/password/reset");
 

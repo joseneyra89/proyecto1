@@ -5,10 +5,13 @@ import com.businessName.security.AuthMiddleware;
 import com.businessName.security.AuthService;
 import io.javalin.Javalin;
 import io.javalin.http.ForbiddenResponse;
+import io.javalin.http.Handler;
 import io.javalin.http.UnauthorizedResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
+
+import java.time.Instant;
 
 
 public class HelpTicketApi {
@@ -26,11 +29,13 @@ public class HelpTicketApi {
             logger.info("Javalin started...");
         });
 
-        HelpTicketController controller = new HelpTicketController();
         AuthService authService = new AuthService();
         AuthController authController = new AuthController(authService);
         HelpdeskFlowController helpdeskFlowController = new HelpdeskFlowController();
         AccessPolicy accessPolicy = new AccessPolicy();
+        Handler legacyGone = ctx -> ctx.status(410).result(new JSONObject()
+                .put("message", "Legacy endpoint retired. Use /service-cases, /tickets, /me or /admin/users.")
+                .toString());
 
         app.exception(UnauthorizedResponse.class, (e, ctx) -> {
             ctx.status(401).result(new JSONObject().put("message", e.getMessage()).toString());
@@ -40,6 +45,12 @@ public class HelpTicketApi {
         });
 
         app.before(ctx -> AuthMiddleware.enforce(ctx, authService, accessPolicy));
+
+        app.get("/health", ctx -> ctx.status(200).result(new JSONObject()
+                .put("status", "UP")
+                .put("service", "ticket-tracking-api")
+                .put("timestamp", Instant.now().toString())
+                .toString()));
 
         app.post("/login", authController.login);
 
@@ -105,38 +116,37 @@ public class HelpTicketApi {
 
         app.post("/notifications/retry", helpdeskFlowController.retryNotifications);
 
-        app.post("/user/requests", controller.userCreateHelpRequest);
+        app.post("/user/requests", legacyGone);
 
-        app.put("/user/requests", controller.viewRequestStatus);
+        app.put("/user/requests", legacyGone);
 
-        app.post("/technician/", controller.viewOpenRequestsTech);
+        app.post("/technician/", legacyGone);
 
-        app.put("/technician/", controller.viewOpenResolveTech);
+        app.put("/technician/", legacyGone);
 
-        app.patch("/technician/", controller.fillCreateFormTech);
+        app.patch("/technician/", legacyGone);
 
-        app.post("/technician/requests", controller.createTicketTech);
+        app.post("/technician/requests", legacyGone);
 
-        app.patch("/user/requests", controller.userUpdateHelpRequest);
+        app.patch("/user/requests", legacyGone);
 
-        app.delete("/user/requests", controller.userCancelHelpRequest);
+        app.delete("/user/requests", legacyGone);
 
-        // Legacy aliases kept while the frontend and Postman collections move from "client" to "user".
-        app.post("/client/requests", controller.clientCreateHelpRequest);
+        app.post("/client/requests", legacyGone);
 
-        app.put("/client/requests", controller.viewRequestStatus);
+        app.put("/client/requests", legacyGone);
 
-        app.patch("/client/requests", controller.clientUpdateHelpRequest);
+        app.patch("/client/requests", legacyGone);
 
-        app.delete("/client/requests", controller.clientCancelHelpRequest);
+        app.delete("/client/requests", legacyGone);
 
-        app.patch("/technician/requests", controller.updateTicketTech);
+        app.patch("/technician/requests", legacyGone);
 
-        app.put("/technician/requests", controller.viewOpenTicketTech);
+        app.put("/technician/requests", legacyGone);
 
-        app.delete("/technician/requests", controller.resolveTicketTech);
+        app.delete("/technician/requests", legacyGone);
 
-        app.post("/", controller.updatePersonalInfo);
+        app.post("/", legacyGone);
 
         app.start(getPort());
 

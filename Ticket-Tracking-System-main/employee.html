@@ -1761,6 +1761,16 @@
             return payload;
         }
 
+        function listData(payload) {
+            if (Array.isArray(payload)) {
+                return payload;
+            }
+            if (payload && Array.isArray(payload.data)) {
+                return payload.data;
+            }
+            return [];
+        }
+
         function renderUser() {
             document.getElementById("roleLabel").textContent = labelFor(state.user.role) + " | " + state.user.username;
             document.getElementById("profileInitials").textContent = initialsFor(state.user);
@@ -2025,7 +2035,7 @@
             if (!isAdmin()) {
                 return;
             }
-            state.users = await api("/admin/users");
+            state.users = listData(await api("/admin/users?pageSize=100"));
             renderAdminUsersTable();
             if (state.editingUserId) {
                 const selected = findAdminUser(state.editingUserId);
@@ -2176,15 +2186,15 @@
         }
 
         async function refreshQueues() {
-            const requestCases = await api("/queues/service-cases?type=REQUEST");
-            const incidentCases = await api("/queues/service-cases?type=INCIDENT");
+            const requestCases = listData(await api("/queues/service-cases?type=REQUEST"));
+            const incidentCases = listData(await api("/queues/service-cases?type=INCIDENT"));
             renderCasesTable("requestQueue", requestCases, true);
             renderCasesTable("incidentQueue", incidentCases, true);
         }
 
         async function refreshCases() {
-            const cases = await api("/service-cases");
-            state.cases = cases || [];
+            const cases = listData(await api("/service-cases?pageSize=100"));
+            state.cases = cases;
             renderCasesTable("casesTable", cases, false);
         }
 
@@ -2204,9 +2214,10 @@
             if (dateFrom) params.set("dateFrom", dateFrom);
             if (dateTo) params.set("dateTo", dateTo);
             if (query) params.set("q", query);
+            params.set("pageSize", "100");
             const suffix = params.toString() ? "?" + params.toString() : "";
-            const tickets = await api("/tickets" + suffix);
-            state.tickets = tickets || [];
+            const tickets = listData(await api("/tickets" + suffix));
+            state.tickets = tickets;
             renderTicketsGroup(tickets);
         }
 
