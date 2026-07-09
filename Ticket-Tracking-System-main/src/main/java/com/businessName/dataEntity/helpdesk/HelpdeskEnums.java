@@ -22,8 +22,10 @@ public final class HelpdeskEnums {
     }
 
     public enum WorkStatus {
-        OPEN,
+        NEW,
+        ASSIGNED,
         IN_PROGRESS,
+        SCHEDULED,
         RESOLVED,
         CLOSED,
         CANCELLED

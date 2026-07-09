@@ -4,11 +4,13 @@ import com.businessName.common.PageRequest;
 import com.businessName.security.AuthException;
 import com.businessName.security.AuthenticatedUser;
 import com.businessName.ticketService.HelpdeskFlowService;
+import com.businessName.ticketService.ManagementReportService;
 import io.javalin.http.Handler;
 import org.json.JSONObject;
 
 public class HelpdeskFlowController {
     private HelpdeskFlowService service = new HelpdeskFlowService();
+    private ManagementReportService reportService = new ManagementReportService();
 
     public Handler listSites = ctx -> handle(ctx, () ->
             service.listSites().toString());
@@ -39,6 +41,20 @@ public class HelpdeskFlowController {
 
     public Handler technicianDashboard = ctx -> handle(ctx, () ->
             service.technicianDashboard(authUser(ctx), ctx.queryParam("dateFrom"), ctx.queryParam("dateTo")).toString());
+
+    public Handler managementReport = ctx -> handle(ctx, () ->
+            reportService.build(ctx.queryParam("dateFrom"), ctx.queryParam("dateTo"), ctx.queryParam("type")).toString());
+
+    public Handler managementReportExcel = ctx -> {
+        try {
+            JSONObject report = reportService.build(ctx.queryParam("dateFrom"), ctx.queryParam("dateTo"), ctx.queryParam("type"));
+            ctx.contentType("application/vnd.ms-excel; charset=UTF-8");
+            ctx.header("Content-Disposition", "attachment; filename=\"informe-gestion-tickets.xls\"");
+            ctx.status(200).result(reportService.toExcelXml(report));
+        } catch (AuthException e) {
+            ctx.status(e.getStatusCode()).result(new JSONObject().put("message", e.getMessage()).toString());
+        }
+    };
 
     public Handler createServiceCase = ctx -> handle(ctx, () ->
             service.createServiceCase(authUser(ctx), ctx.body(), ctx).toString(), 201);

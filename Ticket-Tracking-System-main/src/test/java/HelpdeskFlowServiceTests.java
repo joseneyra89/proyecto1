@@ -34,11 +34,11 @@ public class HelpdeskFlowServiceTests {
 
             Assert.assertEquals(created.getString("type"), "REQUEST");
             Assert.assertTrue(created.getBoolean("hasTicket"));
-            Assert.assertEquals(ticket.getString("status"), "OPEN");
+            Assert.assertEquals(ticket.getString("status"), "NEW");
             Assert.assertEquals(ticket.getString("summary"), title);
             Assert.assertEquals(ticket.getString("caseType"), "REQUEST");
-            Assert.assertEquals(ticket.getLong("requesterUserId"), user.userId.longValue());
-            Assert.assertTrue(ticket.isNull("assignedToUserId"));
+            Assert.assertFalse(ticket.has("requesterUserId"));
+            Assert.assertFalse(ticket.has("assignedToUserId"));
         } finally {
             cleanupCreatedTicket(caseId, ticketId);
         }
@@ -49,42 +49,21 @@ public class HelpdeskFlowServiceTests {
     }
 
     @Test
-    public void createServiceCaseHonorsOperatorFields() throws Exception {
+    public void createServiceCaseRejectsAdministratorCreation() throws Exception {
         AuthenticatedUser admin = firstActiveRole("ADMIN");
-        AuthenticatedUser requester = firstActiveUser();
-        AuthenticatedUser technician = firstActiveRole("TECH");
         Integer siteId = firstActiveSiteId();
-        String title = "Incidencia completa " + Instant.now().toEpochMilli();
         JSONObject payload = new JSONObject()
                 .put("type", "INCIDENT")
-                .put("title", title)
-                .put("description", "Mesa de ayuda registra una incidencia con campos operativos completos.")
+                .put("title", "Incidencia completa " + Instant.now().toEpochMilli())
+                .put("description", "Mesa de ayuda no puede registrar una incidencia como administrador.")
                 .put("priority", "HIGH")
-                .put("siteId", siteId)
-                .put("requesterUserId", requester.userId)
-                .put("assignedToUserId", technician.userId)
-                .put("categoryCode", "GENERAL")
-                .put("status", "IN_PROGRESS")
-                .put("body", "Observacion interna generada durante la creacion.");
+                .put("siteId", siteId);
 
-        Long caseId = null;
-        Long ticketId = null;
         try {
-            JSONObject created = new HelpdeskFlowService().createServiceCase(admin, payload.toString(), null);
-            caseId = created.getLong("caseId");
-            JSONObject ticket = created.getJSONObject("ticket");
-            ticketId = ticket.getLong("ticketId");
-
-            Assert.assertEquals(created.getString("type"), "INCIDENT");
-            Assert.assertEquals(created.getString("status"), "IN_PROGRESS");
-            Assert.assertEquals(ticket.getString("status"), "IN_PROGRESS");
-            Assert.assertEquals(ticket.getString("priority"), "HIGH");
-            Assert.assertEquals(ticket.getString("categoryCode"), "GENERAL");
-            Assert.assertEquals(ticket.getLong("requesterUserId"), requester.userId.longValue());
-            Assert.assertEquals(ticket.getLong("assignedToUserId"), technician.userId.longValue());
-            Assert.assertEquals(ticket.getString("summary"), title);
-        } finally {
-            cleanupCreatedTicket(caseId, ticketId);
+            new HelpdeskFlowService().createServiceCase(admin, payload.toString(), null);
+            Assert.fail("Administrator creation must be rejected");
+        } catch (com.businessName.security.AuthException e) {
+            Assert.assertEquals(e.getStatusCode(), 403);
         }
     }
 
