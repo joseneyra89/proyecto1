@@ -1,0 +1,130 @@
+name: Snyk Maven Security
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  security-events: write
+
+concurrency:
+  group: snyk-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dependency-scan:
+    name: Maven dependency vulnerability scan
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: Ticket-Tracking-System-main
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "8"
+          cache: maven
+          cache-dependency-path: Ticket-Tracking-System-main/pom.xml
+
+      - name: Resolve Maven dependency graph
+        run: mvn -B -ntp dependency:tree "-DoutputType=text" "-DoutputFile=target/dependency-tree.txt"
+
+      - name: Install Snyk CLI
+        uses: snyk/actions/setup@v1.0.0
+
+      - name: Run Snyk dependency scan
+        id: snyk-test
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          if [ -z "${SNYK_TOKEN:-}" ]; then
+            echo "::error title=SNYK_TOKEN not configured::Create a GitHub Actions secret named SNYK_TOKEN with a Snyk API token."
+            exit 1
+          fi
+
+          snyk test \
+            --file=pom.xml \
+            --package-manager=maven \
+            --severity-threshold=low \
+            --show-vulnerable-paths=all \
+            --sarif-file-output=target/snyk.sarif \
+            --json-file-output=target/snyk.json
+
+      - name: Add Snyk recommendations to job summary
+        if: always() && hashFiles('Ticket-Tracking-System-main/target/snyk.json') != ''
+        run: |
+          {
+            echo "## Snyk Maven dependency recommendations"
+            echo
+            jq -r '
+              (.vulnerabilities // []) as $vulns |
+              if ($vulns | length) == 0 then
+                "No vulnerable Maven dependencies were reported by Snyk."
+              else
+                $vulns[] |
+                "- " + ((.packageName // .name // "dependency") | tostring) + "@" + ((.version // "unknown") | tostring) + " [" + ((.severity // "unknown") | tostring) + "]: " + ((.title // .id // "vulnerability") | tostring),
+                "  Recommended update: " + (
+                  if ((.nearestFixedInVersion // "") | tostring | length) > 0 then
+                    "upgrade to " + ((.nearestFixedInVersion // "") | tostring)
+                  elif ((.fixedIn // []) | length) > 0 then
+                    "upgrade to one of: " + ((.fixedIn // []) | map(tostring) | join(", "))
+                  elif ((.upgradePath // []) | length) > 0 then
+                    "review upgrade path: " + ((.upgradePath // []) | map(tostring) | join(" -> "))
+                  else
+                    "review the remediation guidance in the Snyk report artifact."
+                  end
+                )
+              end
+            ' target/snyk.json
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Snyk SARIF to GitHub Code Scanning
+        if: always() && hashFiles('Ticket-Tracking-System-main/target/snyk.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: Ticket-Tracking-System-main/target/snyk.sarif
+
+      - name: Upload Snyk reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: snyk-maven-reports
+          path: |
+            Ticket-Tracking-System-main/target/snyk.json
+            Ticket-Tracking-System-main/target/snyk.sarif
+            Ticket-Tracking-System-main/target/dependency-tree.txt
+          if-no-files-found: ignore
+
+      - name: Monitor main branch in Snyk
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          if [ -z "${SNYK_TOKEN:-}" ]; then
+            echo "::notice title=SNYK_TOKEN not configured::Skipping snyk monitor because the repository secret is missing."
+            exit 0
+          fi
+
+          snyk monitor \
+            --file=pom.xml \
+            --package-manager=maven \
+            --project-name="${{ github.repository }}:Ticket-Tracking-System" \
+            --target-reference="${{ github.ref_name }}"
+
+      - name: Enforce Snyk result
+        if: steps.snyk-test.outcome == 'failure'
+        run: exit 1
