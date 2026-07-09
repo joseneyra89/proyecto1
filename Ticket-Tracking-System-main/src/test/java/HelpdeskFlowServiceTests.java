@@ -45,16 +45,61 @@ public class HelpdeskFlowServiceTests {
     }
 
     private AuthenticatedUser firstActiveUser() throws Exception {
+        return firstActiveRole("USER");
+    }
+
+    @Test
+    public void createServiceCaseHonorsOperatorFields() throws Exception {
+        AuthenticatedUser admin = firstActiveRole("ADMIN");
+        AuthenticatedUser requester = firstActiveUser();
+        AuthenticatedUser technician = firstActiveRole("TECH");
+        Integer siteId = firstActiveSiteId();
+        String title = "Incidencia completa " + Instant.now().toEpochMilli();
+        JSONObject payload = new JSONObject()
+                .put("type", "INCIDENT")
+                .put("title", title)
+                .put("description", "Mesa de ayuda registra una incidencia con campos operativos completos.")
+                .put("priority", "HIGH")
+                .put("siteId", siteId)
+                .put("requesterUserId", requester.userId)
+                .put("assignedToUserId", technician.userId)
+                .put("categoryCode", "GENERAL")
+                .put("status", "IN_PROGRESS")
+                .put("body", "Observacion interna generada durante la creacion.");
+
+        Long caseId = null;
+        Long ticketId = null;
+        try {
+            JSONObject created = new HelpdeskFlowService().createServiceCase(admin, payload.toString(), null);
+            caseId = created.getLong("caseId");
+            JSONObject ticket = created.getJSONObject("ticket");
+            ticketId = ticket.getLong("ticketId");
+
+            Assert.assertEquals(created.getString("type"), "INCIDENT");
+            Assert.assertEquals(created.getString("status"), "IN_PROGRESS");
+            Assert.assertEquals(ticket.getString("status"), "IN_PROGRESS");
+            Assert.assertEquals(ticket.getString("priority"), "HIGH");
+            Assert.assertEquals(ticket.getString("categoryCode"), "GENERAL");
+            Assert.assertEquals(ticket.getLong("requesterUserId"), requester.userId.longValue());
+            Assert.assertEquals(ticket.getLong("assignedToUserId"), technician.userId.longValue());
+            Assert.assertEquals(ticket.getString("summary"), title);
+        } finally {
+            cleanupCreatedTicket(caseId, ticketId);
+        }
+    }
+
+    private AuthenticatedUser firstActiveRole(String roleCode) throws Exception {
         try (Connection connection = ConnectionObject.createConnection();
              PreparedStatement ps = connection.prepareStatement(
                      "SELECT u.user_id, u.username, u.first_name, u.last_name, u.email, u.notification_email, " +
                              "u.job_title, u.phone, u.is_active, r.code AS role_code " +
                              "FROM p2_sandbox.app_users u " +
                              "JOIN p2_sandbox.roles r ON r.role_id = u.role_id " +
-                             "WHERE r.code = 'USER' AND u.is_active = TRUE AND u.deleted_at IS NULL " +
+                             "WHERE r.code = ? AND u.is_active = TRUE AND u.deleted_at IS NULL " +
                              "ORDER BY u.user_id LIMIT 1")) {
+            ps.setString(1, roleCode);
             try (ResultSet rs = ps.executeQuery()) {
-                Assert.assertTrue(rs.next(), "Expected at least one active USER seed");
+                Assert.assertTrue(rs.next(), "Expected at least one active " + roleCode + " seed");
                 AuthenticatedUser user = new AuthenticatedUser();
                 user.userId = rs.getLong("user_id");
                 user.roleCode = rs.getString("role_code");

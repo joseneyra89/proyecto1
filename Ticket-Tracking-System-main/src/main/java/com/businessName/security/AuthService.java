@@ -269,6 +269,37 @@ public class AuthService {
         }
     }
 
+    public JSONObject listRequesters(PageRequest pageRequest) {
+        JSONArray users = new JSONArray();
+        String fromSql = "FROM p2_sandbox.app_users u " +
+                "JOIN p2_sandbox.roles r ON r.role_id = u.role_id " +
+                "WHERE u.deleted_at IS NULL AND u.is_active = TRUE";
+        try (Connection connection = requireConnection()) {
+            long total;
+            try (PreparedStatement ps = connection.prepareStatement("SELECT COUNT(*) AS total " + fromSql);
+                 ResultSet rs = ps.executeQuery()) {
+                rs.next();
+                total = rs.getLong("total");
+            }
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "SELECT u.user_id, u.legacy_employee_id, r.code AS role_code, u.username, " +
+                            "u.first_name, u.last_name, u.email, u.notification_email, u.job_title, u.phone, u.is_active " +
+                            fromSql + " ORDER BY CASE WHEN r.code = 'USER' THEN 0 ELSE 1 END, " +
+                            "u.first_name, u.last_name, u.username LIMIT ? OFFSET ?")) {
+                ps.setInt(1, pageRequest.pageSize);
+                ps.setInt(2, pageRequest.offset);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        users.put(readUser(rs).toJson());
+                    }
+                }
+            }
+            return pageRequest.toResponse(users, total);
+        } catch (Exception e) {
+            throw new AuthException(500, "Unable to list requesters");
+        }
+    }
+
     public JSONObject createUser(String body, AuthenticatedUser actor, Context ctx) {
         JSONObject request = parseJson(body);
         String role = request.optString("role", "USER").trim().toUpperCase();

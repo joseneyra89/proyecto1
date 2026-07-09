@@ -85,12 +85,22 @@ public class AuthorizationPolicyTests {
     }
 
     @Test
-    public void serviceCaseCreationIsUserAndAdminOnly() {
+    public void serviceCaseCreationIsAllowedForPortalAndOperators() {
         AccessPolicy policy = new AccessPolicy();
         String permission = policy.requiredPermission("POST", "/service-cases");
         Assert.assertEquals(permission, "SERVICE_CASE_CREATE");
         Assert.assertTrue(policy.isAllowed("USER", permission));
-        Assert.assertFalse(policy.isAllowed("TECH", permission));
+        Assert.assertTrue(policy.isAllowed("TECH", permission));
+        Assert.assertTrue(policy.isAllowed("ADMIN", permission));
+    }
+
+    @Test
+    public void requesterDirectoryIsOperatorOnly() {
+        AccessPolicy policy = new AccessPolicy();
+        String permission = policy.requiredPermission("GET", "/users/requesters");
+        Assert.assertEquals(permission, "USER_DIRECTORY_READ");
+        Assert.assertFalse(policy.isAllowed("USER", permission));
+        Assert.assertTrue(policy.isAllowed("TECH", permission));
         Assert.assertTrue(policy.isAllowed("ADMIN", permission));
     }
 

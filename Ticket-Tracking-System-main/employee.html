@@ -507,9 +507,120 @@
             gap: 14px;
         }
 
+        .service-offer {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0 14px;
+            border-bottom: 1px solid var(--line);
+            margin-bottom: 14px;
+        }
+
+        .service-offer-icon {
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            border-radius: 6px;
+            background: #eaf3f7;
+            color: var(--blue);
+            font-weight: 900;
+        }
+
+        .user-ticket-form {
+            max-width: 820px;
+            display: grid;
+            gap: 18px;
+        }
+
+        .user-ticket-form section {
+            display: grid;
+            gap: 12px;
+        }
+
+        .user-ticket-form h2 {
+            margin-bottom: 0;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        .user-ticket-form label span {
+            color: var(--muted);
+            font-weight: 500;
+            line-height: 1.35;
+        }
+
+        .user-ticket-form textarea {
+            min-height: 168px;
+        }
+
+        .simple-form-row {
+            max-width: 300px;
+        }
+
+        .simple-form-row.location-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(220px, 1fr));
+            gap: 12px;
+            max-width: 640px;
+        }
+
+        .simple-form-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding-top: 10px;
+            border-top: 1px solid var(--line);
+        }
+
+        .operator-action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            min-height: 36px;
+            margin-bottom: 0;
+            padding: 6px 10px;
+            border: 1px solid var(--line);
+            border-bottom: none;
+            background: #f8fbfc;
+        }
+
+        .operator-action-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .action-command {
+            border: 0;
+            background: transparent;
+            color: var(--blue);
+            border-radius: 4px;
+            padding: 5px 7px;
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .action-command:hover:not(:disabled) {
+            background: #eaf3f7;
+        }
+
+        .action-command:disabled {
+            color: #aab6bb;
+            cursor: not-allowed;
+        }
+
+        .operator-create-full-form {
+            max-width: none;
+        }
+
         .user-overview-grid {
             display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 14px;
         }
 
@@ -1186,6 +1297,7 @@
 
             .form-grid,
             .filters,
+            .simple-form-row.location-row,
             .ticket-form-grid {
                 grid-template-columns: 1fr;
             }
@@ -1427,42 +1539,58 @@
                 <div id="userOverviewCards" class="user-overview-grid" aria-live="polite"></div>
             </section>
 
-            <section class="workspace-section primary-case" id="newCaseSection">
+            <section class="workspace-section primary-case user-service-section" id="newCaseSection">
                 <div class="toolbar">
                     <div>
-                        <h1>Nuevo ticket</h1>
-                        <p>Registra una solicitud o incidencia como ticket directo para mesa de ayuda.</p>
+                        <h1>Solicitar un servicio a la Mesa de Ayuda</h1>
+                        <p>Completa el resumen y el detalle para registrar tu ticket.</p>
                     </div>
                 </div>
-                <form id="caseForm" class="form-grid">
-                    <label>Tipo
-                        <select id="caseType" required>
-                            <option value="REQUEST">Solicitud</option>
-                            <option value="INCIDENT">Incidente</option>
-                        </select>
-                    </label>
-                    <label>Prioridad
-                        <select id="casePriority" required>
-                            <option value="LOW">Baja</option>
-                            <option value="MEDIUM" selected>Media</option>
-                            <option value="HIGH">Alta</option>
-                            <option value="CRITICAL">Critica</option>
-                        </select>
-                    </label>
-                    <label>Sede
-                        <select id="caseSite" required></select>
-                    </label>
-                    <label>Ubicacion
-                        <select id="caseLocation"></select>
-                    </label>
-                    <label class="span-2">Titulo
-                        <input id="caseTitle" type="text" minlength="8" maxlength="160" required>
-                    </label>
-                    <label class="span-2">Descripcion
-                        <textarea id="caseDescription" minlength="20" maxlength="4000" required></textarea>
-                    </label>
-                    <div class="span-2 btn-row">
-                        <button class="btn" type="submit">Registrar ticket</button>
+                <div class="service-offer">
+                    <div class="service-offer-icon" aria-hidden="true">IT</div>
+                    <div>
+                        <h2>Oferta de servicio: Mesa de Ayuda</h2>
+                        <p>Solicita apoyo para requerimientos o incidentes de tecnologia.</p>
+                    </div>
+                </div>
+                <form id="caseForm" class="user-ticket-form">
+                    <input id="casePriority" type="hidden" value="MEDIUM">
+                    <section>
+                        <h2>Opciones de servicio</h2>
+                        <div class="simple-form-row">
+                            <label>Tipo
+                                <select id="caseType" required>
+                                    <option value="REQUEST">Solicitud</option>
+                                    <option value="INCIDENT">Incidencia</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="simple-form-row location-row">
+                            <label>Sede
+                                <select id="caseSite" required></select>
+                                <span>Selecciona la sede donde necesitas atencion.</span>
+                            </label>
+                            <label>Aula / ubicacion
+                                <select id="caseLocation" disabled>
+                                    <option value="">Seleccione una sede primero</option>
+                                </select>
+                                <span>Indica el aula, laboratorio u oficina si aplica.</span>
+                            </label>
+                        </div>
+                    </section>
+                    <section>
+                        <label>Resumen
+                            <input id="caseTitle" type="text" minlength="8" maxlength="160" required>
+                            <span>Completa una frase corta para describir tu solicitud.</span>
+                        </label>
+                        <label>Detalle de la solicitud
+                            <textarea id="caseDescription" minlength="20" maxlength="4000" required></textarea>
+                            <span>Describe tu solicitud; debe ser completa, breve y clara.</span>
+                        </label>
+                    </section>
+                    <div class="simple-form-actions">
+                        <button class="btn secondary" type="button" id="userCancelCaseButton">Cancelar</button>
+                        <button class="btn" type="submit">Revisar y enviar</button>
                     </div>
                 </form>
             </section>
@@ -1517,20 +1645,27 @@
                 <div id="casesTable"></div>
             </section>
 
-            <section class="workspace-section" id="ticketsSection">
+            <section class="workspace-section ticket-type-section" id="requestsSection">
                 <div class="toolbar">
                     <div>
-                        <h2 id="ticketsTitle">Bandejas de tickets</h2>
-                        <p id="ticketsSubtitle">Solicitudes e incidencias con filtros de pendientes, resueltas y todas.</p>
+                        <h2>Solicitudes</h2>
+                        <p id="requestTicketsCount">Solicitudes pendientes, resueltas o historicas.</p>
                     </div>
                     <div class="filters">
+                        <label>Ver
+                            <select id="requestTicketView">
+                                <option value="PENDING">Pendientes</option>
+                                <option value="RESOLVED">Resueltas</option>
+                                <option value="ALL">Todas</option>
+                            </select>
+                        </label>
                         <label>Sede
-                            <select id="ticketSiteFilter">
+                            <select id="requestTicketSiteFilter">
                                 <option value="">Todas</option>
                             </select>
                         </label>
                         <label>Vencimiento
-                            <select id="ticketDueFilter">
+                            <select id="requestTicketDueFilter">
                                 <option value="">Todos</option>
                                 <option value="ON_TRACK">En plazo</option>
                                 <option value="WARNING">En advertencia</option>
@@ -1539,51 +1674,73 @@
                                 <option value="MET_LATE">Cumplido tarde</option>
                             </select>
                         </label>
-                        <label>Desde
-                            <input id="ticketDateFrom" type="date">
+                        <label>Buscar
+                            <input id="requestTicketSearch" type="search" placeholder="Ticket, usuario, tecnico o titulo">
                         </label>
-                        <label>Hasta
-                            <input id="ticketDateTo" type="date">
+                    </div>
+                </div>
+                <div class="operator-action-bar operator-only">
+                    <div class="operator-action-group">
+                        <button class="action-command" type="button" id="requestNewButton" onclick="openTypedTicketCreation('REQUEST')">Nuevo: &#9662;</button>
+                        <button class="action-command" type="button" disabled>Resolver</button>
+                        <button class="action-command" type="button" disabled>Cerrar</button>
+                        <button class="action-command" type="button" disabled>Ordenacion multiple</button>
+                        <button class="action-command" type="button" disabled>Asignarme</button>
+                    </div>
+                    <div class="operator-action-group">
+                        <button class="action-command" type="button" onclick="refreshTickets()">Actualizar</button>
+                    </div>
+                </div>
+                <div id="requestTickets"></div>
+            </section>
+
+            <section class="workspace-section ticket-type-section" id="incidentsSection">
+                <div class="toolbar">
+                    <div>
+                        <h2>Incidencias</h2>
+                        <p id="incidentTicketsCount">Incidencias pendientes, resueltas o historicas.</p>
+                    </div>
+                    <div class="filters">
+                        <label>Ver
+                            <select id="incidentTicketView">
+                                <option value="PENDING">Pendientes</option>
+                                <option value="RESOLVED">Resueltas</option>
+                                <option value="ALL">Todas</option>
+                            </select>
+                        </label>
+                        <label>Sede
+                            <select id="incidentTicketSiteFilter">
+                                <option value="">Todas</option>
+                            </select>
+                        </label>
+                        <label>Vencimiento
+                            <select id="incidentTicketDueFilter">
+                                <option value="">Todos</option>
+                                <option value="ON_TRACK">En plazo</option>
+                                <option value="WARNING">En advertencia</option>
+                                <option value="BREACHED">Vencido</option>
+                                <option value="MET">Cumplido</option>
+                                <option value="MET_LATE">Cumplido tarde</option>
+                            </select>
                         </label>
                         <label>Buscar
-                            <input id="ticketSearch" type="search" placeholder="Ticket, usuario, tecnico, correo o titulo">
+                            <input id="incidentTicketSearch" type="search" placeholder="Ticket, usuario, tecnico o titulo">
                         </label>
                     </div>
                 </div>
-                <div class="ticket-board-grid">
-                    <div class="queue-block">
-                        <div class="board-header">
-                            <div>
-                                <h3>Solicitudes</h3>
-                                <p id="requestTicketsCount">Pendientes de atencion.</p>
-                            </div>
-                            <label class="board-filter">Ver
-                                <select id="requestTicketView">
-                                    <option value="PENDING">Pendientes</option>
-                                    <option value="RESOLVED">Resueltas</option>
-                                    <option value="ALL">Todas</option>
-                                </select>
-                            </label>
-                        </div>
-                        <div id="requestTickets"></div>
+                <div class="operator-action-bar operator-only">
+                    <div class="operator-action-group">
+                        <button class="action-command" type="button" id="incidentNewButton" onclick="openTypedTicketCreation('INCIDENT')">Nuevo: &#9662;</button>
+                        <button class="action-command" type="button" disabled>Resolver</button>
+                        <button class="action-command" type="button" disabled>Cerrar</button>
+                        <button class="action-command" type="button" disabled>Ordenacion multiple</button>
+                        <button class="action-command" type="button" disabled>Asignarme</button>
                     </div>
-                    <div class="queue-block">
-                        <div class="board-header">
-                            <div>
-                                <h3>Incidencias</h3>
-                                <p id="incidentTicketsCount">Pendientes de atencion.</p>
-                            </div>
-                            <label class="board-filter">Ver
-                                <select id="incidentTicketView">
-                                    <option value="PENDING">Pendientes</option>
-                                    <option value="RESOLVED">Resueltas</option>
-                                    <option value="ALL">Todas</option>
-                                </select>
-                            </label>
-                        </div>
-                        <div id="incidentTickets"></div>
+                    <div class="operator-action-group">
+                        <button class="action-command" type="button" onclick="refreshTickets()">Actualizar</button>
                     </div>
                 </div>
+                <div id="incidentTickets"></div>
             </section>
         </main>
     </div>
@@ -1648,6 +1805,7 @@
             user: null,
             sites: [],
             technicians: [],
+            requesters: [],
             users: [],
             cases: [],
             tickets: [],
@@ -1667,7 +1825,7 @@
             ACTIVE: "Activo",
             INACTIVE: "Dado de baja",
             REQUEST: "Solicitud",
-            INCIDENT: "Incidente",
+            INCIDENT: "Incidencia",
             OPEN: "Nuevo",
             IN_PROGRESS: "En proceso",
             RESOLVED: "Resuelto",
@@ -1704,7 +1862,7 @@
         }
 
         function canCreateCases() {
-            return state.user && (state.user.role === "USER" || state.user.role === "ADMIN");
+            return state.user && (state.user.role === "USER" || state.user.role === "TECH" || state.user.role === "ADMIN");
         }
 
         function isAdmin() {
@@ -1724,6 +1882,7 @@
                 const startupWork = [loadSites()];
                 if (canOperateTickets()) {
                     startupWork.push(loadTechnicians());
+                    startupWork.push(loadRequesters());
                 }
                 if (isAdmin()) {
                     startupWork.push(loadAdminUsers());
@@ -1744,6 +1903,7 @@
             document.getElementById("profileBackdrop").addEventListener("click", closeProfileDrawer);
             document.getElementById("profileForm").addEventListener("submit", updateProfile);
             document.getElementById("caseForm").addEventListener("submit", createServiceCase);
+            document.getElementById("userCancelCaseButton").addEventListener("click", resetUserTicketForm);
             document.getElementById("adminUserForm").addEventListener("submit", createAdminUser);
             document.getElementById("adminRefreshUsersButton").addEventListener("click", loadAdminUsers);
             document.getElementById("adminEditUserForm").addEventListener("submit", updateAdminUser);
@@ -1755,13 +1915,12 @@
             document.getElementById("dashboardRefreshButton").addEventListener("click", refreshDashboard);
             document.getElementById("dashboardDateFrom").addEventListener("change", refreshDashboard);
             document.getElementById("dashboardDateTo").addEventListener("change", refreshDashboard);
-            document.getElementById("requestTicketView").addEventListener("change", () => renderTicketsGroup(state.tickets));
-            document.getElementById("incidentTicketView").addEventListener("change", () => renderTicketsGroup(state.tickets));
-            document.getElementById("ticketSiteFilter").addEventListener("change", refreshTickets);
-            document.getElementById("ticketDueFilter").addEventListener("change", refreshTickets);
-            document.getElementById("ticketDateFrom").addEventListener("change", refreshTickets);
-            document.getElementById("ticketDateTo").addEventListener("change", refreshTickets);
-            document.getElementById("ticketSearch").addEventListener("input", debounce(refreshTickets, 250));
+            ["request", "incident"].forEach(prefix => {
+                document.getElementById(prefix + "TicketView").addEventListener("change", () => renderTicketBoards(state.tickets));
+                document.getElementById(prefix + "TicketSiteFilter").addEventListener("change", () => renderTicketBoards(state.tickets));
+                document.getElementById(prefix + "TicketDueFilter").addEventListener("change", () => renderTicketBoards(state.tickets));
+                document.getElementById(prefix + "TicketSearch").addEventListener("input", debounce(() => renderTicketBoards(state.tickets), 250));
+            });
             document.getElementById("closeDrawerButton").addEventListener("click", closeDrawer);
             document.getElementById("drawerBackdrop").addEventListener("click", closeDrawer);
             document.addEventListener("keydown", onGlobalKeydown);
@@ -1816,25 +1975,22 @@
             document.getElementById("casesTitle").textContent = state.user.role === "USER" ? "Mis solicitudes e incidencias" : "Casos";
             document.getElementById("casesSubtitle").textContent =
                 state.user.role === "USER" ? "Estado, sede y SLA de los casos que registraste." : "Vista operativa segun permisos del rol.";
-            document.getElementById("ticketsTitle").textContent =
-                state.user.role === "USER" ? "Mis tickets registrados" : "Bandejas de solicitudes e incidencias";
-            document.getElementById("ticketsSubtitle").textContent =
-                state.user.role === "USER"
-                    ? "Tickets creados directamente por ti y separados por tipo."
-                    : "Usa los desplegables para ver pendientes, resueltas o todas en general.";
         }
 
         function applyRoleVisibility() {
             document.getElementById("adminManagementSection").classList.toggle("hidden", !isAdmin());
             document.getElementById("userOverviewSection").classList.toggle("hidden", state.user.role !== "USER");
-            document.getElementById("newCaseSection").classList.toggle("hidden", !canCreateCases());
+            document.getElementById("newCaseSection").classList.toggle("hidden", state.user.role !== "USER");
             document.getElementById("dashboardSection").classList.toggle("hidden", !canOperateTickets());
             document.getElementById("queuesSection").classList.add("hidden");
-            document.getElementById("ticketSearch").disabled = false;
+            document.querySelectorAll(".operator-only").forEach(section => {
+                section.classList.toggle("hidden", !canOperateTickets());
+            });
             renderNavigation();
             setDefaultDashboardDates();
             renderSiteOptions();
             renderTicketSiteOptions();
+            renderTypedCaseSiteOptions();
             renderAdminSiteOptions();
             syncTabsWithNavigation();
         }
@@ -1852,24 +2008,24 @@
             if (state.user.role === "USER") {
                 items.push(
                     { sectionId: "userOverviewSection", label: "Resumen" },
-                    { sectionId: "newCaseSection", label: "Registrar ticket" },
-                    { sectionId: "ticketsSection", label: "Mis tickets" }
+                    { sectionId: "newCaseSection", label: "Crear" },
+                    { sectionId: "requestsSection", label: "Solicitudes" },
+                    { sectionId: "incidentsSection", label: "Incidencias" }
                 );
             }
             if (state.user.role === "TECH") {
                 items.push(
                     { sectionId: "dashboardSection", label: "Dashboard" },
-                    { sectionId: "casesSection", label: "Casos" },
-                    { sectionId: "ticketsSection", label: "Tickets" }
+                    { sectionId: "requestsSection", label: "Solicitudes" },
+                    { sectionId: "incidentsSection", label: "Incidencias" }
                 );
             }
             if (state.user.role === "ADMIN") {
                 items.push(
                     { sectionId: "adminManagementSection", label: "Usuarios" },
-                    { sectionId: "newCaseSection", label: "Registrar ticket" },
                     { sectionId: "dashboardSection", label: "Dashboard" },
-                    { sectionId: "casesSection", label: "Casos" },
-                    { sectionId: "ticketsSection", label: "Tickets" }
+                    { sectionId: "requestsSection", label: "Solicitudes" },
+                    { sectionId: "incidentsSection", label: "Incidencias" }
                 );
             }
             state.navItems = items;
@@ -1976,7 +2132,7 @@
             }
             const wasActive = state.tabs[index].id === state.activeTabId;
             const closed = state.tabs.splice(index, 1)[0];
-            if (closed.type === "case" || closed.type === "ticket") {
+            if (closed.type === "case" || closed.type === "ticket" || closed.type === "new-ticket") {
                 const pane = document.getElementById(closed.paneId);
                 if (pane) {
                     pane.remove();
@@ -2010,6 +2166,9 @@
             document.querySelectorAll("#workspace > .workspace-section[data-ticket-pane='true']").forEach(section => {
                 section.classList.toggle("tab-pane-hidden", !activeTab || activeTab.type !== "ticket" || activeTab.paneId !== section.id);
             });
+            document.querySelectorAll("#workspace > .workspace-section[data-new-ticket-pane='true']").forEach(section => {
+                section.classList.toggle("tab-pane-hidden", !activeTab || activeTab.type !== "new-ticket" || activeTab.paneId !== section.id);
+            });
         }
 
         function activeSectionId() {
@@ -2037,6 +2196,14 @@
             return "ticketPane-" + ticketId;
         }
 
+        function newTicketTabId(type) {
+            return "new-ticket-" + type.toLowerCase();
+        }
+
+        function newTicketPaneId(type) {
+            return "newTicketPane-" + type.toLowerCase();
+        }
+
         function sectionLabel(section) {
             const heading = section.querySelector("h1, h2, h3");
             return heading ? heading.textContent.trim() : "Vista";
@@ -2052,6 +2219,7 @@
             state.sites = await api("/sites");
             renderSiteOptions();
             renderTicketSiteOptions();
+            renderTypedCaseSiteOptions();
             renderAdminSiteOptions();
             await onSiteChanged();
         }
@@ -2060,11 +2228,20 @@
             state.technicians = await api("/users/technicians");
         }
 
+        async function loadRequesters() {
+            if (!canOperateTickets()) {
+                state.requesters = [];
+                return;
+            }
+            state.requesters = listData(await api("/users/requesters?pageSize=100"));
+        }
+
         async function loadAdminUsers() {
             if (!isAdmin()) {
                 return;
             }
             state.users = listData(await api("/admin/users?pageSize=100"));
+            state.requesters = state.users.filter(user => user.isActive);
             renderAdminUsersTable();
             if (state.editingUserId) {
                 const selected = findAdminUser(state.editingUserId);
@@ -2083,9 +2260,29 @@
         }
 
         function renderTicketSiteOptions() {
-            const select = document.getElementById("ticketSiteFilter");
-            select.innerHTML = "<option value=''>Todas</option>" +
-                state.sites.map(site => `<option value="${site.siteId}">${escapeHtml(site.name)}</option>`).join("");
+            ["requestTicketSiteFilter", "incidentTicketSiteFilter"].forEach(id => {
+                const select = document.getElementById(id);
+                if (!select) {
+                    return;
+                }
+                const selected = select.value;
+                select.innerHTML = "<option value=''>Todas</option>" +
+                    state.sites.map(site => `<option value="${site.siteId}">${escapeHtml(site.name)}</option>`).join("");
+                if (selected) {
+                    select.value = selected;
+                }
+            });
+        }
+
+        function renderTypedCaseSiteOptions() {
+            document.querySelectorAll(".typed-case-site").forEach(select => {
+                const selected = select.value;
+                select.innerHTML = "<option value=''>Seleccione sede</option>" +
+                    state.sites.map(site => `<option value="${site.siteId}">${escapeHtml(site.name)}</option>`).join("");
+                if (selected) {
+                    select.value = selected;
+                }
+            });
         }
 
         function renderAdminSiteOptions() {
@@ -2228,21 +2425,10 @@
 
         async function refreshTickets() {
             const params = new URLSearchParams();
-            const siteId = document.getElementById("ticketSiteFilter").value;
-            const due = document.getElementById("ticketDueFilter").value;
-            const dateFrom = document.getElementById("ticketDateFrom").value;
-            const dateTo = document.getElementById("ticketDateTo").value;
-            const query = document.getElementById("ticketSearch").value.trim();
-            if (siteId) params.set("siteId", siteId);
-            if (due) params.set("due", due);
-            if (dateFrom) params.set("dateFrom", dateFrom);
-            if (dateTo) params.set("dateTo", dateTo);
-            if (query) params.set("q", query);
             params.set("pageSize", "100");
-            const suffix = params.toString() ? "?" + params.toString() : "";
-            const tickets = listData(await api("/tickets" + suffix));
+            const tickets = listData(await api("/tickets?" + params.toString()));
             state.tickets = tickets;
-            renderTicketsGroup(tickets);
+            renderTicketBoards(tickets);
         }
 
         function renderUserOverview() {
@@ -2253,12 +2439,15 @@
             const tickets = state.tickets || [];
             const pendingTickets = tickets.filter(item => item.status === "IN_PROGRESS" || item.status === "OPEN").length;
             const resolvedTickets = tickets.filter(item => item.status === "RESOLVED" || item.status === "CLOSED").length;
+            const requests = tickets.filter(item => item.caseType === "REQUEST").length;
+            const incidents = tickets.filter(item => item.caseType === "INCIDENT").length;
             const breached = cases.filter(item => item.sla && item.sla.code === "BREACHED").length +
                 tickets.filter(item => item.sla && item.sla.code === "BREACHED").length;
             document.getElementById("userOverviewCards").innerHTML = [
-                summaryCard("Tickets registrados", tickets.length),
-                summaryCard("Tickets pendientes", pendingTickets),
-                summaryCard("Tickets resueltos", resolvedTickets),
+                summaryCard("Solicitudes", requests),
+                summaryCard("Incidencias", incidents),
+                summaryCard("Pendientes", pendingTickets),
+                summaryCard("Resueltas", resolvedTickets),
                 summaryCard("Fuera de SLA", breached)
             ].join("");
         }
@@ -2334,18 +2523,23 @@
             `).join("")}</div>`;
         }
 
-        function renderTicketsGroup(tickets) {
-            const requestView = document.getElementById("requestTicketView").value;
-            const incidentView = document.getElementById("incidentTicketView").value;
-            const requestTickets = filterTicketsForBoard(tickets, "REQUEST", requestView);
-            const incidentTickets = filterTicketsForBoard(tickets, "INCIDENT", incidentView);
-            renderBoardCount("requestTicketsCount", requestTickets.length, requestView);
-            renderBoardCount("incidentTicketsCount", incidentTickets.length, incidentView);
-            renderTicketsTable("requestTickets", requestTickets);
-            renderTicketsTable("incidentTickets", incidentTickets);
+        function renderTicketBoards(tickets) {
+            renderTicketBoard(tickets, "REQUEST", "request", "solicitudes");
+            renderTicketBoard(tickets, "INCIDENT", "incident", "incidencias");
         }
 
-        function filterTicketsForBoard(tickets, type, view) {
+        function renderTicketBoard(tickets, type, prefix, noun) {
+            const view = document.getElementById(prefix + "TicketView").value;
+            const filteredTickets = filterTicketsForBoard(tickets, type, prefix);
+            renderBoardCount(prefix + "TicketsCount", filteredTickets.length, view, noun);
+            renderTicketsTable(prefix + "Tickets", filteredTickets, type);
+        }
+
+        function filterTicketsForBoard(tickets, type, prefix) {
+            const view = document.getElementById(prefix + "TicketView").value;
+            const siteId = document.getElementById(prefix + "TicketSiteFilter").value;
+            const due = document.getElementById(prefix + "TicketDueFilter").value;
+            const query = document.getElementById(prefix + "TicketSearch").value.trim().toLowerCase();
             const statuses = {
                 PENDING: ["OPEN", "IN_PROGRESS"],
                 RESOLVED: ["RESOLVED", "CLOSED", "CANCELLED"]
@@ -2354,26 +2548,52 @@
                 if (ticket.caseType !== type) {
                     return false;
                 }
-                if (view === "ALL") {
-                    return true;
+                if (view !== "ALL" && (statuses[view] || statuses.PENDING).indexOf(ticket.status) < 0) {
+                    return false;
                 }
-                return (statuses[view] || statuses.PENDING).indexOf(ticket.status) >= 0;
+                if (siteId && String(ticket.siteId || "") !== String(siteId)) {
+                    return false;
+                }
+                if (due && (!ticket.sla || ticket.sla.code !== due)) {
+                    return false;
+                }
+                if (query && !ticketMatchesSearch(ticket, query)) {
+                    return false;
+                }
+                return true;
             });
         }
 
-        function renderBoardCount(targetId, count, view) {
+        function ticketMatchesSearch(ticket, query) {
+            return [
+                ticket.ticketNumber,
+                ticket.caseNumber,
+                ticket.caseTitle,
+                ticket.summary,
+                ticket.requesterName,
+                ticket.requesterUsername,
+                ticket.requesterEmail,
+                ticket.assignedToName,
+                ticket.assignedToUsername,
+                ticket.assignedToEmail
+            ].some(value => String(value || "").toLowerCase().indexOf(query) >= 0);
+        }
+
+        function renderBoardCount(targetId, count, view, noun) {
             const labels = {
                 PENDING: "pendientes",
                 RESOLVED: "resueltas",
                 ALL: "en total"
             };
-            document.getElementById(targetId).textContent = Number(count || 0) + " tickets " + (labels[view] || labels.PENDING) + ".";
+            document.getElementById(targetId).textContent = Number(count || 0) + " " + noun + " " + (labels[view] || labels.PENDING) + ".";
         }
 
-        function renderTicketsTable(targetId, tickets) {
+        function renderTicketsTable(targetId, tickets, type) {
             const target = document.getElementById(targetId);
+            const noun = type === "REQUEST" ? "solicitudes" : "incidencias";
+            const idHeader = type === "REQUEST" ? "Solicitud" : "Incidencia";
             if (!tickets || tickets.length === 0) {
-                target.innerHTML = "<div class='empty'>Sin tickets.</div>";
+                target.innerHTML = `<div class='empty'>Sin ${noun}.</div>`;
                 return;
             }
             if (state.user && state.user.role === "USER") {
@@ -2384,7 +2604,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>ID incidencia</th>
+                            <th>${escapeHtml(idHeader)}</th>
                             <th>VIP</th>
                             <th>Nivel</th>
                             <th>Cliente</th>
@@ -2638,7 +2858,63 @@
             const description = document.getElementById("caseDescription").value.trim();
             const siteId = document.getElementById("caseSite").value;
             if (title.length < 8) {
-                notifyError("El titulo debe tener al menos 8 caracteres.");
+                notifyError("El resumen debe tener al menos 8 caracteres.");
+                return;
+            }
+            if (description.length < 20) {
+                notifyError("La descripcion debe tener al menos 20 caracteres.");
+                return;
+            }
+            if (!siteId) {
+                notifyError("Seleccione la sede donde necesita atencion.");
+                return;
+            }
+            const payload = {
+                type: document.getElementById("caseType").value,
+                title,
+                description,
+                priority: document.getElementById("casePriority").value || "MEDIUM",
+                siteId: Number(siteId)
+            };
+            const locationId = document.getElementById("caseLocation").value;
+            if (locationId) {
+                payload.locationId = Number(locationId);
+            }
+            try {
+                const created = await api("/service-cases", { method: "POST", body: JSON.stringify(payload) });
+                await resetUserTicketForm();
+                await refreshAll({ refreshTabs: false });
+                notifyOk("Ticket registrado correctamente.");
+                if (created.ticket && created.ticket.ticketId) {
+                    openTicket(created.ticket.ticketId);
+                } else {
+                    openCase(created.caseId);
+                }
+            } catch (error) {
+                notifyError(error.message);
+            }
+        }
+
+        async function createTypedTicket(event, type) {
+            event.preventDefault();
+            if (!canOperateTickets()) {
+                notifyError("No tienes permisos para crear tickets operativos.");
+                return;
+            }
+            const form = event.currentTarget;
+            const summary = formValue(form, "summary").trim();
+            const description = formValue(form, "description").trim();
+            const siteId = formValue(form, "siteId");
+            const priority = formValue(form, "priority") || "MEDIUM";
+            const requesterUserId = formValue(form, "requesterUserId");
+            const assignedToUserId = formValue(form, "assignedToUserId");
+            const locationId = formValue(form, "locationId");
+            const categoryCode = formValue(form, "categoryCode").trim() || "GENERAL";
+            const status = formValue(form, "status") || "OPEN";
+            const body = formValue(form, "body").trim();
+            const resolution = formValue(form, "resolution").trim();
+            if (summary.length < 8) {
+                notifyError("El resumen debe tener al menos 8 caracteres.");
                 return;
             }
             if (description.length < 20) {
@@ -2649,24 +2925,33 @@
                 notifyError("Seleccione una sede.");
                 return;
             }
-            const payload = {
-                type: document.getElementById("caseType").value,
-                title,
-                description,
-                priority: document.getElementById("casePriority").value,
-                siteId: Number(siteId)
-            };
-            const locationId = document.getElementById("caseLocation").value;
-            if (locationId) {
-                payload.locationId = Number(locationId);
+            if (!requesterUserId) {
+                notifyError("Seleccione el usuario final.");
+                return;
             }
+            if (["RESOLVED", "CLOSED", "CANCELLED"].indexOf(status) >= 0 && resolution.length < 12) {
+                notifyError("La resolucion publica debe tener al menos 12 caracteres.");
+                return;
+            }
+            const payload = {
+                type,
+                title: summary,
+                description,
+                priority,
+                siteId: Number(siteId),
+                requesterUserId: Number(requesterUserId),
+                categoryCode,
+                status
+            };
+            if (locationId) payload.locationId = Number(locationId);
+            if (assignedToUserId) payload.assignedToUserId = Number(assignedToUserId);
+            if (body) payload.body = body;
+            if (resolution) payload.resolution = resolution;
             try {
                 const created = await api("/service-cases", { method: "POST", body: JSON.stringify(payload) });
-                document.getElementById("caseForm").reset();
-                renderSiteOptions();
-                await onSiteChanged();
-                await refreshAll();
-                notifyOk("Ticket registrado correctamente.");
+                await refreshAll({ refreshTabs: false });
+                notifyOk(type === "REQUEST" ? "Solicitud creada." : "Incidencia creada.");
+                closeTypedTicketCreation(type);
                 if (created.ticket && created.ticket.ticketId) {
                     openTicket(created.ticket.ticketId);
                 } else {
@@ -2675,6 +2960,149 @@
             } catch (error) {
                 notifyError(error.message);
             }
+        }
+
+        function openTypedTicketCreation(type) {
+            if (!canOperateTickets()) {
+                notifyError("No tienes permisos para crear tickets operativos.");
+                return;
+            }
+            const safeType = type === "REQUEST" ? "REQUEST" : "INCIDENT";
+            const existing = state.tabs.find(tab => tab.id === newTicketTabId(safeType));
+            if (existing) {
+                activateTab(existing.id);
+                focusNewTicketSummary(safeType);
+                return;
+            }
+            const pane = document.createElement("section");
+            pane.id = newTicketPaneId(safeType);
+            pane.className = "workspace-section ticket-create-section tab-pane-hidden";
+            pane.dataset.newTicketPane = "true";
+            pane.innerHTML = renderTypedTicketCreationPane(safeType);
+            document.getElementById("workspace").appendChild(pane);
+            state.tabs.push({
+                id: newTicketTabId(safeType),
+                type: "new-ticket",
+                ticketType: safeType,
+                paneId: pane.id,
+                label: safeType === "REQUEST" ? "Nueva solicitud" : "Nueva incidencia"
+            });
+            renderTypedCaseSiteOptions();
+            activateTab(newTicketTabId(safeType));
+            focusNewTicketSummary(safeType);
+        }
+
+        function renderTypedTicketCreationPane(type) {
+            const title = type === "REQUEST" ? "Nueva solicitud" : "Nueva incidencia";
+            const subtitle = type === "REQUEST"
+                ? "Registra una solicitud directa para la mesa de ayuda."
+                : "Registra una incidencia directa para la mesa de ayuda.";
+            const requesterId = defaultRequesterId();
+            const requester = findRequester(requesterId);
+            return `
+                <div class="toolbar">
+                    <div>
+                        <h2>${escapeHtml(title)}</h2>
+                        <p>${escapeHtml(subtitle)}</p>
+                    </div>
+                </div>
+                <form class="ticket-form operator-create-full-form" onsubmit="createTypedTicket(event, '${escapeAttr(type)}')">
+                    <div class="ticket-command-bar">
+                        <button class="btn" type="submit">Guardar</button>
+                        <button class="btn secondary" type="button" onclick="closeTypedTicketCreation('${escapeAttr(type)}')">Cancelar</button>
+                        <button class="btn secondary" type="button" onclick="assignCreationToMe(this)" ${state.user.role === "TECH" ? "" : "disabled"}>Asignarme</button>
+                    </div>
+                    <section class="ticket-form-section">
+                        <h2>Cliente y propietario</h2>
+                        <div class="ticket-form-grid compact-ticket-layout">
+                            ${ticketField("Usuario final", userSelect("requesterUserId", requesterId, requester ? fullName(requester) : "", ""), requester ? (requester.notificationEmail || requester.email || "") : "", "ticket-final-user", true)}
+                            ${ticketField("Informado por", `<input value="${escapeAttr(state.user.username || "")}" disabled>`, "", "ticket-reporter")}
+                            ${ticketField("Servicio", `<input data-field="categoryCode" value="GENERAL" maxlength="60">`, "", "ticket-service")}
+                            ${ticketField("Estado", statusSelect("OPEN", ""), "", "ticket-status", true)}
+                            ${ticketField("Organizacion Cliente", `<select class="typed-case-site" data-field="siteId" required onchange="loadTypedCaseLocations(this)"></select>`, "", "ticket-org", true)}
+                            ${ticketField("Ubicacion", `<select class="typed-case-location" data-field="locationId" disabled><option value="">Sin ubicacion</option></select>`, "", "ticket-location")}
+                            ${ticketField("Categoria", `<input value="GENERAL" disabled>`, "", "ticket-category")}
+                            ${ticketField("Fecha de programacion", `<input type="datetime-local" disabled>`, "", "ticket-schedule")}
+                            ${ticketField("Servicio Negocio", `<input value="${escapeAttr(labelFor(type))}" disabled>`, "", "ticket-business")}
+                            ${ticketField("Filtrar por analista", `<input type="checkbox" disabled>`, "", "ticket-filter")}
+                            ${ticketField("Nombre/resumen", `<input data-field="summary" minlength="8" maxlength="160" required>`, "", "ticket-summary", true)}
+                            ${ticketField("Descripcion", richTextArea("description", "", ""), "", "ticket-description-field")}
+                            <div class="ticket-side">
+                                ${ticketField("Equipo", `<input value="${escapeAttr(resolverTeam({}))}" disabled>`, "", "")}
+                                ${ticketField("Asignatario", technicianSelect("assignedToUserId", "", ""), "", "")}
+                                ${ticketField("Prioridad", prioritySelect("MEDIUM", ""), "", "")}
+                                ${ticketField("# Caso Externo", `<input disabled>`, "", "")}
+                            </div>
+                            ${ticketField("Comentario tecnico", `<textarea data-field="body" placeholder="Agregar observacion interna"></textarea>`, "", "ticket-comment")}
+                            ${ticketField("Resolucion publica", `<textarea data-field="resolution" minlength="12" placeholder="Solucion para cerrar o resolver"></textarea>`, "", "ticket-resolution")}
+                        </div>
+                    </section>
+                </form>
+            `;
+        }
+
+        function closeTypedTicketCreation(type) {
+            const tabId = newTicketTabId(type === "REQUEST" ? "REQUEST" : "INCIDENT");
+            if (state.tabs.some(tab => tab.id === tabId)) {
+                closeTab(tabId);
+            }
+        }
+
+        function focusNewTicketSummary(type) {
+            const pane = document.getElementById(newTicketPaneId(type));
+            const input = pane ? pane.querySelector("[data-field='summary']") : null;
+            if (input) {
+                input.focus();
+            }
+        }
+
+        function defaultRequesterId() {
+            const requesters = state.requesters || [];
+            const endUser = requesters.find(user => user.role === "USER");
+            if (endUser) {
+                return endUser.userId;
+            }
+            if (state.user && state.user.userId) {
+                return state.user.userId;
+            }
+            return requesters.length ? requesters[0].userId : "";
+        }
+
+        function findRequester(userId) {
+            return (state.requesters || []).find(user => sameUser(user.userId, userId)) || null;
+        }
+
+        function assignCreationToMe(button) {
+            const form = button.closest("form");
+            const select = form ? form.querySelector("[data-field='assignedToUserId']") : null;
+            if (select && state.user && state.user.role === "TECH") {
+                select.value = String(state.user.userId);
+            }
+        }
+
+        async function loadTypedCaseLocations(siteSelect) {
+            const form = siteSelect.closest("form");
+            const locationSelect = form ? form.querySelector(".typed-case-location") : null;
+            if (!locationSelect) {
+                return;
+            }
+            const siteId = siteSelect.value;
+            if (!siteId) {
+                locationSelect.innerHTML = "<option value=''>Sin ubicacion</option>";
+                locationSelect.disabled = true;
+                return;
+            }
+            const locations = await api("/sites/" + siteId + "/locations");
+            locationSelect.disabled = false;
+            locationSelect.innerHTML = "<option value=''>Sin ubicacion especifica</option>" +
+                locations.map(location => `<option value="${location.locationId}">${escapeHtml(labelFor(location.type))} - ${escapeHtml(location.name)}</option>`).join("");
+        }
+
+        async function resetUserTicketForm() {
+            document.getElementById("caseForm").reset();
+            document.getElementById("casePriority").value = "MEDIUM";
+            renderSiteOptions();
+            await onSiteChanged();
         }
 
         async function createAdminUser(event) {
@@ -3224,8 +3652,9 @@
 
         function userSelect(field, selectedId, fallbackName, disabledAttr) {
             let options = "";
-            if (state.users && state.users.length) {
-                options = state.users.map(user => option(user.userId, `${fullName(user)} (${user.username})`, String(user.userId) === String(selectedId || ""))).join("");
+            const users = state.requesters && state.requesters.length ? state.requesters : state.users;
+            if (users && users.length) {
+                options = users.map(user => option(user.userId, `${fullName(user)} (${user.username})`, String(user.userId) === String(selectedId || ""))).join("");
             } else {
                 options = option(selectedId || "", fallbackName || "-", true);
             }
