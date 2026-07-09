@@ -16,7 +16,10 @@ public class ServiceCase extends HelpdeskRecord {
     public Long affectedUserId;
     public Integer siteId;
     public Long locationId;
-    public WorkStatus status = WorkStatus.OPEN;
+    public String organization;
+    public String reportedBy;
+    public String businessService;
+    public WorkStatus status = WorkStatus.NEW;
     public Priority priority = Priority.MEDIUM;
     public Integer legacyTicketRequestId;
     public Long createdByUserId;

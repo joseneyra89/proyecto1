@@ -88,6 +88,7 @@ VALUES
     ('SERVICE_CASE_READ', 'Leer casos de servicio segun alcance del rol'),
     ('QUEUE_READ', 'Leer colas de casos sin ticket'),
     ('DASHBOARD_TECH_READ', 'Leer dashboard operativo de tecnico'),
+    ('MANAGEMENT_REPORT_READ', 'Consultar y exportar el informe de gestion por tecnico'),
     ('NOTIFICATIONS_RETRY', 'Reintentar envios pendientes de correo'),
     ('ADMIN_USERS_READ', 'Listar y leer usuarios'),
     ('ADMIN_USERS_CREATE', 'Crear usuarios con rol USER, TECH o ADMIN'),
@@ -144,6 +145,13 @@ FROM p2_sandbox.roles r
 JOIN p2_sandbox.permissions p ON p.is_active = TRUE
 WHERE r.code = 'ADMIN'
 ON CONFLICT DO NOTHING;
+
+DELETE FROM p2_sandbox.role_permissions rp
+USING p2_sandbox.roles r, p2_sandbox.permissions p
+WHERE rp.role_id = r.role_id
+  AND rp.permission_id = p.permission_id
+  AND r.code IN ('TECH', 'ADMIN')
+  AND p.code = 'SERVICE_CASE_CREATE';
 
 COMMENT ON TABLE p2_sandbox.auth_sessions IS 'Sesiones server-side para tokens opacos de autenticacion.';
 COMMENT ON TABLE p2_sandbox.password_reset_tokens IS 'Tokens de recuperacion de contrasena de un solo uso.';

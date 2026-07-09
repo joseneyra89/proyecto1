@@ -328,6 +328,17 @@
             min-width: 0;
         }
 
+        .metric-panel.clickable {
+            cursor: pointer;
+            transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
+        }
+
+        .metric-panel.clickable:hover {
+            border-color: var(--green);
+            box-shadow: var(--shadow);
+            transform: translateY(-2px);
+        }
+
         .metric-panel header {
             display: flex;
             justify-content: space-between;
@@ -365,6 +376,71 @@
         .sla-bars {
             display: grid;
             gap: 8px;
+        }
+
+        .sla-pie-layout {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 18px;
+            align-items: center;
+            margin-top: 14px;
+        }
+
+        .sla-pie {
+            width: 140px;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            border: 1px solid var(--line);
+            box-shadow: inset 0 0 0 18px #fff;
+        }
+
+        .sla-legend {
+            display: grid;
+            gap: 8px;
+        }
+
+        .sla-legend span::before {
+            content: "";
+            display: inline-block;
+            width: 11px;
+            height: 11px;
+            margin-right: 7px;
+            background: var(--green);
+        }
+
+        .sla-legend .outside::before {
+            background: var(--red);
+        }
+
+        .report-chart {
+            display: grid;
+            gap: 12px;
+            margin: 18px 0;
+        }
+
+        .report-bar-row {
+            display: grid;
+            grid-template-columns: minmax(120px, 220px) 1fr 46px;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .report-bar-track {
+            height: 22px;
+            background: #edf2ef;
+            border: 1px solid var(--line);
+        }
+
+        .report-bar-fill {
+            height: 100%;
+            background: var(--blue);
+        }
+
+        .resolution-banner {
+            padding: 16px;
+            border-left: 5px solid var(--ok);
+            background: #ecf8f0;
+            margin-bottom: 16px;
         }
 
         .sla-bar-label {
@@ -1616,6 +1692,29 @@
                 <div id="dashboardMetrics" class="dashboard-grid" aria-live="polite"></div>
             </section>
 
+            <section class="workspace-section" id="managementReportSection">
+                <div class="toolbar">
+                    <div>
+                        <h2 id="managementReportTitle">Estadisticas por tecnico</h2>
+                        <p id="managementReportSubtitle">Haz clic en una tarjeta del dashboard para ver solicitudes o incidencias.</p>
+                    </div>
+                    <div class="filters">
+                        <label>Desde
+                            <input id="reportDateFrom" type="date">
+                        </label>
+                        <label>Hasta
+                            <input id="reportDateTo" type="date">
+                        </label>
+                        <div class="btn-row">
+                            <button class="btn secondary" type="button" id="reportRefreshButton">Aplicar</button>
+                            <button class="btn blue" type="button" id="reportDownloadButton">Descargar Excel</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="managementReportChart" class="report-chart" aria-label="Casos por técnico"></div>
+                <div id="managementReportTable"></div>
+            </section>
+
             <section class="workspace-section" id="queuesSection">
                 <div class="toolbar">
                     <div>
@@ -1814,6 +1913,7 @@
             activeTabId: null,
             activeCaseId: null,
             editingUserId: null,
+            reportType: "REQUEST",
             previousFocus: null,
             profilePreviousFocus: null,
             ticketRefreshTimer: null
@@ -1827,7 +1927,10 @@
             REQUEST: "Solicitud",
             INCIDENT: "Incidencia",
             OPEN: "Nuevo",
+            NEW: "Nuevo",
+            ASSIGNED: "Asignado",
             IN_PROGRESS: "En proceso",
+            SCHEDULED: "Programado",
             RESOLVED: "Resuelto",
             CLOSED: "Cerrado",
             CANCELLED: "Cancelado",
@@ -1862,7 +1965,7 @@
         }
 
         function canCreateCases() {
-            return state.user && (state.user.role === "USER" || state.user.role === "TECH" || state.user.role === "ADMIN");
+            return state.user && state.user.role === "USER";
         }
 
         function isAdmin() {
@@ -1915,6 +2018,8 @@
             document.getElementById("dashboardRefreshButton").addEventListener("click", refreshDashboard);
             document.getElementById("dashboardDateFrom").addEventListener("change", refreshDashboard);
             document.getElementById("dashboardDateTo").addEventListener("change", refreshDashboard);
+            document.getElementById("reportRefreshButton").addEventListener("click", refreshManagementReport);
+            document.getElementById("reportDownloadButton").addEventListener("click", downloadManagementReport);
             ["request", "incident"].forEach(prefix => {
                 document.getElementById(prefix + "TicketView").addEventListener("change", () => renderTicketBoards(state.tickets));
                 document.getElementById(prefix + "TicketSiteFilter").addEventListener("change", () => renderTicketBoards(state.tickets));
@@ -1982,6 +2087,13 @@
             document.getElementById("userOverviewSection").classList.toggle("hidden", state.user.role !== "USER");
             document.getElementById("newCaseSection").classList.toggle("hidden", state.user.role !== "USER");
             document.getElementById("dashboardSection").classList.toggle("hidden", !canOperateTickets());
+            document.getElementById("managementReportSection").classList.toggle("hidden", !isAdmin());
+            document.getElementById("requestNewButton").hidden = true;
+            document.getElementById("incidentNewButton").hidden = true;
+            ["requestTicketSiteFilter", "requestTicketDueFilter", "incidentTicketSiteFilter", "incidentTicketDueFilter"].forEach(id => {
+                const label = document.getElementById(id).closest("label");
+                if (label) label.hidden = state.user.role === "USER";
+            });
             document.getElementById("queuesSection").classList.add("hidden");
             document.querySelectorAll(".operator-only").forEach(section => {
                 section.classList.toggle("hidden", !canOperateTickets());
@@ -2022,14 +2134,16 @@
             }
             if (state.user.role === "ADMIN") {
                 items.push(
-                    { sectionId: "adminManagementSection", label: "Usuarios" },
                     { sectionId: "dashboardSection", label: "Dashboard" },
                     { sectionId: "requestsSection", label: "Solicitudes" },
-                    { sectionId: "incidentsSection", label: "Incidencias" }
+                    { sectionId: "incidentsSection", label: "Incidencias" },
+                    { sectionId: "adminManagementSection", label: "Usuarios" },
+                    { sectionId: "managementReportSection", label: "Estadisticas", hidden: true }
                 );
             }
             state.navItems = items;
-            nav.innerHTML = items.map((item, index) =>
+            const visibleItems = items.filter(item => !item.hidden);
+            nav.innerHTML = visibleItems.map((item, index) =>
                 `<button class="nav-button ${index === 0 ? "active" : ""}" type="button" data-section="${escapeAttr(item.sectionId)}">${escapeHtml(item.label)}</button>`
             ).join("");
             nav.querySelectorAll(".nav-button").forEach(button => {
@@ -2313,6 +2427,9 @@
             }
             if (isAdmin()) {
                 work.push(loadAdminUsers());
+                if (state.tabs.some(tab => tab.type === "section" && tab.sectionId === "managementReportSection")) {
+                    work.push(refreshManagementReport());
+                }
             }
             await Promise.all(work);
             renderUserOverview();
@@ -2357,8 +2474,11 @@
             const within = Number(metric.withinSlaPercent || 0);
             const outside = Number(metric.outsideSlaPercent || 0);
             const typeLabel = labelFor(metric.type);
+            const reportAttrs = isAdmin()
+                ? ` role="button" tabindex="0" onclick="openManagementReportForType('${escapeAttr(metric.type)}')" onkeydown="handleMetricKeydown(event, '${escapeAttr(metric.type)}')"`
+                : "";
             return `
-                <article class="metric-panel" aria-label="Metricas ${escapeAttr(typeLabel)}">
+                <article class="metric-panel ${isAdmin() ? "clickable" : ""}" aria-label="Metricas ${escapeAttr(typeLabel)}"${reportAttrs}>
                     <header>
                         <h3>${escapeHtml(typeLabel)}</h3>
                         ${badge(metric.type)}
@@ -2371,12 +2491,24 @@
                         ${metricRow("Resueltos/cerrados", metric.resolvedTickets)}
                         ${metricRow("En advertencia", metric.warningTickets)}
                     </div>
-                    <div class="sla-bars">
-                        ${slaBar("Dentro de SLA", within, "ok", metric.withinSla)}
-                        ${slaBar("Fuera de SLA", outside, "out", metric.outsideSla)}
+                    <div class="sla-pie-layout">
+                        <div class="sla-pie" role="img" aria-label="Dentro de SLA ${within.toFixed(1)}%, fuera de SLA ${outside.toFixed(1)}%"
+                            style="background: conic-gradient(var(--green) 0 ${within}%, var(--red) ${within}% 100%)"></div>
+                        <div class="sla-legend">
+                            <span>Dentro de SLA: ${within.toFixed(1)}% (${Number(metric.withinSla || 0)})</span>
+                            <span class="outside">Fuera de SLA: ${outside.toFixed(1)}% (${Number(metric.outsideSla || 0)})</span>
+                        </div>
                     </div>
+                    ${isAdmin() ? "<p>Click para ver barras por tecnico.</p>" : ""}
                 </article>
             `;
+        }
+
+        function handleMetricKeydown(event, type) {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                openManagementReportForType(type);
+            }
         }
 
         function metricRow(label, value) {
@@ -2408,6 +2540,98 @@
                 if (!from.value) from.value = dateInputValue(past);
                 if (!to.value) to.value = dateInputValue(today);
             }
+            document.getElementById("reportDateFrom").value = document.getElementById("reportDateFrom").value || from.value;
+            document.getElementById("reportDateTo").value = document.getElementById("reportDateTo").value || to.value;
+        }
+
+        async function openManagementReportForType(type) {
+            if (!isAdmin()) {
+                return;
+            }
+            state.reportType = type === "INCIDENT" ? "INCIDENT" : "REQUEST";
+            document.getElementById("reportDateFrom").value = document.getElementById("dashboardDateFrom").value;
+            document.getElementById("reportDateTo").value = document.getElementById("dashboardDateTo").value;
+            openSectionTab("managementReportSection");
+            await refreshManagementReport();
+        }
+
+        async function refreshManagementReport() {
+            if (!isAdmin()) {
+                return;
+            }
+            try {
+                renderManagementReportHeading();
+                const params = reportQueryParams();
+                const report = await api("/reports/requests?" + params.toString());
+                const rows = report.byTechnician || [];
+                const maxGenerated = Math.max(1, ...rows.map(item => Number(item.generated || 0)));
+                document.getElementById("managementReportChart").innerHTML = rows.length ? rows.map(item => `
+                <div class="report-bar-row">
+                    <strong>${escapeHtml(item.technicianName)}</strong>
+                    <div class="report-bar-track"><div class="report-bar-fill" style="width:${(Number(item.generated || 0) * 100) / maxGenerated}%"></div></div>
+                    <span>${Number(item.generated || 0)}</span>
+                </div>
+                `).join("") : "<div class='empty'>Sin información para el rango seleccionado.</div>";
+                renderManagementReportTable(report);
+            } catch (error) {
+                notifyError(error.message || "No se pudo cargar el reporte.");
+            }
+        }
+
+        function renderManagementReportHeading() {
+            const type = state.reportType === "INCIDENT" ? "INCIDENT" : "REQUEST";
+            const label = type === "INCIDENT" ? "incidencias" : "solicitudes";
+            document.getElementById("managementReportTitle").textContent = "Estadisticas de " + label;
+            document.getElementById("managementReportSubtitle").textContent =
+                "Barras por tecnico para " + label + " del rango seleccionado.";
+        }
+
+        function renderManagementReportTable(report) {
+            const rows = (report.byTechnician || []).concat(report.teamTotals ? [report.teamTotals] : []);
+            document.getElementById("managementReportTable").innerHTML = rows.length ? `<div class="table-wrap">
+                <table>
+                    <thead><tr><th>Técnico</th><th>Generados</th><th>Pendientes</th><th>Resueltos</th><th>Dentro SLA</th><th>Fuera SLA</th><th>Promedio atención</th></tr></thead>
+                    <tbody>${rows.map((item, index) => `<tr>
+                        <td>${escapeHtml(index === rows.length - 1 ? "TOTAL EQUIPO" : item.technicianName)}</td>
+                        <td>${Number(item.generated || 0)}</td>
+                        <td>${Number(item.pending || 0)}</td>
+                        <td>${Number(item.resolved || 0)}</td>
+                        <td>${Number(item.withinSla || 0)}</td>
+                        <td>${Number(item.outsideSla || 0)}</td>
+                        <td>${Number(item.averageAttentionMinutes || 0).toFixed(1)} min</td>
+                    </tr>`).join("")}</tbody>
+                </table>
+            </div>` : "<div class='empty'>Sin información.</div>";
+        }
+
+        function reportQueryParams() {
+            const params = new URLSearchParams();
+            const from = document.getElementById("reportDateFrom").value;
+            const to = document.getElementById("reportDateTo").value;
+            if (from) params.set("dateFrom", from);
+            if (to) params.set("dateTo", to);
+            params.set("type", state.reportType === "INCIDENT" ? "INCIDENT" : "REQUEST");
+            return params;
+        }
+
+        async function downloadManagementReport() {
+            try {
+                const response = await fetch(API_BASE_URL + "/reports/requests/excel?" + reportQueryParams().toString(), {
+                    headers: { Authorization: "Bearer " + token() }
+                });
+                if (!response.ok) {
+                    throw new Error("No se pudo generar el archivo Excel.");
+                }
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = "informe-" + (state.reportType === "INCIDENT" ? "incidencias" : "solicitudes") + ".xls";
+                link.click();
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                notifyError(error.message);
+            }
         }
 
         async function refreshQueues() {
@@ -2437,18 +2661,15 @@
             }
             const cases = state.cases || [];
             const tickets = state.tickets || [];
-            const pendingTickets = tickets.filter(item => item.status === "IN_PROGRESS" || item.status === "OPEN").length;
+            const pendingTickets = tickets.filter(item => ["NEW", "ASSIGNED", "IN_PROGRESS", "SCHEDULED"].indexOf(item.status) >= 0).length;
             const resolvedTickets = tickets.filter(item => item.status === "RESOLVED" || item.status === "CLOSED").length;
             const requests = tickets.filter(item => item.caseType === "REQUEST").length;
             const incidents = tickets.filter(item => item.caseType === "INCIDENT").length;
-            const breached = cases.filter(item => item.sla && item.sla.code === "BREACHED").length +
-                tickets.filter(item => item.sla && item.sla.code === "BREACHED").length;
             document.getElementById("userOverviewCards").innerHTML = [
                 summaryCard("Solicitudes", requests),
                 summaryCard("Incidencias", incidents),
                 summaryCard("Pendientes", pendingTickets),
-                summaryCard("Resueltas", resolvedTickets),
-                summaryCard("Fuera de SLA", breached)
+                summaryCard("Resueltas", resolvedTickets)
             ].join("");
         }
 
@@ -2504,17 +2725,13 @@
                             <span>${escapeHtml(item.caseNumber)}</span>
                             <strong>${escapeHtml(item.title)}</strong>
                         </div>
-                        ${slaBadge(item.sla)}
                     </header>
                     <div class="card-badges">
                         ${badge(item.type)}
                         ${badge(item.status)}
-                        ${badge(item.priority)}
                     </div>
                     <div class="card-meta">
-                        <span>${escapeHtml(joinLocation(item.siteName, item.locationName))}</span>
                         <span>Creado: ${escapeHtml(formatDate(item.createdAt))}</span>
-                        <span>Vence: ${escapeHtml(formatDate(item.dueAt))}</span>
                     </div>
                     <div class="card-actions">
                         <button class="btn secondary" type="button" onclick="openCase(${item.caseId})">Ver detalle</button>
@@ -2541,7 +2758,7 @@
             const due = document.getElementById(prefix + "TicketDueFilter").value;
             const query = document.getElementById(prefix + "TicketSearch").value.trim().toLowerCase();
             const statuses = {
-                PENDING: ["OPEN", "IN_PROGRESS"],
+                PENDING: ["NEW", "ASSIGNED", "IN_PROGRESS", "SCHEDULED"],
                 RESOLVED: ["RESOLVED", "CLOSED", "CANCELLED"]
             };
             return (tickets || []).filter(ticket => {
@@ -2646,17 +2863,14 @@
                             <span>${escapeHtml(ticket.ticketNumber)}</span>
                             <strong>${escapeHtml(ticket.caseTitle || ticket.summary)}</strong>
                         </div>
-                        ${slaBadge(ticket.sla)}
                     </header>
                     <div class="card-badges">
                         ${badge(ticket.caseType)}
                         ${badge(ticket.status)}
-                        ${badge(ticket.priority)}
                     </div>
                     <div class="card-meta">
                         <span>${escapeHtml(ticket.caseNumber)}</span>
-                        <span>Asignado: ${escapeHtml(ticket.assignedToUsername || "Sin asignar")}</span>
-                        <span>Vence: ${escapeHtml(formatDate(ticket.dueAt))}</span>
+                        <span>Creado: ${escapeHtml(formatDate(ticket.createdAt))}</span>
                     </div>
                     <div class="card-actions">
                         <button class="btn secondary" type="button" onclick="openTicket(${ticket.ticketId})">Ver detalle</button>
@@ -3384,6 +3598,10 @@
 
         function renderTicketTab(ticket, serviceCase) {
             const pane = ensureTicketPane(ticket.ticketId);
+            if (state.user && state.user.role === "USER") {
+                pane.innerHTML = renderUserTicketView(ticket);
+                return;
+            }
             pane.innerHTML = `
                 <div class="case-detail-header">
                     <div class="case-detail-title">
@@ -3402,6 +3620,39 @@
                     </div>
                 </div>
                 ${renderEnterpriseTicketForm(ticket, serviceCase)}
+            `;
+        }
+
+        function renderUserTicketView(ticket) {
+            const resolved = ticket.status === "RESOLVED" || ticket.status === "CLOSED";
+            return `
+                <div class="case-detail-header">
+                    <div class="case-detail-title">
+                        <h1>${escapeHtml(ticket.summary || ticket.caseTitle || "Ticket")}</h1>
+                        <div class="case-detail-badges">${badge(ticket.caseType)} ${badge(ticket.status)}</div>
+                    </div>
+                    <button class="btn secondary" type="button" onclick="refreshTicketTab(${ticket.ticketId}, true)">Actualizar</button>
+                </div>
+                <div class="drawer-body">
+                    ${resolved ? `<div class="resolution-banner">
+                        <h2>Caso resuelto</h2>
+                        <p>${escapeHtml(ticket.resolution || "El equipo técnico marcó el caso como resuelto.")}</p>
+                        <strong>Fecha de resolución: ${escapeHtml(formatDate(ticket.resolvedAt || ticket.closedAt))}</strong>
+                    </div>` : ""}
+                    <section>
+                        <h2>Información de tu ticket</h2>
+                        ${detailLine("Fecha de creación", formatDate(ticket.createdAt))}
+                        ${detailLine("Nombre / resumen", ticket.summary || ticket.caseTitle || "-")}
+                        ${detailLine("Detalle", ticket.description || "-")}
+                        ${detailLineHtml("Estado", badge(ticket.status))}
+                        ${resolved ? detailLine("Comentario de resolución", ticket.resolution || "-") : ""}
+                        ${resolved ? detailLine("Fecha de resolución", formatDate(ticket.resolvedAt || ticket.closedAt)) : ""}
+                    </section>
+                    <section>
+                        <h2>Actualizaciones</h2>
+                        ${renderUpdates(ticket.updates || [])}
+                    </section>
+                </div>
             `;
         }
 
@@ -3476,7 +3727,13 @@
                     data-current-description="${escapeAttr(ticket.description || service.description || "")}"
                     data-current-category="${escapeAttr(ticket.categoryCode || "GENERAL")}"
                     data-current-requester="${escapeAttr(ticket.requesterUserId || "")}"
-                    data-current-site="${escapeAttr(ticket.siteId || "")}">
+                    data-current-site="${escapeAttr(ticket.siteId || "")}"
+                    data-current-location="${escapeAttr(ticket.locationId || "")}"
+                    data-current-organization="${escapeAttr(ticket.organization || "")}"
+                    data-current-reported-by="${escapeAttr(ticket.reportedBy || "")}"
+                    data-current-business-service="${escapeAttr(ticket.businessService || "")}"
+                    data-current-resolver-team="${escapeAttr(ticket.resolverTeam || "")}"
+                    data-current-scheduled-at="${escapeAttr(dateTimeLocalValue(ticket.scheduledAt))}">
                     <div class="ticket-command-bar">
                         <button class="btn" type="submit" ${editable ? "" : "disabled"}>Guardar</button>
                         <button class="btn secondary" type="button" onclick="refreshTicketTab(${ticket.ticketId}, true)">Cancelar</button>
@@ -3489,19 +3746,19 @@
                         <h2>Cliente y propietario</h2>
                         <div class="ticket-form-grid compact-ticket-layout">
                             ${ticketField("Usuario final", userSelect("requesterUserId", ticket.requesterUserId, ticket.requesterName || ticket.requesterUsername, ticketFieldDisabled(ticket, "requesterUserId")), ticket.requesterEmail || "", "ticket-final-user", true)}
-                            ${ticketField("Informado por", `<input value="${escapeAttr(ticket.requesterUsername || "")}" disabled>`, "", "ticket-reporter")}
-                            ${ticketField("Servicio", `<input data-field="categoryCode" value="${escapeAttr(ticket.categoryCode || "GENERAL")}" ${ticketFieldDisabled(ticket, "categoryCode")}>`, "", "ticket-service")}
+                            ${ticketField("Informado por", `<input data-field="reportedBy" value="${escapeAttr(ticket.reportedBy || ticket.requesterUsername || "")}" ${ticketFieldDisabled(ticket, "reportedBy")}>`, "", "ticket-reporter")}
+                            ${ticketField("Servicio de negocio", `<input data-field="businessService" value="${escapeAttr(ticket.businessService || "Mesa de Ayuda")}" ${ticketFieldDisabled(ticket, "businessService")}>`, "", "ticket-service")}
                             ${ticketField("Estado", statusSelect(ticket.status, ticketFieldDisabled(ticket, "status")), "", "ticket-status", true)}
-                            ${ticketField("Organizacion Cliente", siteSelect(ticket.siteId, ticketFieldDisabled(ticket, "siteId")), "", "ticket-org")}
-                            ${ticketField("Ubicacion", `<input value="${escapeAttr(ticket.locationName || service.locationName || "")}" disabled>`, "", "ticket-location")}
-                            ${ticketField("Categoria", `<input value="${escapeAttr(ticket.categoryCode || "GENERAL")}" disabled>`, "", "ticket-category")}
-                            ${ticketField("Fecha de programacion", `<input type="datetime-local" value="${escapeAttr(dateTimeLocalValue(ticket.dueAt))}" disabled>`, "", "ticket-schedule")}
-                            ${ticketField("Servicio Negocio", `<input value="${escapeAttr(labelFor(ticket.caseType))}" disabled>`, "", "ticket-business")}
+                            ${ticketField("Organizacion", `<input data-field="organization" value="${escapeAttr(ticket.organization || ticket.siteName || "")}" ${ticketFieldDisabled(ticket, "organization")}>`, "", "ticket-org")}
+                            ${ticketField("Ubicacion (ID)", `<input data-field="locationId" type="number" min="1" value="${escapeAttr(ticket.locationId || "")}" ${ticketFieldDisabled(ticket, "locationId")}>`, ticket.locationName || service.locationName || "", "ticket-location")}
+                            ${ticketField("Categoria", `<input data-field="categoryCode" value="${escapeAttr(ticket.categoryCode || "GENERAL")}" ${ticketFieldDisabled(ticket, "categoryCode")}>`, "", "ticket-category")}
+                            ${ticketField("Fecha de programacion", `<input data-field="scheduledAt" type="datetime-local" value="${escapeAttr(dateTimeLocalValue(ticket.scheduledAt))}" ${ticket.status === "SCHEDULED" ? ticketFieldDisabled(ticket, "scheduledAt") : "disabled"}>`, "Se habilita al seleccionar Programado.", "ticket-schedule")}
+                            ${ticketField("Sede", siteSelect(ticket.siteId, ticketFieldDisabled(ticket, "siteId")), "", "ticket-business")}
                             ${ticketField("Filtrar por analista", `<input type="checkbox" disabled>`, "", "ticket-filter")}
                             ${ticketField("Nombre/resumen", `<input data-field="summary" value="${escapeAttr(ticket.summary || ticket.caseTitle || "")}" minlength="8" maxlength="180" ${ticketFieldDisabled(ticket, "summary")}>`, "", "ticket-summary", true)}
                             ${ticketField("Descripcion", richTextArea("description", ticket.description || service.description || "", ticketFieldDisabled(ticket, "description")), "", "ticket-description-field")}
                             <div class="ticket-side">
-                                ${ticketField("Equipo", `<input value="${escapeAttr(resolverTeam(ticket))}" disabled>`, "", "")}
+                                ${ticketField("Equipo", `<input data-field="resolverTeam" value="${escapeAttr(resolverTeam(ticket))}" ${ticketFieldDisabled(ticket, "resolverTeam")}>`, "", "")}
                                 ${ticketField("Asignatario", technicianSelect("assignedToUserId", ticket.assignedToUserId, ticketFieldDisabled(ticket, "assignedToUserId")), "", "")}
                                 ${ticketField("Prioridad", prioritySelect(ticket.priority, ticketFieldDisabled(ticket, "priority")), "", "")}
                                 ${ticketField("# Caso Externo", `<input data-field="externalCase" value="" ${ticketFieldDisabled(ticket, "externalCase")}>`, "", "")}
@@ -3626,9 +3883,10 @@
 
         function statusSelect(current, disabledAttr) {
             const statuses = isAdmin()
-                ? ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED", "CANCELLED"]
-                : ["OPEN", "IN_PROGRESS"];
-            return `<select data-field="status" ${disabledAttr}>${statuses.map(status => option(status, labelFor(status), status === current)).join("")}</select>`;
+                ? ["NEW", "ASSIGNED", "IN_PROGRESS", "SCHEDULED", "CLOSED", "CANCELLED"]
+                : ["NEW", "ASSIGNED", "IN_PROGRESS", "SCHEDULED"];
+            if (current === "RESOLVED") statuses.unshift("RESOLVED");
+            return `<select data-field="status" onchange="toggleScheduleField(this)" ${disabledAttr}>${statuses.map(status => option(status, labelFor(status), status === current)).join("")}</select>`;
         }
 
         function prioritySelect(current, disabledAttr) {
@@ -3678,17 +3936,21 @@
             if (!canOperateTickets()) {
                 return "disabled";
             }
-            if (isTerminalTicket(ticket) && !isAdmin()) {
+            if (ticket && ticket.locked) {
                 return "disabled";
             }
             if (isAdmin()) {
                 return "";
             }
-            return ["status", "priority", "assignedToUserId"].indexOf(field) >= 0 ? "" : "disabled";
+            if (["description", "status", "priority", "assignedToUserId", "scheduledAt"].indexOf(field) >= 0) {
+                return "";
+            }
+            const deadline = ticket && ticket.protectedFieldsEditableUntil ? new Date(ticket.protectedFieldsEditableUntil).getTime() : 0;
+            return Date.now() < deadline ? "" : "disabled";
         }
 
         function canOperateTicket(ticket) {
-            return canOperateTickets() && (!isTerminalTicket(ticket) || isAdmin());
+            return canOperateTickets() && ticket && !ticket.locked;
         }
 
         function canAssignToSelf(ticket) {
@@ -3700,11 +3962,21 @@
         }
 
         function canResolveTicket(ticket) {
-            return canOperateTickets() && !isTerminalTicket(ticket);
+            return canOperateTickets() && ticket && !ticket.locked && ticket.status !== "RESOLVED";
         }
 
         function isTerminalTicket(ticket) {
-            return ticket && (ticket.status === "RESOLVED" || ticket.status === "CLOSED" || ticket.status === "CANCELLED");
+            return ticket && Boolean(ticket.locked);
+        }
+
+        function toggleScheduleField(statusSelectElement) {
+            const form = statusSelectElement.closest("form");
+            const scheduledInput = form ? form.querySelector('[data-field="scheduledAt"]') : null;
+            if (!scheduledInput) return;
+            scheduledInput.disabled = statusSelectElement.value !== "SCHEDULED" || statusSelectElement.disabled;
+            if (scheduledInput.disabled && statusSelectElement.value !== "SCHEDULED") {
+                scheduledInput.value = "";
+            }
         }
 
         async function saveTicketForm(event, ticketId, caseId) {
@@ -3719,34 +3991,36 @@
             if (body) payload.body = body;
             if (status && status !== form.dataset.currentStatus) payload.status = status;
             if (priority && priority !== form.dataset.currentPriority) payload.priority = priority;
-            if (isAdmin()) {
-                const summary = formValue(form, "summary").trim();
-                const description = formValue(form, "description").trim();
-                const categoryCode = formValue(form, "categoryCode").trim();
-                const requesterUserId = formValue(form, "requesterUserId");
-                const siteId = formValue(form, "siteId");
-                if (summary && summary !== form.dataset.currentSummary) payload.summary = summary;
-                if (description && description !== form.dataset.currentDescription) payload.description = description;
-                if (categoryCode && categoryCode !== form.dataset.currentCategory) payload.categoryCode = categoryCode;
-                if (requesterUserId && requesterUserId !== form.dataset.currentRequester) payload.requesterUserId = Number(requesterUserId);
-                if (siteId && siteId !== form.dataset.currentSite) payload.siteId = Number(siteId);
-                if (assignmentChanged) payload.assignedToUserId = Number(assignedToUserId);
-            }
+            const summary = formValue(form, "summary").trim();
+            const description = formValue(form, "description").trim();
+            const categoryCode = formValue(form, "categoryCode").trim();
+            const requesterUserId = formValue(form, "requesterUserId");
+            const siteId = formValue(form, "siteId");
+            const locationId = formValue(form, "locationId");
+            const organization = formValue(form, "organization").trim();
+            const reportedBy = formValue(form, "reportedBy").trim();
+            const businessService = formValue(form, "businessService").trim();
+            const resolverTeamValue = formValue(form, "resolverTeam").trim();
+            const scheduledAt = formValue(form, "scheduledAt");
+            if (summary && summary !== form.dataset.currentSummary) payload.summary = summary;
+            if (description && description !== form.dataset.currentDescription) payload.description = description;
+            if (categoryCode && categoryCode !== form.dataset.currentCategory) payload.categoryCode = categoryCode;
+            if (requesterUserId && requesterUserId !== form.dataset.currentRequester) payload.requesterUserId = Number(requesterUserId);
+            if (siteId && siteId !== form.dataset.currentSite) payload.siteId = Number(siteId);
+            if (locationId && locationId !== form.dataset.currentLocation) payload.locationId = Number(locationId);
+            if (organization && organization !== form.dataset.currentOrganization) payload.organization = organization;
+            if (reportedBy && reportedBy !== form.dataset.currentReportedBy) payload.reportedBy = reportedBy;
+            if (businessService && businessService !== form.dataset.currentBusinessService) payload.businessService = businessService;
+            if (resolverTeamValue && resolverTeamValue !== form.dataset.currentResolverTeam) payload.resolverTeam = resolverTeamValue;
+            if (scheduledAt && scheduledAt !== form.dataset.currentScheduledAt) payload.scheduledAt = scheduledAt;
+            if (assignmentChanged) payload.assignedToUserId = Number(assignedToUserId);
             const hasPatch = Object.keys(payload).some(key => key !== "visibility");
-            if (!hasPatch && !assignmentChanged) {
+            if (!hasPatch) {
                 notifyError("No hay cambios para guardar.");
                 return;
             }
             try {
-                if (hasPatch) {
-                    await api("/tickets/" + ticketId, { method: "PATCH", body: JSON.stringify(payload) });
-                }
-                if (assignmentChanged && !isAdmin()) {
-                    await api("/tickets/" + ticketId + "/assign", {
-                        method: "POST",
-                        body: JSON.stringify({ assignedToUserId: Number(assignedToUserId) })
-                    });
-                }
+                await api("/tickets/" + ticketId, { method: "PATCH", body: JSON.stringify(payload) });
                 await refreshAll({ refreshTabs: false });
                 await openTicket(ticketId);
                 notifyOk("Ticket actualizado.");

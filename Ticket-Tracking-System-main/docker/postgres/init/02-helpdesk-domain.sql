@@ -236,6 +236,12 @@ ALTER TABLE p2_sandbox.service_case
     ADD COLUMN IF NOT EXISTS sla_policy_id INTEGER REFERENCES p2_sandbox.sla_policies(sla_policy_id),
     ADD COLUMN IF NOT EXISTS due_at TIMESTAMPTZ;
 
+ALTER TABLE p2_sandbox.app_users
+    ADD COLUMN IF NOT EXISTS notification_email VARCHAR(160);
+
+UPDATE p2_sandbox.app_users
+SET notification_email = COALESCE(notification_email, email);
+
 ALTER TABLE p2_sandbox.notifications
     ADD COLUMN IF NOT EXISTS recipient_email VARCHAR(160),
     ADD COLUMN IF NOT EXISTS attempt_count INTEGER NOT NULL DEFAULT 0,

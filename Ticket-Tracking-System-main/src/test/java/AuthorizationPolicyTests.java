@@ -43,13 +43,13 @@ public class AuthorizationPolicyTests {
     }
 
     @Test
-    public void userRequestsAreLimitedToUserAndAdminRoles() {
+    public void userRequestsAreLimitedToEndUsers() {
         AccessPolicy policy = new AccessPolicy();
         String permission = policy.requiredPermission("POST", "/user/requests");
         Assert.assertEquals(permission, "USER_REQUEST_CREATE");
         Assert.assertTrue(policy.isAllowed("USER", permission));
         Assert.assertFalse(policy.isAllowed("TECH", permission));
-        Assert.assertTrue(policy.isAllowed("ADMIN", permission));
+        Assert.assertFalse(policy.isAllowed("ADMIN", permission));
     }
 
     @Test
@@ -85,13 +85,13 @@ public class AuthorizationPolicyTests {
     }
 
     @Test
-    public void serviceCaseCreationIsAllowedForPortalAndOperators() {
+    public void serviceCaseCreationIsAllowedOnlyForEndUsers() {
         AccessPolicy policy = new AccessPolicy();
         String permission = policy.requiredPermission("POST", "/service-cases");
         Assert.assertEquals(permission, "SERVICE_CASE_CREATE");
         Assert.assertTrue(policy.isAllowed("USER", permission));
-        Assert.assertTrue(policy.isAllowed("TECH", permission));
-        Assert.assertTrue(policy.isAllowed("ADMIN", permission));
+        Assert.assertFalse(policy.isAllowed("TECH", permission));
+        Assert.assertFalse(policy.isAllowed("ADMIN", permission));
     }
 
     @Test
@@ -153,5 +153,17 @@ public class AuthorizationPolicyTests {
         Assert.assertFalse(policy.isAllowed("USER", permission));
         Assert.assertTrue(policy.isAllowed("TECH", permission));
         Assert.assertTrue(policy.isAllowed("ADMIN", permission));
+    }
+
+    @Test
+    public void managementReportIsAdminOnly() {
+        AccessPolicy policy = new AccessPolicy();
+        String reportPermission = policy.requiredPermission("GET", "/reports/requests");
+        String excelPermission = policy.requiredPermission("GET", "/reports/requests/excel");
+        Assert.assertEquals(reportPermission, "MANAGEMENT_REPORT_READ");
+        Assert.assertEquals(excelPermission, "MANAGEMENT_REPORT_READ");
+        Assert.assertFalse(policy.isAllowed("USER", reportPermission));
+        Assert.assertFalse(policy.isAllowed("TECH", reportPermission));
+        Assert.assertTrue(policy.isAllowed("ADMIN", reportPermission));
     }
 }

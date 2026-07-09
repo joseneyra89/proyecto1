@@ -53,9 +53,9 @@ public final class DashboardMetrics {
 
         public void addTicket(String status, String slaCode) {
             ticketsTotal++;
-            if ("OPEN".equals(status)) {
+            if ("NEW".equals(status) || "ASSIGNED".equals(status)) {
                 openTickets++;
-            } else if ("IN_PROGRESS".equals(status)) {
+            } else if ("IN_PROGRESS".equals(status) || "SCHEDULED".equals(status)) {
                 inProgressTickets++;
             } else if ("RESOLVED".equals(status) || "CLOSED".equals(status) || "CANCELLED".equals(status)) {
                 resolvedTickets++;

@@ -16,7 +16,9 @@ public class Ticket extends HelpdeskRecord {
     public String summary;
     public String description;
     public String resolution;
-    public WorkStatus status = WorkStatus.OPEN;
+    public String resolverTeam;
+    public OffsetDateTime scheduledAt;
+    public WorkStatus status = WorkStatus.NEW;
     public Priority priority = Priority.MEDIUM;
     public OffsetDateTime dueAt;
     public Integer legacyTicketId;

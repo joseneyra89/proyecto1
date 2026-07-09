@@ -12,6 +12,11 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
 import java.time.Instant;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import com.businessName.ticketService.HelpdeskFlowService;
 
 
 public class HelpTicketApi {
@@ -94,6 +99,10 @@ public class HelpTicketApi {
 
         app.get("/dashboard/technician", helpdeskFlowController.technicianDashboard);
 
+        app.get("/reports/requests", helpdeskFlowController.managementReport);
+
+        app.get("/reports/requests/excel", helpdeskFlowController.managementReportExcel);
+
         app.post("/service-cases", helpdeskFlowController.createServiceCase);
 
         app.get("/service-cases", helpdeskFlowController.listServiceCases);
@@ -149,6 +158,23 @@ public class HelpTicketApi {
         app.delete("/technician/requests", legacyGone);
 
         app.post("/", legacyGone);
+
+        ScheduledExecutorService autoCloseScheduler = Executors.newSingleThreadScheduledExecutor(runnable -> {
+            Thread thread = new Thread(runnable, "ticket-auto-close");
+            thread.setDaemon(true);
+            return thread;
+        });
+        HelpdeskFlowService workflowService = new HelpdeskFlowService();
+        autoCloseScheduler.scheduleWithFixedDelay(() -> {
+            try {
+                int closed = workflowService.closeExpiredResolvedTickets();
+                if (closed > 0) {
+                    logger.info("Automatically closed {} resolved tickets", closed);
+                }
+            } catch (Exception e) {
+                logger.warn("Automatic ticket closure skipped: {}", e.getMessage());
+            }
+        }, 0, 60, TimeUnit.SECONDS);
 
         app.start(getPort());
 
