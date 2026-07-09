@@ -4,6 +4,7 @@ import com.businessName.security.AccessPolicy;
 import com.businessName.security.AuthMiddleware;
 import com.businessName.security.AuthService;
 import io.javalin.Javalin;
+import io.javalin.config.RoutesConfig;
 import io.javalin.http.ForbiddenResponse;
 import io.javalin.http.Handler;
 import io.javalin.http.UnauthorizedResponse;
@@ -27,137 +28,18 @@ public class HelpTicketApi {
     public static Logger logger = LogManager.getLogger(HelpTicketApi.class);
 
     public static void main(String[] args) {
-        Javalin app = Javalin.create(config -> {
-            logger.info("Javalin starting...");
-            config.enableCorsForAllOrigins();
-            config.enableDevLogging();
-            logger.info("Javalin started...");
-        });
-
         AuthService authService = new AuthService();
         AuthController authController = new AuthController(authService);
         HelpdeskFlowController helpdeskFlowController = new HelpdeskFlowController();
         AccessPolicy accessPolicy = new AccessPolicy();
-        Handler legacyGone = ctx -> ctx.status(410).result(new JSONObject()
-                .put("message", "Legacy endpoint retired. Use /service-cases, /tickets, /me or /admin/users.")
-                .toString());
 
-        app.exception(UnauthorizedResponse.class, (e, ctx) -> {
-            ctx.status(401).result(new JSONObject().put("message", e.getMessage()).toString());
+        Javalin app = Javalin.create(config -> {
+            logger.info("Javalin starting...");
+            config.bundledPlugins.enableCors(cors -> cors.addRule(rule -> rule.anyHost()));
+            config.bundledPlugins.enableDevLogging();
+            registerRoutes(config.routes, authService, authController, helpdeskFlowController, accessPolicy);
+            logger.info("Javalin configured.");
         });
-        app.exception(ForbiddenResponse.class, (e, ctx) -> {
-            ctx.status(403).result(new JSONObject().put("message", e.getMessage()).toString());
-        });
-
-        app.before(ctx -> AuthMiddleware.enforce(ctx, authService, accessPolicy));
-
-        app.get("/health", ctx -> ctx.status(200).result(new JSONObject()
-                .put("status", "UP")
-                .put("service", "ticket-tracking-api")
-                .put("timestamp", Instant.now().toString())
-                .toString()));
-
-        app.post("/login", authController.login);
-
-        app.post("/logout", authController.logout);
-
-        app.get("/me", authController.me);
-
-        app.patch("/me", authController.updateMe);
-
-        app.post("/password/forgot", authController.forgotPassword);
-
-        app.post("/password/reset", authController.resetPassword);
-
-        app.get("/admin/users", authController.listUsers);
-
-        app.post("/admin/users", authController.createUser);
-
-        app.patch("/admin/users/{userId}", authController.updateUser);
-
-        app.patch("/admin/users/{userId}/status", authController.updateUserStatus);
-
-        app.get("/sites", helpdeskFlowController.listSites);
-
-        app.post("/sites", helpdeskFlowController.createSite);
-
-        app.patch("/sites/{siteId}", helpdeskFlowController.updateSite);
-
-        app.patch("/sites/{siteId}/status", helpdeskFlowController.updateSiteStatus);
-
-        app.get("/sites/{siteId}/locations", helpdeskFlowController.listLocations);
-
-        app.post("/sites/{siteId}/locations", helpdeskFlowController.createLocation);
-
-        app.patch("/locations/{locationId}", helpdeskFlowController.updateLocation);
-
-        app.patch("/locations/{locationId}/status", helpdeskFlowController.updateLocationStatus);
-
-        app.get("/users/requesters", authController.listRequesters);
-
-        app.get("/users/technicians", helpdeskFlowController.listTechnicians);
-
-        app.get("/dashboard/technician", helpdeskFlowController.technicianDashboard);
-
-        app.get("/reports/requests", helpdeskFlowController.managementReport);
-
-        app.get("/reports/requests/excel", helpdeskFlowController.managementReportExcel);
-
-        app.post("/service-cases", helpdeskFlowController.createServiceCase);
-
-        app.get("/service-cases", helpdeskFlowController.listServiceCases);
-
-        app.get("/service-cases/{caseId}", helpdeskFlowController.getServiceCase);
-
-        app.get("/queues/service-cases", helpdeskFlowController.listQueues);
-
-        app.get("/tickets", helpdeskFlowController.listTickets);
-
-        app.get("/tickets/{ticketId}", helpdeskFlowController.getTicket);
-
-        app.get("/tickets/{ticketId}/audit", helpdeskFlowController.listTicketAudit);
-
-        app.post("/service-cases/{caseId}/tickets", helpdeskFlowController.createTicket);
-
-        app.patch("/tickets/{ticketId}", helpdeskFlowController.updateTicket);
-
-        app.post("/tickets/{ticketId}/assign", helpdeskFlowController.assignTicket);
-
-        app.post("/tickets/{ticketId}/resolve", helpdeskFlowController.resolveTicket);
-
-        app.post("/notifications/retry", helpdeskFlowController.retryNotifications);
-
-        app.post("/user/requests", legacyGone);
-
-        app.put("/user/requests", legacyGone);
-
-        app.post("/technician/", legacyGone);
-
-        app.put("/technician/", legacyGone);
-
-        app.patch("/technician/", legacyGone);
-
-        app.post("/technician/requests", legacyGone);
-
-        app.patch("/user/requests", legacyGone);
-
-        app.delete("/user/requests", legacyGone);
-
-        app.post("/client/requests", legacyGone);
-
-        app.put("/client/requests", legacyGone);
-
-        app.patch("/client/requests", legacyGone);
-
-        app.delete("/client/requests", legacyGone);
-
-        app.patch("/technician/requests", legacyGone);
-
-        app.put("/technician/requests", legacyGone);
-
-        app.delete("/technician/requests", legacyGone);
-
-        app.post("/", legacyGone);
 
         ScheduledExecutorService autoCloseScheduler = Executors.newSingleThreadScheduledExecutor(runnable -> {
             Thread thread = new Thread(runnable, "ticket-auto-close");
@@ -178,6 +60,133 @@ public class HelpTicketApi {
 
         app.start(getPort());
 
+    }
+
+    private static void registerRoutes(RoutesConfig routes,
+                                       AuthService authService,
+                                       AuthController authController,
+                                       HelpdeskFlowController helpdeskFlowController,
+                                       AccessPolicy accessPolicy) {
+        Handler legacyGone = ctx -> ctx.status(410).result(new JSONObject()
+                .put("message", "Legacy endpoint retired. Use /service-cases, /tickets, /me or /admin/users.")
+                .toString());
+
+        routes.exception(UnauthorizedResponse.class, (e, ctx) -> {
+            ctx.status(401).result(new JSONObject().put("message", e.getMessage()).toString());
+        });
+        routes.exception(ForbiddenResponse.class, (e, ctx) -> {
+            ctx.status(403).result(new JSONObject().put("message", e.getMessage()).toString());
+        });
+
+        routes.before(ctx -> AuthMiddleware.enforce(ctx, authService, accessPolicy));
+
+        routes.get("/health", ctx -> ctx.status(200).result(new JSONObject()
+                .put("status", "UP")
+                .put("service", "ticket-tracking-api")
+                .put("timestamp", Instant.now().toString())
+                .toString()));
+
+        routes.post("/login", authController.login);
+
+        routes.post("/logout", authController.logout);
+
+        routes.get("/me", authController.me);
+
+        routes.patch("/me", authController.updateMe);
+
+        routes.post("/password/forgot", authController.forgotPassword);
+
+        routes.post("/password/reset", authController.resetPassword);
+
+        routes.get("/admin/users", authController.listUsers);
+
+        routes.post("/admin/users", authController.createUser);
+
+        routes.patch("/admin/users/{userId}", authController.updateUser);
+
+        routes.patch("/admin/users/{userId}/status", authController.updateUserStatus);
+
+        routes.get("/sites", helpdeskFlowController.listSites);
+
+        routes.post("/sites", helpdeskFlowController.createSite);
+
+        routes.patch("/sites/{siteId}", helpdeskFlowController.updateSite);
+
+        routes.patch("/sites/{siteId}/status", helpdeskFlowController.updateSiteStatus);
+
+        routes.get("/sites/{siteId}/locations", helpdeskFlowController.listLocations);
+
+        routes.post("/sites/{siteId}/locations", helpdeskFlowController.createLocation);
+
+        routes.patch("/locations/{locationId}", helpdeskFlowController.updateLocation);
+
+        routes.patch("/locations/{locationId}/status", helpdeskFlowController.updateLocationStatus);
+
+        routes.get("/users/requesters", authController.listRequesters);
+
+        routes.get("/users/technicians", helpdeskFlowController.listTechnicians);
+
+        routes.get("/dashboard/technician", helpdeskFlowController.technicianDashboard);
+
+        routes.get("/reports/requests", helpdeskFlowController.managementReport);
+
+        routes.get("/reports/requests/excel", helpdeskFlowController.managementReportExcel);
+
+        routes.post("/service-cases", helpdeskFlowController.createServiceCase);
+
+        routes.get("/service-cases", helpdeskFlowController.listServiceCases);
+
+        routes.get("/service-cases/{caseId}", helpdeskFlowController.getServiceCase);
+
+        routes.get("/queues/service-cases", helpdeskFlowController.listQueues);
+
+        routes.get("/tickets", helpdeskFlowController.listTickets);
+
+        routes.get("/tickets/{ticketId}", helpdeskFlowController.getTicket);
+
+        routes.get("/tickets/{ticketId}/audit", helpdeskFlowController.listTicketAudit);
+
+        routes.post("/service-cases/{caseId}/tickets", helpdeskFlowController.createTicket);
+
+        routes.patch("/tickets/{ticketId}", helpdeskFlowController.updateTicket);
+
+        routes.post("/tickets/{ticketId}/assign", helpdeskFlowController.assignTicket);
+
+        routes.post("/tickets/{ticketId}/resolve", helpdeskFlowController.resolveTicket);
+
+        routes.post("/notifications/retry", helpdeskFlowController.retryNotifications);
+
+        routes.post("/user/requests", legacyGone);
+
+        routes.put("/user/requests", legacyGone);
+
+        routes.post("/technician/", legacyGone);
+
+        routes.put("/technician/", legacyGone);
+
+        routes.patch("/technician/", legacyGone);
+
+        routes.post("/technician/requests", legacyGone);
+
+        routes.patch("/user/requests", legacyGone);
+
+        routes.delete("/user/requests", legacyGone);
+
+        routes.post("/client/requests", legacyGone);
+
+        routes.put("/client/requests", legacyGone);
+
+        routes.patch("/client/requests", legacyGone);
+
+        routes.delete("/client/requests", legacyGone);
+
+        routes.patch("/technician/requests", legacyGone);
+
+        routes.put("/technician/requests", legacyGone);
+
+        routes.delete("/technician/requests", legacyGone);
+
+        routes.post("/", legacyGone);
     }
 
     private static int getPort() {

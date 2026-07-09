@@ -297,3 +297,4 @@ Si se necesitan datos limpios:
 docker compose down -v
 docker compose up --build
 ```
+prueba de snyk
