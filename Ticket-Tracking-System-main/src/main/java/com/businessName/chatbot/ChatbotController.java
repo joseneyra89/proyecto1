@@ -1,19 +1,25 @@
 package com.businessName.chatbot;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import io.javalin.http.Context;
+import io.javalin.http.Handler;
+import com.google.gson.Gson;
 
-@RestController
-@RequestMapping("/api/chatbot")
-@CrossOrigin(origins = "*")
 public class ChatbotController {
 
-    @Autowired
-    private ChatbotService chatbotService;
+    private static final ChatbotService chatbotService = new ChatbotService();
+    private static final Gson gson = new Gson();
 
-    @PostMapping("/enviar")
-    public ChatbotResponse recibirMensaje(@RequestBody String mensajeUsuario) {
-        String mensajeLimpio = mensajeUsuario.replace("\"", ""); 
-        return chatbotService.procesarMensaje(mensajeLimpio);
-    }
+    public static Handler recibirMensaje = ctx -> {
+        // Leemos el mensaje del cuerpo de la petición
+        String mensajeUsuario = ctx.body();
+        String mensajeLimpio = mensajeUsuario.replace("\"", "");
+        
+        // Procesamos la respuesta con nuestro servicio
+        ChatbotResponse respuesta = chatbotService.procesarMensaje(mensajeLimpio);
+        
+        // Respondemos en formato JSON usando Gson
+        ctx.contentType("application/json");
+        ctx.result(gson.toJson(respuesta));
+    };
 }
+

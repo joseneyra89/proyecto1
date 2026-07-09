@@ -1,8 +1,5 @@
 package com.businessName.chatbot;
 
-import org.springframework.stereotype.Service;
-
-@Service
 public class ChatbotService {
 
     public ChatbotResponse procesarMensaje(String mensajeUsuario) {

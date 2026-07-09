@@ -12,10 +12,11 @@ services:
       - ticket_postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U tickets_user -d tickets_db"]
       interval: 5s
       timeout: 5s
       retries: 10
+
 
   ticket-api:
     build:
@@ -42,7 +43,7 @@ services:
       SMTP_PASSWORD: "${SMTP_PASSWORD:-}"
       SMTP_STARTTLS: "${SMTP_STARTTLS:-false}"
     ports:
-      - "${APP_PORT:-8081}:8081"
+      - "8085:8081"
     depends_on:
       postgres:
         condition: service_healthy
