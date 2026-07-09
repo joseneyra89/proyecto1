@@ -395,54 +395,148 @@ public class HelpdeskFlowService {
         String priority = optionalEnum(request.optString("priority", "MEDIUM"), "priority", "LOW", "MEDIUM", "HIGH", "CRITICAL");
         Integer siteId = request.has("siteId") && !request.isNull("siteId") ? request.getInt("siteId") : null;
         Long locationId = request.has("locationId") && !request.isNull("locationId") ? request.getLong("locationId") : null;
+        boolean operator = "TECH".equals(user.roleCode) || "ADMIN".equals(user.roleCode);
+        Long requesterUserId = user.userId;
+        if (request.has("requesterUserId") && !request.isNull("requesterUserId")) {
+            if (!operator) {
+                throw new AuthException(403, "Only operators can select requesterUserId");
+            }
+            requesterUserId = request.getLong("requesterUserId");
+        }
+        Long assignedToUserId = request.has("assignedToUserId") && !request.isNull("assignedToUserId")
+                ? request.getLong("assignedToUserId") : null;
+        if (assignedToUserId != null && !operator) {
+            throw new AuthException(403, "Only operators can assign tickets");
+        }
+        String categoryCode = trimToNull(request.optString("categoryCode", "GENERAL"));
+        if (categoryCode == null) {
+            categoryCode = "GENERAL";
+        }
+        String status = request.has("status") && !request.isNull("status")
+                ? requireEnum(request.optString("status", ""), "status", "OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED", "CANCELLED")
+                : "OPEN";
+        if (!operator && !"OPEN".equals(status)) {
+            throw new AuthException(403, "Only operators can select initial status");
+        }
+        if ("TECH".equals(user.roleCode) && ("CLOSED".equals(status) || "CANCELLED".equals(status))) {
+            throw new AuthException(403, "Only ADMIN can create closed or cancelled tickets");
+        }
+        boolean terminalStatus = "RESOLVED".equals(status) || "CLOSED".equals(status) || "CANCELLED".equals(status);
+        String resolution = trimToNull(request.optString("resolution", request.optString("publicUpdate", "")));
+        if (terminalStatus) {
+            resolution = requireText(resolution, "resolution", 12, 4000);
+        }
+        String internalComment = trimToNull(request.optString("body", request.optString("technicalComment", "")));
 
         if (siteId == null) {
             throw new AuthException(400, "siteId is required");
         }
 
         try (Connection connection = requireConnection()) {
-            validateSiteAndLocation(connection, siteId, locationId);
-            SlaPolicyDetails policy = findSlaPolicyDetails(connection, type, priority);
-            Timestamp startAt = Timestamp.from(Instant.now());
-            Timestamp dueAt = SlaEngine.calculateDueAt(type, startAt, policy.resolutionMinutes,
-                    policy.calendarCode, policy.businessHoursOnly);
-            try (PreparedStatement ps = connection.prepareStatement(
-                    "INSERT INTO p2_sandbox.service_case " +
-                            "(type, title, description, requester_user_id, affected_user_id, site_id, location_id, " +
-                            "status, priority, sla_policy_id, due_at, created_by_user_id, created_at, updated_at) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?, 'OPEN', ?, ?, ?, ?, ?, ?) " +
-                            "RETURNING case_id")) {
-                ps.setString(1, type);
-                ps.setString(2, title);
-                ps.setString(3, description);
-                ps.setLong(4, user.userId);
-                ps.setLong(5, user.userId);
-                ps.setInt(6, siteId);
-                if (locationId == null) {
-                    ps.setNull(7, Types.BIGINT);
-                } else {
-                    ps.setLong(7, locationId);
+            connection.setAutoCommit(false);
+            try {
+                validateSiteAndLocation(connection, siteId, locationId);
+                ensureActiveUser(connection, requesterUserId);
+                if (assignedToUserId != null) {
+                    ensureTechnician(connection, assignedToUserId);
                 }
-                ps.setString(8, priority);
-                if (policy.slaPolicyId == null) {
-                    ps.setNull(9, Types.INTEGER);
-                } else {
-                    ps.setInt(9, policy.slaPolicyId);
+                SlaPolicyDetails policy = findSlaPolicyDetails(connection, type, priority);
+                Timestamp startAt = Timestamp.from(Instant.now());
+                Timestamp dueAt = SlaEngine.calculateDueAt(type, startAt, policy.resolutionMinutes,
+                        policy.calendarCode, policy.businessHoursOnly);
+                Timestamp resolvedAt = terminalStatus ? startAt : null;
+                try (PreparedStatement ps = connection.prepareStatement(
+                        "INSERT INTO p2_sandbox.service_case " +
+                                "(type, title, description, requester_user_id, affected_user_id, site_id, location_id, " +
+                                "status, priority, sla_policy_id, due_at, resolved_at, created_by_user_id, created_at, updated_at) " +
+                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                                "RETURNING case_id")) {
+                    ps.setString(1, type);
+                    ps.setString(2, title);
+                    ps.setString(3, description);
+                    ps.setLong(4, requesterUserId);
+                    ps.setLong(5, requesterUserId);
+                    ps.setInt(6, siteId);
+                    if (locationId == null) {
+                        ps.setNull(7, Types.BIGINT);
+                    } else {
+                        ps.setLong(7, locationId);
+                    }
+                    ps.setString(8, status);
+                    ps.setString(9, priority);
+                    if (policy.slaPolicyId == null) {
+                        ps.setNull(10, Types.INTEGER);
+                    } else {
+                        ps.setInt(10, policy.slaPolicyId);
+                    }
+                    ps.setTimestamp(11, dueAt);
+                    ps.setTimestamp(12, resolvedAt);
+                    ps.setLong(13, user.userId);
+                    ps.setTimestamp(14, startAt);
+                    ps.setTimestamp(15, startAt);
+                    long caseId;
+                    try (ResultSet rs = ps.executeQuery()) {
+                        rs.next();
+                        caseId = rs.getLong("case_id");
+                    }
+                    long ticketId;
+                    try (PreparedStatement ticketPs = connection.prepareStatement(
+                            "INSERT INTO p2_sandbox.ticket " +
+                                    "(service_case_id, assigned_to_user_id, created_by_user_id, sla_policy_id, category_code, " +
+                                    "summary, description, resolution, status, priority, due_at, resolved_at) " +
+                                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING ticket_id")) {
+                        ticketPs.setLong(1, caseId);
+                        setNullableLong(ticketPs, 2, assignedToUserId);
+                        ticketPs.setLong(3, user.userId);
+                        if (policy.slaPolicyId == null) {
+                            ticketPs.setNull(4, Types.INTEGER);
+                        } else {
+                            ticketPs.setInt(4, policy.slaPolicyId);
+                        }
+                        ticketPs.setString(5, categoryCode);
+                        ticketPs.setString(6, title);
+                        ticketPs.setString(7, description);
+                        setNullableString(ticketPs, 8, resolution);
+                        ticketPs.setString(9, status);
+                        ticketPs.setString(10, priority);
+                        ticketPs.setTimestamp(11, dueAt);
+                        ticketPs.setTimestamp(12, resolvedAt);
+                        try (ResultSet ticketRs = ticketPs.executeQuery()) {
+                            ticketRs.next();
+                            ticketId = ticketRs.getLong("ticket_id");
+                        }
+                    }
+                    addTicketUpdate(connection, ticketId, user.userId, "PUBLIC", "SYSTEM",
+                            operator ? "Ticket registrado por mesa de ayuda." : "Ticket registrado por el usuario.",
+                            null, status);
+                    if (assignedToUserId != null) {
+                        addTicketUpdate(connection, ticketId, user.userId, "INTERNAL", "ASSIGNMENT",
+                                "Ticket assigned during creation.", null, status);
+                    }
+                    if (internalComment != null) {
+                        addTicketUpdate(connection, ticketId, user.userId, "INTERNAL", "COMMENT",
+                                internalComment, null, status);
+                    }
+                    if (terminalStatus && resolution != null) {
+                        addTicketUpdate(connection, ticketId, user.userId, "PUBLIC", "STATUS_CHANGE",
+                                resolution, null, status);
+                    }
+                    JSONObject created = getServiceCase(connection, user, caseId);
+                    JSONObject ticket = getTicket(connection, user, ticketId);
+                    audit(connection, user.userId, "service_case", String.valueOf(caseId), "SERVICE_CASE_CREATED",
+                            null, created, ctx);
+                    audit(connection, user.userId, "ticket", String.valueOf(ticketId), "TICKET_CREATED", null, ticket, ctx);
+                    notificationService.notifyTicketCreated(connection, ticketId);
+                    if (assignedToUserId != null) {
+                        notificationService.notifyTicketAssigned(connection, ticketId);
+                    }
+                    connection.commit();
+                    created.put("ticket", ticket);
+                    return created;
                 }
-                ps.setTimestamp(10, dueAt);
-                ps.setLong(11, user.userId);
-                ps.setTimestamp(12, startAt);
-                ps.setTimestamp(13, startAt);
-                long caseId;
-                try (ResultSet rs = ps.executeQuery()) {
-                    rs.next();
-                    caseId = rs.getLong("case_id");
-                }
-                JSONObject created = getServiceCase(connection, user, caseId);
-                audit(connection, user.userId, "service_case", String.valueOf(caseId), "SERVICE_CASE_CREATED",
-                        null, created, ctx);
-                notificationService.notifyCaseCreated(connection, caseId);
-                return created;
+            } catch (Exception e) {
+                rollbackQuietly(connection);
+                throw e;
             }
         } catch (AuthException e) {
             throw e;
@@ -1492,6 +1586,13 @@ public class HelpdeskFlowService {
             throw new AuthException(500, "Database connection unavailable");
         }
         return connection;
+    }
+
+    private void rollbackQuietly(Connection connection) {
+        try {
+            connection.rollback();
+        } catch (Exception ignored) {
+        }
     }
 
     private JSONObject parseJson(String body) {

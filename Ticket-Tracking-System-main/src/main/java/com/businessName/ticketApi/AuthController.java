@@ -69,6 +69,15 @@ public class AuthController {
         }
     };
 
+    public Handler listRequesters = ctx -> {
+        try {
+            ctx.status(200).result(authService.listRequesters(
+                    PageRequest.from(ctx.queryParam("page"), ctx.queryParam("pageSize"))).toString());
+        } catch (AuthException e) {
+            ctx.status(e.getStatusCode()).result(new JSONObject().put("message", e.getMessage()).toString());
+        }
+    };
+
     public Handler createUser = ctx -> {
         try {
             AuthenticatedUser actor = ctx.attribute("authUser");

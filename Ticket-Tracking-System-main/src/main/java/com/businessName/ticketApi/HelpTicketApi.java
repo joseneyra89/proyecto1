@@ -88,6 +88,8 @@ public class HelpTicketApi {
 
         app.patch("/locations/{locationId}/status", helpdeskFlowController.updateLocationStatus);
 
+        app.get("/users/requesters", authController.listRequesters);
+
         app.get("/users/technicians", helpdeskFlowController.listTechnicians);
 
         app.get("/dashboard/technician", helpdeskFlowController.technicianDashboard);

@@ -14,8 +14,8 @@ public class ConnectionObject {
             String port = getEnvOrDefault("DB_PORT", "5432");
             String database = getEnvOrDefault("DB_NAME", "tickets_db");
             String url = getEnvOrDefault("DB_URL", "jdbc:postgresql://" + host + ":" + port + "/" + database);
-            String user = getEnvOrDefault("DB_USER", "postgres");
-            String password = getEnvOrDefault("DB_PASSWORD", "");
+            String user = getEnvOrDefault("DB_USER", "tickets_user");
+            String password = getEnvOrDefault("DB_PASSWORD", "tickets_password");
 
             Connection dbConnection = DriverManager.getConnection(url, user, password);
             System.out.println("Connected to PostgreSQL");
